@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
+import 'package:provider/provider.dart';
 import '../utils/golden_ration_utils.dart' as gr;
 import 'package:my_utilities/color_utils.dart';
 import 'package:my_utilities/math_utils.dart' as math;
@@ -57,7 +58,8 @@ class CornerDrawer extends StatefulWidget {
     this.buttonRadius = 12,
     this.extendedChildAnimationDuration = const Duration(milliseconds: 100),
     this.extendedChildTransitionBuilder,
-  });
+    Key key,
+  }) : super(key: key);
 
   // Widget _defaultExtendedChildTransitionBuilder(BuildContext context, Animation<double> animation, Widget child) => child;
 
@@ -267,7 +269,7 @@ class _CornerDrawerButton extends StatelessWidget {
               Align(
                 alignment: Alignment.bottomRight,
                 child: SizedBox(
-                  width: cornerDrawer.drawerAnimation.value * (cornerDrawer.widget.drawerWidth - cornerDrawer.widget.buttonSize.width) +
+                  width: cornerDrawer.drawerAnimation.value * (cornerDrawer._drawerWidth - cornerDrawer.widget.buttonSize.width) +
                       cornerDrawer.widget.buttonSize.width,
                   height:
                       cornerDrawer.drawerAnimation.value * (MediaQuery.of(context).size.height - cornerDrawer.widget.buttonSize.height) +
@@ -286,8 +288,7 @@ class _CornerDrawerButton extends StatelessWidget {
                       child: HeavyTouchButton(
                         onPressed: () => cornerDrawer.drawerAnimation.isCompleted ? cornerDrawer.closeDrawer() : cornerDrawer.openDrawer(),
                         child: SizedBox(
-                          width: cornerDrawer.drawerAnimation.value *
-                                  (cornerDrawer.widget.drawerWidth - cornerDrawer.widget.buttonSize.width) +
+                          width: cornerDrawer.drawerAnimation.value * (cornerDrawer._drawerWidth - cornerDrawer.widget.buttonSize.width) +
                               cornerDrawer.widget.buttonSize.width,
                           height: cornerDrawer.widget.buttonSize.height,
                           child: ColoredBox(
@@ -383,7 +384,7 @@ class TabsCornerDrawer extends StatefulWidget {
     @required this.opennedButton,
     @required this.closedButton,
     @required this.tabButtons,
-    this.screens,
+    @required this.screens,
     this.animationDuration = const Duration(milliseconds: 135),
     this.drawerWidth,
     this.overlap = 0.0,
@@ -400,34 +401,36 @@ class TabsCornerDrawer extends StatefulWidget {
   });
 
   @override
-  _TabsCornerDrawerState createState() => _TabsCornerDrawerState();
+  TabsCornerDrawerState createState() => TabsCornerDrawerState();
 }
 
-class _TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProviderStateMixin {
-  int _currentIndex;
+class TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProviderStateMixin {
+  int _currentIndex = 0;
   int get currentIndex => _currentIndex;
   set currentIndex(int value) {
     assert(value >= 0 && value < widget.screens.length);
-    _up = value > _currentIndex;
-    _currentIndex = value;
-    _controller.animateTo(_currentIndex.toDouble());
+    setState(() {
+      _up = value > _currentIndex;
+      _currentIndex = value;
+    });
+    // _controller.animateTo(_currentIndex.toDouble());
   }
 
-  bool _up;
+  bool _up = false;
 
-  AnimationController _controller;
-  Animation<double> get controller => _controller.view;
+  // AnimationController _controller;
+  // Animation<double> get controller => _controller.view;
 
   Widget get currentScreen => widget.screens[_currentIndex];
 
   @override
   void initState() {
-    _controller = AnimationController(
-      // lowerBound: 0.0,
-      // upperBound: widget.screens.length - 1.0,
-      duration: widget.animationDuration,
-      vsync: this,
-    );
+    // _controller = AnimationController(
+    //   // lowerBound: 0.0,
+    //   // upperBound: widget.screens.length - 1.0,
+    //   duration: widget.animationDuration,
+    //   vsync: this,
+    // );
 
     super.initState();
   }
@@ -435,20 +438,18 @@ class _TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProvider
   @override
   Widget build(BuildContext context) {
     return CornerDrawer(
-      expandedChild: Builder(
-        builder: (context) {
-          return SafeArea(
-            child: _DrawerTabBar(
-              pointerPositionController: null, // TODO
-              transitionAnimation: context.findAncestorStateOfType<_CornerDrawerState>().extendedChildAniamtion,
-              pointer: Icon(Icons.arrow_right),
-              tabs: [
-                Text("Test tab"),
-              ],
-            ),
-          );
-        }
-      ),
+      key: ValueKey(_currentIndex),
+      expandedChild: Builder(builder: (context) {
+        return SafeArea(
+          child: _DrawerTabBar(
+            vsync: this,
+            selectedIndex: _currentIndex, // TODO
+            transitionAnimation: context.findAncestorStateOfType<_CornerDrawerState>().extendedChildAniamtion,
+            pointer: widget.pointer,
+            tabs: widget.tabButtons,
+          ),
+        );
+      }),
       opennedButton: widget.opennedButton,
       closedButton: widget.closedButton,
       screen: AnimatedSwitcher(
@@ -483,11 +484,16 @@ class _TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProvider
 class _DrawerTabBar extends MultiChildRenderObjectWidget {
   final Widget pointer;
   final List<Widget> tabs;
-  final Animation<double> pointerPositionController;
+
+  final int selectedIndex;
   final Animation<double> transitionAnimation;
+  final TickerProvider vsync;
+  final Duration duration;
 
   _DrawerTabBar({
-    this.pointerPositionController,
+    this.duration,
+    this.vsync,
+    this.selectedIndex = 0,
     this.transitionAnimation,
     this.pointer,
     this.tabs,
@@ -498,30 +504,150 @@ class _DrawerTabBar extends MultiChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _RenderDrawerTabBar(
-      pointerPositionController: null,
-      transitionAnimation: null,
-    );
+    return _RenderDrawerTabBar(selectedIndex, transitionAnimation, vsync);
   }
 
   @override
-  void updateRenderObject(BuildContext context, covariant RenderObject renderObject) {
-    // TODO: implement updateRenderObject
-    super.updateRenderObject(context, renderObject);
+  void updateRenderObject(BuildContext context, covariant _RenderDrawerTabBar renderObject) {
+    print("UPDATE RENDER OBJ");
+    renderObject
+      ..vsync = vsync
+      ..transitionAnimation = transitionAnimation
+      ..selectedIndex = selectedIndex;
   }
 }
 
-class _RenderDrawerTabBar extends RenderBox with ContainerRenderObjectMixin<RenderBox, ContainerBoxParentData<RenderBox>> {
-  Animation<double> pointerPositionController;
-  Animation<double> transitionAnimation;
+class _RenderDrawerTabBar extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, ContainerBoxParentData<RenderBox>>,
+        RenderBoxContainerDefaultsMixin<RenderBox, ContainerBoxParentData<RenderBox>> {
+  AnimationController _pointerPositionController;
+  TickerProvider vsync;
+  List<double> indexToOffset = [];
 
-  _RenderDrawerTabBar({
-    @required this.pointerPositionController,
-    @required this.transitionAnimation,
-  });
+  int _selectedIndex;
+  int get selectedIndex => _selectedIndex;
+  set selectedIndex(int value) {
+    print("sdgsdhfsdfh");
+    if (value == _selectedIndex) return;
+
+    _selectedIndex = value;
+    _pointerPositionController.animateTo(indexToOffset[value]);
+  }
+
+  Animation<double> _transitionAnimation;
+  Animation<double> get transitionAnimation => _transitionAnimation;
+  set transitionAnimation(Animation<double> value) {
+    if (identical(value, _transitionAnimation)) return;
+
+    value.addListener(_handleTransitionAnimation);
+    _transitionAnimation.removeListener(_handleTransitionAnimation);
+    _transitionAnimation = value;
+  }
+
+  set duration(Duration value) {
+    if (value == _pointerPositionController.duration) return;
+    _pointerPositionController.duration = value;
+  }
+
+  _RenderDrawerTabBar(
+    this._selectedIndex,
+    this._transitionAnimation,
+    this.vsync,
+  );
 
   RenderBox get pointer => firstChild;
 
   @override
-  void layout(Constraints constraints, {bool parentUsesSize = false}) {}
+  void setupParentData(covariant RenderObject child) {
+    child.parentData = MultiChildLayoutParentData();
+  }
+
+  @override
+  void attach(covariant PipelineOwner owner) {
+    // It's unbounded so it is not required to be recreated on every relayout when the height changes
+    _pointerPositionController = AnimationController.unbounded(duration: Duration(milliseconds: 100), vsync: vsync)
+      ..addListener(_handlePointerPositionAnimation);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _transitionAnimation.addListener(_handleTransitionAnimation);
+    });
+
+    super.attach(owner);
+  }
+
+  @override
+  void detach() {
+    _pointerPositionController.removeListener(_handlePointerPositionAnimation);
+    _transitionAnimation.removeListener(_handleTransitionAnimation);
+    _pointerPositionController.dispose();
+    super.detach();
+  }
+
+  void _handleTransitionAnimation() {
+    markNeedsPaint();
+  }
+
+  void _handlePointerPositionAnimation() {
+    markNeedsPaint();
+  }
+
+  @override
+  void performLayout() {
+    // TODO: Make its Column capabilities be more configurable(main/cross axis alignment and so on)
+    RenderBox current = childAfter(pointer);
+    double spaceLeft = constraints.maxHeight;
+
+    indexToOffset = List<double>.filled(childCount - 1, 0);
+
+    pointer.layout(
+        BoxConstraints(
+          minWidth: 0,
+          maxWidth: constraints.maxWidth * gr.invphi,
+          minHeight: 0,
+          maxHeight: constraints.maxHeight,
+        ),
+        parentUsesSize: true);
+
+    for (int i = 0; i < childCount - 1; i++) {
+      current.layout(
+        BoxConstraints(
+          minWidth: math.max(constraints.minWidth - pointer.size.width, 0),
+          maxWidth: constraints.maxWidth - pointer.size.width,
+          minHeight: 0,
+          maxHeight: spaceLeft,
+        ),
+        parentUsesSize: true,
+      );
+
+      (current.parentData as ContainerBoxParentData).offset =
+          Offset(pointer.size.width, (i - 1 >= 0 ? indexToOffset[i - 1] : 0) + childBefore(current)?.size?.height ?? 0 / 2);
+
+      spaceLeft = spaceLeft - current.size.height;
+
+      indexToOffset[i] = (current.parentData as ContainerBoxParentData).offset.dy + current.size.height / 2 - pointer.size.height / 2;
+
+      current = childAfter(current);
+    }
+
+    size = Size(constraints.maxWidth, constraints.maxHeight);
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    RenderBox current = childAfter(pointer);
+
+    context.paintChild(pointer, Offset(offset.dx, offset.dy + _pointerPositionController.value));
+
+    for (int i = 0; i < childCount - 1; i++) {
+      context.paintChild(current, offset + (current.parentData as ContainerBoxParentData).offset);
+
+      current = childAfter(current);
+    }
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
+    return defaultHitTestChildren(result, position: position);
+  }
 }
