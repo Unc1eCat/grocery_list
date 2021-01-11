@@ -30,38 +30,53 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
             child: Text("Test screen 2"),
           ),
         ],
-        pointer: Icon(Icons.circle),
+        pointer: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Icon(
+            Icons.circle,
+            size: 6,
+          ),
+        ),
         tabButtons: [
           Padding(
             padding: const EdgeInsets.all(10),
-            child: HeavyTouchButton(
-              onPressed: () => context.findAncestorStateOfType<TabsCornerDrawerState>().currentIndex = 0,
-              child: Text("Test button 0"),
+            child: Builder(
+              builder: (context) => HeavyTouchButton(
+                pressedScale: 0.9,
+                onPressed: () => context.findAncestorStateOfType<TabsCornerDrawerState>().currentIndex = 0,
+                child: Text("Test button 1", style: Theme.of(context).textTheme.headline6),
+              ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(10),
             child: Builder(
-              builder: (context) => RaisedButton(
-                onPressed: () {
-                  print("hadfsfg");
-                  context.findAncestorStateOfType<TabsCornerDrawerState>().currentIndex = 1;
-                },
-                child: Text("Test button 1"),
+              builder: (context) => HeavyTouchButton(
+                pressedScale: 0.9,
+                onPressed: () => context.findAncestorStateOfType<TabsCornerDrawerState>().currentIndex = 1,
+                child: Text("Test button 2", style: Theme.of(context).textTheme.headline6),
               ),
             ),
           ),
         ],
-        closedButton: Icon(Icons.menu_outlined, size: 36),
-        opennedButton: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("Close", style: Theme.of(context).textTheme.headline6),
-              SizedBox(width: 20),
-              Icon(Icons.close, size: 36),
-            ],
+        closedButton: (context, onPressed) => HeavyTouchButton(
+          onPressed: onPressed,
+          pressedScale: 0.9,
+          child: Icon(Icons.menu_outlined, size: 36),
+        ),
+        openedButton: (context, onPressed) => HeavyTouchButton(
+          onPressed: onPressed,
+          pressedScale: 0.9,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Close", style: Theme.of(context).textTheme.headline6),
+                SizedBox(width: 20),
+                Icon(Icons.close, size: 36),
+              ],
+            ),
           ),
         ),
       ),

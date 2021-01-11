@@ -7,13 +7,17 @@ import 'package:provider/provider.dart';
 import '../utils/golden_ration_utils.dart' as gr;
 import 'package:my_utilities/color_utils.dart';
 import 'package:my_utilities/math_utils.dart' as math;
+import 'package:vector_math/vector_math_64.dart' as vec;
+
+typedef ButtonBuilder = Widget Function(BuildContext context, VoidCallback onPressed);
+typedef WidgetWrapper = Widget Function(BuildContext context, Widget child);
 
 class CornerDrawer extends StatefulWidget {
   final double drawerWidth;
   final Widget screen;
   final Widget expandedChild;
-  final Widget opennedButton;
-  final Widget closedButton;
+  final ButtonBuilder opennedButton;
+  final ButtonBuilder closedButton;
   final Color color;
   final Color backgroundColor;
   final BorderRadius screenBorderRadius;
@@ -21,6 +25,7 @@ class CornerDrawer extends StatefulWidget {
   final double buttonRadius;
   final Duration extendedChildAnimationDuration;
   final AnimatedTransitionBuilder extendedChildTransitionBuilder;
+  final AnimatedTransitionBuilder screenTransitionBuilder;
 
   /// Size of the butotn in the closed position
   final Size buttonSize;
@@ -30,9 +35,6 @@ class CornerDrawer extends StatefulWidget {
 
   /// How much should the screeen be covered in black when the drawer is open: 0.0 = no fade, 1.0 = fully black(not recommended)
   final double fadeAmount;
-
-  /// How much should the screen scale down: 0.0 = no scale down, 1.0 = disappear
-  final double scaleDownAmount;
 
   /// How much should the drawer overlap previous screen: 0.0 = no overlap, 1.0 = fully cover.
   /// Specify a negative nubmer to leave some space between the screen and the drawer
@@ -47,7 +49,6 @@ class CornerDrawer extends StatefulWidget {
     @required this.closedButton,
     this.drawerWidth,
     this.overlap = 0.0,
-    this.scaleDownAmount = 0.1,
     this.color,
     this.backgroundColor,
     this.elevation = 3,
@@ -56,8 +57,9 @@ class CornerDrawer extends StatefulWidget {
     this.drawerAnimationDuration = const Duration(milliseconds: 300),
     this.buttonSize = const Size(60, 80),
     this.buttonRadius = 12,
-    this.extendedChildAnimationDuration = const Duration(milliseconds: 100),
+    this.extendedChildAnimationDuration = const Duration(milliseconds: 110),
     this.extendedChildTransitionBuilder,
+    this.screenTransitionBuilder,
     Key key,
   }) : super(key: key);
 
@@ -72,9 +74,9 @@ class CornerDrawer extends StatefulWidget {
 class _CornerDrawerState extends State<CornerDrawer> with TickerProviderStateMixin {
   AnimationController _controller;
   Animation<Offset> _slideAniamtion;
-  Animation<double> _scaleAniamtion;
+  Widget _screenTranstion;
 
-  /// Aniamtion representing oppening and closing of the drawer
+  /// Animation representing opening and closing of the drawer
   Animation<double> drawerAnimation;
 
   /// The animation representing appearing and disappearing of the extended child
@@ -93,6 +95,8 @@ class _CornerDrawerState extends State<CornerDrawer> with TickerProviderStateMix
   /// The animation composed of sequence of the extended child and the drawer animations, full animation
   Animation<double> get animation => _controller.view;
 
+  double get animationsBorderValue => widget.drawerAnimationDuration.inMilliseconds / widget.fullAniamtionDuration.inMilliseconds;
+
   double get _drawerWidth => widget.drawerWidth ?? MediaQuery.of(context).size.width * (1 - gr.invphi * gr.invphi);
 
   @override
@@ -104,11 +108,11 @@ class _CornerDrawerState extends State<CornerDrawer> with TickerProviderStateMix
 
     drawerAnimation = CurvedAnimation(
       parent: _controller,
-      curve: Interval(0.0, widget.drawerAnimationDuration.inMilliseconds / widget.fullAniamtionDuration.inMilliseconds),
+      curve: Interval(0.0, animationsBorderValue),
     );
     extendedChildAniamtion = CurvedAnimation(
       parent: _controller,
-      curve: Interval(widget.drawerAnimationDuration.inMilliseconds / widget.fullAniamtionDuration.inMilliseconds, 1.0),
+      curve: Interval(animationsBorderValue, 1.0),
     );
 
     super.initState();
@@ -119,10 +123,6 @@ class _CornerDrawerState extends State<CornerDrawer> with TickerProviderStateMix
     _slideAniamtion = Tween<Offset>(
       begin: Offset(0, 0),
       end: Offset(-_drawerWidth * (1.0 - widget.overlap) / MediaQuery.of(context).size.width, 0),
-    ).animate(drawerAnimation);
-    _scaleAniamtion = Tween<double>(
-      begin: 1.0,
-      end: 1.0 - widget.scaleDownAmount,
     ).animate(drawerAnimation);
 
     super.didChangeDependencies();
@@ -138,6 +138,40 @@ class _CornerDrawerState extends State<CornerDrawer> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     var screenBorderRadius = widget.screenBorderRadius ?? BorderRadius.circular(8);
+    var wrappedScreen = DecoratedBoxTransition(
+      position: DecorationPosition.foreground,
+      decoration: DecorationTween(
+        begin: BoxDecoration(
+          color: Colors.transparent,
+        ),
+        end: BoxDecoration(
+          color: Colors.black.withOpacity(widget.fadeAmount),
+          borderRadius: screenBorderRadius,
+        ),
+      ).animate(drawerAnimation),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: screenBorderRadius,
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 6,
+              color: Colors.black.withOpacity(math.clip(widget.elevation / 7, 0.45, 1.0)), // TODO: Make better elevation
+              spreadRadius: widget.elevation / 3,
+            ),
+          ],
+        ),
+        child: widget.screenBorderRadius == BorderRadius.zero
+            ? widget.screen
+            : AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) => ClipRRect(
+                  borderRadius: BorderRadius.lerp(BorderRadius.zero, screenBorderRadius, _controller.value),
+                  child: child,
+                ),
+                child: widget.screen,
+              ),
+      ),
+    );
 
     return Stack(
       children: [
@@ -147,43 +181,11 @@ class _CornerDrawerState extends State<CornerDrawer> with TickerProviderStateMix
         ),
         SlideTransition(
           position: _slideAniamtion,
-          child: ScaleTransition(
-            scale: _scaleAniamtion,
-            child: DecoratedBoxTransition(
-              position: DecorationPosition.foreground,
-              decoration: DecorationTween(
-                begin: BoxDecoration(
-                  color: Colors.transparent,
-                ),
-                end: BoxDecoration(
-                  color: Colors.black.withOpacity(widget.fadeAmount),
-                  borderRadius: screenBorderRadius,
-                ),
-              ).animate(drawerAnimation),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: screenBorderRadius,
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 6,
-                      color: Colors.black.withOpacity(math.clip(widget.elevation / 7, 0.45, 1.0)), // TODO: Make better elevation
-                      spreadRadius: widget.elevation / 3,
-                    ),
-                  ],
-                ),
-                child: widget.screenBorderRadius == BorderRadius.zero
-                    ? widget.screen
-                    : AnimatedBuilder(
-                        animation: _controller,
-                        builder: (context, child) => ClipRRect(
-                          borderRadius: BorderRadius.lerp(BorderRadius.zero, screenBorderRadius, _controller.value),
-                          child: child,
-                        ),
-                        child: widget.screen,
-                      ),
+          child: widget.screenTransitionBuilder?.call(context, drawerAnimation, wrappedScreen) ??
+              ScaleTransition(
+                scale: Tween<double>(begin: 1.0, end: 0.8).animate(drawerAnimation),
+                child: wrappedScreen,
               ),
-            ),
-          ),
         ),
         Positioned(
           right: 0,
@@ -218,8 +220,11 @@ class _CornerDrawerButton extends StatelessWidget {
       end: Alignment.bottomRight,
     );
 
+    var openedButton = cornerDrawer.widget.opennedButton(context, () => cornerDrawer.closeDrawer());
+    var closedButton = cornerDrawer.widget.closedButton(context, () => cornerDrawer.openDrawer());
+
     return AnimatedBuilder(
-      animation: cornerDrawer.extendedChildAniamtion,
+      animation: cornerDrawer.drawerAnimation,
       builder: (context, ch) {
         Widget child;
 
@@ -230,12 +235,12 @@ class _CornerDrawerButton extends StatelessWidget {
               IgnorePointer(
                 child: Opacity(
                   opacity: 1.0 - cornerDrawer.drawerAnimation.value,
-                  child: cornerDrawer.widget.closedButton,
+                  child: closedButton,
                 ),
               ),
               Opacity(
                 opacity: cornerDrawer.drawerAnimation.value,
-                child: cornerDrawer.widget.opennedButton,
+                child: openedButton,
               ),
             ],
           );
@@ -245,20 +250,20 @@ class _CornerDrawerButton extends StatelessWidget {
             children: [
               Opacity(
                 opacity: 1.0 - cornerDrawer.drawerAnimation.value,
-                child: cornerDrawer.widget.closedButton,
+                child: closedButton,
               ),
               IgnorePointer(
                 child: Opacity(
                   opacity: cornerDrawer.drawerAnimation.value,
-                  child: cornerDrawer.widget.opennedButton,
+                  child: openedButton,
                 ),
               ),
             ],
           );
         } else if (cornerDrawer.drawerAnimation.isDismissed) {
-          child = cornerDrawer.widget.closedButton;
+          child = closedButton;
         } else /* if (cornerDrawer.drawerAnimation.isCompleted) */ {
-          child = cornerDrawer.widget.opennedButton;
+          child = openedButton;
         }
 
         return SizedBox(
@@ -302,7 +307,7 @@ class _CornerDrawerButton extends StatelessWidget {
                   ),
                 ),
               ),
-              ch,
+              if (cornerDrawer.drawerAnimation.value >= 0.99) ch,
             ],
           ),
         );
@@ -312,14 +317,7 @@ class _CornerDrawerButton extends StatelessWidget {
         builder: (context, child) =>
             cornerDrawer.widget.extendedChildTransitionBuilder?.call(context, cornerDrawer.extendedChildAniamtion, child) ??
             _defaultExtendedChildTransitionBuilder(context, cornerDrawer.extendedChildAniamtion, child),
-        child: cornerDrawer.drawerAnimation.isCompleted
-            ? SizedBox(
-                key: ValueKey(true),
-              )
-            : KeyedSubtree(
-                child: cornerDrawer.widget.expandedChild,
-                key: ValueKey(false),
-              ),
+        child: cornerDrawer.widget.expandedChild,
       ),
     );
   }
@@ -349,10 +347,10 @@ class TabsCornerDrawer extends StatefulWidget {
   final Widget pointer;
 
   /// The child of the button that closes the drawer
-  final Widget opennedButton;
+  final ButtonBuilder openedButton;
 
   /// The child of the button that opens the drawer
-  final Widget closedButton;
+  final ButtonBuilder closedButton;
   final double drawerWidth;
   final Color color;
   final Color backgroundColor;
@@ -360,6 +358,8 @@ class TabsCornerDrawer extends StatefulWidget {
   final Duration drawerAnimationDuration;
   final double buttonRadius;
   final Duration extendedChildAnimationDuration;
+  final AnimatedTransitionBuilder screenTransitionBuilder;
+  final WidgetWrapper tabBarWrapper;
 
   /// Size of the button in the closed position
   final Size buttonSize;
@@ -381,7 +381,7 @@ class TabsCornerDrawer extends StatefulWidget {
 
   TabsCornerDrawer({
     @required this.pointer,
-    @required this.opennedButton,
+    @required this.openedButton,
     @required this.closedButton,
     @required this.tabButtons,
     @required this.screens,
@@ -397,7 +397,9 @@ class TabsCornerDrawer extends StatefulWidget {
     this.drawerAnimationDuration = const Duration(milliseconds: 300),
     this.buttonSize = const Size(60, 80),
     this.buttonRadius = 12,
-    this.extendedChildAnimationDuration = const Duration(milliseconds: 100),
+    this.extendedChildAnimationDuration = const Duration(milliseconds: 240),
+    this.screenTransitionBuilder,
+    this.tabBarWrapper,
   });
 
   @override
@@ -437,20 +439,34 @@ class TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProviderS
 
   @override
   Widget build(BuildContext context) {
+    var tb = DrawerTabBar(
+      vsync: this,
+      selectedIndex: _currentIndex, // TODO
+      pointer: widget.pointer,
+      tabs: widget.tabButtons,
+    );
+
     return CornerDrawer(
-      key: ValueKey(_currentIndex),
-      expandedChild: Builder(builder: (context) {
-        return SafeArea(
-          child: _DrawerTabBar(
-            vsync: this,
-            selectedIndex: _currentIndex, // TODO
-            transitionAnimation: context.findAncestorStateOfType<_CornerDrawerState>().extendedChildAniamtion,
-            pointer: widget.pointer,
-            tabs: widget.tabButtons,
-          ),
-        );
-      }),
-      opennedButton: widget.opennedButton,
+      color: widget.color,
+      backgroundColor: widget.backgroundColor,
+      buttonRadius: widget.buttonRadius,
+      buttonSize: widget.buttonSize,
+      drawerAnimationDuration: widget.drawerAnimationDuration,
+      drawerWidth: widget.drawerWidth,
+      elevation: widget.elevation,
+      extendedChildAnimationDuration: widget.extendedChildAnimationDuration,
+      fadeAmount: widget.fadeAmount,
+      overlap: widget.overlap,
+      screenBorderRadius: widget.screenBorderRadius,
+      screenTransitionBuilder: widget.screenTransitionBuilder,
+      extendedChildTransitionBuilder: (context, animation, child) => child,
+      expandedChild: SafeArea(
+        child: widget.tabBarWrapper?.call(context, tb) ??
+            Center(
+              child: tb,
+            ),
+      ),
+      opennedButton: widget.openedButton,
       closedButton: widget.closedButton,
       screen: AnimatedSwitcher(
         duration: widget.animationDuration,
@@ -481,16 +497,20 @@ class TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProviderS
   }
 }
 
-class _DrawerTabBar extends MultiChildRenderObjectWidget {
+class DrawerTabBar extends MultiChildRenderObjectWidget {
   final Widget pointer;
   final List<Widget> tabs;
 
   final int selectedIndex;
   final Animation<double> transitionAnimation;
   final TickerProvider vsync;
+  final double pointerIndentation;
+
+  /// Duration of the pointer movement(idk how it relates to the velocity, I just passed it to the animation controller responsible for the pointer movement)
   final Duration duration;
 
-  _DrawerTabBar({
+  DrawerTabBar({
+    this.pointerIndentation,
     this.duration,
     this.vsync,
     this.selectedIndex = 0,
@@ -504,35 +524,48 @@ class _DrawerTabBar extends MultiChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _RenderDrawerTabBar(selectedIndex, transitionAnimation, vsync);
+    return RenderDrawerTabBar(
+        selectedIndex, transitionAnimation ?? context.findAncestorStateOfType<_CornerDrawerState>()?.extendedChildAniamtion, vsync, pointerIndentation ?? 0,
+        duration: duration);
   }
 
   @override
-  void updateRenderObject(BuildContext context, covariant _RenderDrawerTabBar renderObject) {
-    print("UPDATE RENDER OBJ");
+  void updateRenderObject(BuildContext context, covariant RenderDrawerTabBar renderObject) {
     renderObject
-      ..vsync = vsync
-      ..transitionAnimation = transitionAnimation
-      ..selectedIndex = selectedIndex;
+      .._vsync = vsync
+      ..transitionAnimation = transitionAnimation ?? context.findAncestorStateOfType<_CornerDrawerState>()?.extendedChildAniamtion
+      ..selectedIndex = selectedIndex
+      ..pointerIndentation = pointerIndentation ?? 0;
   }
 }
 
-class _RenderDrawerTabBar extends RenderBox
+class RenderDrawerTabBar extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, ContainerBoxParentData<RenderBox>>,
         RenderBoxContainerDefaultsMixin<RenderBox, ContainerBoxParentData<RenderBox>> {
   AnimationController _pointerPositionController;
-  TickerProvider vsync;
-  List<double> indexToOffset = [];
+  TickerProvider _vsync;
+  List<double> _indexToOffset = [];
+  List<double> get indexToOffset => List.unmodifiable(_indexToOffset);
+
+  double _pointerIndentation;
+  double get pointerIndentation => _pointerIndentation;
+  set pointerIndentation(double value)
+  {
+    if (_pointerIndentation == value) return;
+
+    _pointerIndentation = value;
+
+    markNeedsLayout();
+  }
 
   int _selectedIndex;
   int get selectedIndex => _selectedIndex;
   set selectedIndex(int value) {
-    print("sdgsdhfsdfh");
     if (value == _selectedIndex) return;
 
     _selectedIndex = value;
-    _pointerPositionController.animateTo(indexToOffset[value]);
+    _pointerPositionController.animateTo(_indexToOffset[value]);
   }
 
   Animation<double> _transitionAnimation;
@@ -550,11 +583,13 @@ class _RenderDrawerTabBar extends RenderBox
     _pointerPositionController.duration = value;
   }
 
-  _RenderDrawerTabBar(
+  RenderDrawerTabBar(
     this._selectedIndex,
     this._transitionAnimation,
-    this.vsync,
-  );
+    this._vsync,
+    this._pointerIndentation, {
+    Duration duration,
+  }) : _pointerPositionController = AnimationController.unbounded(duration: duration ?? Duration(milliseconds: 100), vsync: _vsync);
 
   RenderBox get pointer => firstChild;
 
@@ -566,8 +601,7 @@ class _RenderDrawerTabBar extends RenderBox
   @override
   void attach(covariant PipelineOwner owner) {
     // It's unbounded so it is not required to be recreated on every relayout when the height changes
-    _pointerPositionController = AnimationController.unbounded(duration: Duration(milliseconds: 100), vsync: vsync)
-      ..addListener(_handlePointerPositionAnimation);
+    _pointerPositionController.addListener(_handlePointerPositionAnimation);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _transitionAnimation.addListener(_handleTransitionAnimation);
@@ -598,7 +632,7 @@ class _RenderDrawerTabBar extends RenderBox
     RenderBox current = childAfter(pointer);
     double spaceLeft = constraints.maxHeight;
 
-    indexToOffset = List<double>.filled(childCount - 1, 0);
+    _indexToOffset = List<double>.filled(childCount - 1, 0);
 
     pointer.layout(
         BoxConstraints(
@@ -612,35 +646,47 @@ class _RenderDrawerTabBar extends RenderBox
     for (int i = 0; i < childCount - 1; i++) {
       current.layout(
         BoxConstraints(
-          minWidth: math.max(constraints.minWidth - pointer.size.width, 0),
-          maxWidth: constraints.maxWidth - pointer.size.width,
+          minWidth: math.max(constraints.minWidth - pointer.size.width - _pointerIndentation, 0),
+          maxWidth: math.max(constraints.maxWidth - pointer.size.width - _pointerIndentation, 0),
           minHeight: 0,
           maxHeight: spaceLeft,
         ),
         parentUsesSize: true,
       );
-
+      
       (current.parentData as ContainerBoxParentData).offset =
-          Offset(pointer.size.width, (i - 1 >= 0 ? indexToOffset[i - 1] : 0) + childBefore(current)?.size?.height ?? 0 / 2);
+          Offset(pointer.size.width + _pointerIndentation, (i - 1 >= 0 ? _indexToOffset[i - 1] : 0) + childBefore(current)?.size?.height ?? 0 / 2);
 
       spaceLeft = spaceLeft - current.size.height;
 
-      indexToOffset[i] = (current.parentData as ContainerBoxParentData).offset.dy + current.size.height / 2 - pointer.size.height / 2;
+      _indexToOffset[i] = (current.parentData as ContainerBoxParentData).offset.dy + current.size.height / 2 - pointer.size.height / 2;
 
       current = childAfter(current);
     }
 
-    size = Size(constraints.maxWidth, constraints.maxHeight);
+    size = Size(constraints.maxWidth, (lastChild.parentData as ContainerBoxParentData).offset.dy + lastChild.size.height);
+    // This size computation is not accurate, the pointer may overflow the widget in case it's height is bigger than heigh of the first or the last children
+
+    _pointerPositionController.value = _indexToOffset[_selectedIndex];
   }
 
   @override
   void paint(PaintingContext context, Offset offset) {
     RenderBox current = childAfter(pointer);
+    var pointerValue = Curves.easeOutQuint.transform((transitionAnimation.value * 1.5 - 1.0 / 1.5).clamp(0.0, 1.0)).toDouble();
 
-    context.paintChild(pointer, Offset(offset.dx, offset.dy + _pointerPositionController.value));
+    context.pushOpacity(offset, (pointerValue * 255).round(), (context, offset) {
+      context.paintChild(
+          pointer, Offset(offset.dx, offset.dy + _pointerPositionController.value + (1.0 - pointerValue) * 0.8 * size.height));
+    });
 
     for (int i = 0; i < childCount - 1; i++) {
-      context.paintChild(current, offset + (current.parentData as ContainerBoxParentData).offset);
+      var buttonValue = _sequentiallyStartingAnimations(transitionAnimation.value, childCount - i - 2, childCount - 1, 0.3);
+
+      context.pushOpacity(offset, (buttonValue * 255.0).toInt().clamp(0, 255), (context, offset) {
+        context.paintChild(
+            current, offset + (current.parentData as ContainerBoxParentData).offset + Offset(0, (1.0 - buttonValue) * size.height * 0.5));
+      });
 
       current = childAfter(current);
     }
@@ -649,5 +695,12 @@ class _RenderDrawerTabBar extends RenderBox
   @override
   bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
     return defaultHitTestChildren(result, position: position);
+  }
+
+  static double _sequentiallyStartingAnimations(double t, int index, int maxIndex, double shift) {
+    var o = 1 / maxIndex + shift * (1 - 1 / maxIndex); // Lerp between inverse of [[maxIndex]] and 1 via shift
+    return math.clip(o * maxIndex * t - (o * maxIndex - 1) * index / (maxIndex - 1), 0.0, 1.0);
+
+    // return 1;
   }
 }
