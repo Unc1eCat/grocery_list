@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
@@ -11,6 +12,7 @@ import 'package:vector_math/vector_math_64.dart' as vec;
 
 typedef ButtonBuilder = Widget Function(BuildContext context, VoidCallback onPressed);
 typedef WidgetWrapper = Widget Function(BuildContext context, Widget child);
+typedef WithinStateBuilder<T extends State> = Widget Function(BuildContext context, T state, Widget child);
 
 class CornerDrawer extends StatefulWidget {
   final double drawerWidth;
@@ -20,21 +22,14 @@ class CornerDrawer extends StatefulWidget {
   final ButtonBuilder closedButton;
   final Color color;
   final Color backgroundColor;
-  final BorderRadius screenBorderRadius;
   final Duration drawerAnimationDuration;
   final double buttonRadius;
   final Duration extendedChildAnimationDuration;
   final AnimatedTransitionBuilder extendedChildTransitionBuilder;
-  final AnimatedTransitionBuilder screenTransitionBuilder;
+  final WithinStateBuilder<CornerDrawerState> screenBuilder;
 
   /// Size of the butotn in the closed position
   final Size buttonSize;
-
-  /// Elevation of the screen
-  final double elevation;
-
-  /// How much should the screeen be covered in black when the drawer is open: 0.0 = no fade, 1.0 = fully black(not recommended)
-  final double fadeAmount;
 
   /// How much should the drawer overlap previous screen: 0.0 = no overlap, 1.0 = fully cover.
   /// Specify a negative nubmer to leave some space between the screen and the drawer
@@ -51,27 +46,80 @@ class CornerDrawer extends StatefulWidget {
     this.overlap = 0.0,
     this.color,
     this.backgroundColor,
-    this.elevation = 3,
-    this.fadeAmount = 0.6,
-    this.screenBorderRadius,
     this.drawerAnimationDuration = const Duration(milliseconds: 300),
     this.buttonSize = const Size(60, 80),
     this.buttonRadius = 12,
     this.extendedChildAnimationDuration = const Duration(milliseconds: 110),
     this.extendedChildTransitionBuilder,
-    this.screenTransitionBuilder,
+    this.screenBuilder,
     Key key,
+    // BorderRadius screenBorderRadius,
+    // double screenElevation,
+    // double fadeAmount,
   }) : super(key: key);
+  // {
+  //   screenBuilder ??= (context, cornerDrawer, child) => defaultScreenTransitionBuilder(context, cornerDrawer, child);
+  // }
 
   // Widget _defaultExtendedChildTransitionBuilder(BuildContext context, Animation<double> animation, Widget child) => child;
 
   @override
-  _CornerDrawerState createState() => _CornerDrawerState();
+  CornerDrawerState createState() => CornerDrawerState();
 
-  static _CornerDrawerState of(BuildContext context) => context.findAncestorStateOfType<_CornerDrawerState>();
+  static CornerDrawerState of(BuildContext context) => context.findAncestorStateOfType<CornerDrawerState>();
+
+  static Widget defaultScreenTransitionBuilder(
+    BuildContext context,
+    CornerDrawerState cornerDrawer,
+    Widget child, {
+    double elevation,
+    double fadeAmount,
+    BorderRadius screenBorderRadius,
+  }) {
+    var screenBR = screenBorderRadius ?? BorderRadius.circular(8);
+    var elev = elevation ?? 3.0;
+
+    return ScaleTransition(
+      scale: Tween<double>(begin: 1.0, end: 0.8).animate(cornerDrawer.drawerAnimation),
+      child: DecoratedBoxTransition(
+        position: DecorationPosition.foreground,
+        decoration: DecorationTween(
+          begin: BoxDecoration(
+            color: Colors.transparent,
+          ),
+          end: BoxDecoration(
+            color: Colors.black.withOpacity(fadeAmount ?? 0.4),
+            borderRadius: screenBR,
+          ),
+        ).animate(cornerDrawer.drawerAnimation),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: screenBR,
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 6,
+                color: Colors.black.withOpacity(math.clip(elev / 7, 0.45, 1.0)), // TODO: Make better elevation
+                spreadRadius: elev / 3,
+              ),
+            ],
+          ),
+          child: screenBR == BorderRadius.zero
+              ? cornerDrawer.widget.screen
+              : AnimatedBuilder(
+                  animation: cornerDrawer.drawerAnimation,
+                  builder: (context, child) => ClipRRect(
+                    borderRadius: BorderRadius.lerp(BorderRadius.zero, screenBorderRadius, cornerDrawer.drawerAnimation.value),
+                    child: child,
+                  ),
+                  child: child,
+                ),
+        ),
+      ),
+    );
+  }
 }
 
-class _CornerDrawerState extends State<CornerDrawer> with TickerProviderStateMixin {
+class CornerDrawerState extends State<CornerDrawer> with TickerProviderStateMixin {
   AnimationController _controller;
   Animation<Offset> _slideAniamtion;
   Widget _screenTranstion;
@@ -137,42 +185,6 @@ class _CornerDrawerState extends State<CornerDrawer> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    var screenBorderRadius = widget.screenBorderRadius ?? BorderRadius.circular(8);
-    var wrappedScreen = DecoratedBoxTransition(
-      position: DecorationPosition.foreground,
-      decoration: DecorationTween(
-        begin: BoxDecoration(
-          color: Colors.transparent,
-        ),
-        end: BoxDecoration(
-          color: Colors.black.withOpacity(widget.fadeAmount),
-          borderRadius: screenBorderRadius,
-        ),
-      ).animate(drawerAnimation),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: screenBorderRadius,
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 6,
-              color: Colors.black.withOpacity(math.clip(widget.elevation / 7, 0.45, 1.0)), // TODO: Make better elevation
-              spreadRadius: widget.elevation / 3,
-            ),
-          ],
-        ),
-        child: widget.screenBorderRadius == BorderRadius.zero
-            ? widget.screen
-            : AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) => ClipRRect(
-                  borderRadius: BorderRadius.lerp(BorderRadius.zero, screenBorderRadius, _controller.value),
-                  child: child,
-                ),
-                child: widget.screen,
-              ),
-      ),
-    );
-
     return Stack(
       children: [
         ColoredBox(
@@ -181,11 +193,8 @@ class _CornerDrawerState extends State<CornerDrawer> with TickerProviderStateMix
         ),
         SlideTransition(
           position: _slideAniamtion,
-          child: widget.screenTransitionBuilder?.call(context, drawerAnimation, wrappedScreen) ??
-              ScaleTransition(
-                scale: Tween<double>(begin: 1.0, end: 0.8).animate(drawerAnimation),
-                child: wrappedScreen,
-              ),
+          child: widget.screenBuilder?.call(context, this, widget.screen) ??
+              CornerDrawer.defaultScreenTransitionBuilder(context, this, widget.screen),
         ),
         Positioned(
           right: 0,
@@ -202,7 +211,7 @@ class _CornerDrawerButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var cornerDrawer = context.findAncestorStateOfType<_CornerDrawerState>();
+    var cornerDrawer = context.findAncestorStateOfType<CornerDrawerState>();
     var buttonDecorationShadows = [
       BoxShadow(
         blurRadius: 4,
@@ -358,8 +367,9 @@ class TabsCornerDrawer extends StatefulWidget {
   final Duration drawerAnimationDuration;
   final double buttonRadius;
   final Duration extendedChildAnimationDuration;
-  final AnimatedTransitionBuilder screenTransitionBuilder;
+  final WithinStateBuilder<CornerDrawerState> screenBuilder;
   final WidgetWrapper tabBarWrapper;
+  final Duration screenChangeDuration;
 
   /// Size of the button in the closed position
   final Size buttonSize;
@@ -398,8 +408,9 @@ class TabsCornerDrawer extends StatefulWidget {
     this.buttonSize = const Size(60, 80),
     this.buttonRadius = 12,
     this.extendedChildAnimationDuration = const Duration(milliseconds: 240),
-    this.screenTransitionBuilder,
+    this.screenBuilder,
     this.tabBarWrapper,
+    this.screenChangeDuration = const Duration(milliseconds: 150),
   });
 
   @override
@@ -408,33 +419,36 @@ class TabsCornerDrawer extends StatefulWidget {
 
 class TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProviderStateMixin {
   int _currentIndex = 0;
+
+  /// When animating, this is the destination index
   int get currentIndex => _currentIndex;
   set currentIndex(int value) {
     assert(value >= 0 && value < widget.screens.length);
+
+    if (_pageController.page.round() == value) return;
+
+    _currentIndex = value;
+
     setState(() {
-      _up = value > _currentIndex;
-      _currentIndex = value;
+      _pageController.animateToPage(_currentIndex, duration: widget.screenChangeDuration, curve: Curves.easeOut);
     });
-    // _controller.animateTo(_currentIndex.toDouble());
   }
 
-  bool _up = false;
-
-  // AnimationController _controller;
-  // Animation<double> get controller => _controller.view;
-
-  Widget get currentScreen => widget.screens[_currentIndex];
+  PageController _pageController;
+  PageController get controller => _pageController;
 
   @override
   void initState() {
-    // _controller = AnimationController(
-    //   // lowerBound: 0.0,
-    //   // upperBound: widget.screens.length - 1.0,
-    //   duration: widget.animationDuration,
-    //   vsync: this,
-    // );
+    _pageController = PageController();
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -453,12 +467,9 @@ class TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProviderS
       buttonSize: widget.buttonSize,
       drawerAnimationDuration: widget.drawerAnimationDuration,
       drawerWidth: widget.drawerWidth,
-      elevation: widget.elevation,
       extendedChildAnimationDuration: widget.extendedChildAnimationDuration,
-      fadeAmount: widget.fadeAmount,
       overlap: widget.overlap,
-      screenBorderRadius: widget.screenBorderRadius,
-      screenTransitionBuilder: widget.screenTransitionBuilder,
+      screenBuilder: (_, __, child) => child,
       extendedChildTransitionBuilder: (context, animation, child) => child,
       expandedChild: SafeArea(
         child: widget.tabBarWrapper?.call(context, tb) ??
@@ -468,30 +479,21 @@ class TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProviderS
       ),
       opennedButton: widget.openedButton,
       closedButton: widget.closedButton,
-      screen: AnimatedSwitcher(
-        duration: widget.animationDuration,
-        transitionBuilder: (child, animation) => FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(
-                0,
-                _up
-                    ? (_currentIndex == (child.key as ValueKey).value ? 0.7 : -0.7)
-                    : (_currentIndex == (child.key as ValueKey).value ? -0.7 : 0.7),
-              ),
-              end: Offset(
-                0,
-                0,
-              ),
-            ).animate(animation),
-            child: child,
-          ),
-        ),
-        child: KeyedSubtree(
-          key: ValueKey(_currentIndex),
-          child: currentScreen,
-        ),
+      screen: PageView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        scrollDirection: Axis.vertical,
+        controller: _pageController,
+        itemBuilder: (context, index) =>
+            (widget.screenBuilder?.call(context, context.findAncestorStateOfType<CornerDrawerState>(), widget.screens[index])) ??
+            CornerDrawer.defaultScreenTransitionBuilder(
+              context,
+              context.findAncestorStateOfType<CornerDrawerState>(),
+              widget.screens[index],
+              elevation: widget.elevation,
+              fadeAmount: widget.fadeAmount,
+              screenBorderRadius: widget.screenBorderRadius,
+            ),
+        itemCount: widget.screens.length,
       ),
     );
   }
@@ -524,8 +526,8 @@ class DrawerTabBar extends MultiChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return RenderDrawerTabBar(
-        selectedIndex, transitionAnimation ?? context.findAncestorStateOfType<_CornerDrawerState>()?.extendedChildAniamtion, vsync, pointerIndentation ?? 0,
+    return RenderDrawerTabBar(selectedIndex,
+        transitionAnimation ?? context.findAncestorStateOfType<CornerDrawerState>()?.extendedChildAniamtion, vsync, pointerIndentation ?? 0,
         duration: duration);
   }
 
@@ -533,7 +535,7 @@ class DrawerTabBar extends MultiChildRenderObjectWidget {
   void updateRenderObject(BuildContext context, covariant RenderDrawerTabBar renderObject) {
     renderObject
       .._vsync = vsync
-      ..transitionAnimation = transitionAnimation ?? context.findAncestorStateOfType<_CornerDrawerState>()?.extendedChildAniamtion
+      ..transitionAnimation = transitionAnimation ?? context.findAncestorStateOfType<CornerDrawerState>()?.extendedChildAniamtion
       ..selectedIndex = selectedIndex
       ..pointerIndentation = pointerIndentation ?? 0;
   }
@@ -550,8 +552,7 @@ class RenderDrawerTabBar extends RenderBox
 
   double _pointerIndentation;
   double get pointerIndentation => _pointerIndentation;
-  set pointerIndentation(double value)
-  {
+  set pointerIndentation(double value) {
     if (_pointerIndentation == value) return;
 
     _pointerIndentation = value;
@@ -653,9 +654,9 @@ class RenderDrawerTabBar extends RenderBox
         ),
         parentUsesSize: true,
       );
-      
-      (current.parentData as ContainerBoxParentData).offset =
-          Offset(pointer.size.width + _pointerIndentation, (i - 1 >= 0 ? _indexToOffset[i - 1] : 0) + childBefore(current)?.size?.height ?? 0 / 2);
+
+      (current.parentData as ContainerBoxParentData).offset = Offset(
+          pointer.size.width + _pointerIndentation, (i - 1 >= 0 ? _indexToOffset[i - 1] : 0) + childBefore(current)?.size?.height ?? 0 / 2);
 
       spaceLeft = spaceLeft - current.size.height;
 
@@ -700,7 +701,5 @@ class RenderDrawerTabBar extends RenderBox
   static double _sequentiallyStartingAnimations(double t, int index, int maxIndex, double shift) {
     var o = 1 / maxIndex + shift * (1 - 1 / maxIndex); // Lerp between inverse of [[maxIndex]] and 1 via shift
     return math.clip(o * maxIndex * t - (o * maxIndex - 1) * index / (maxIndex - 1), 0.0, 1.0);
-
-    // return 1;
   }
 }

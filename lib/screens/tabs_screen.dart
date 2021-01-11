@@ -23,10 +23,12 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
     return Scaffold(
       body: TabsCornerDrawer(
         screens: [
-          Center(
+          Align(
+            alignment: Alignment.centerRight,
             child: Text("Test screen 1"),
           ),
-          Center(
+          Align(
+            alignment: Alignment.centerRight,
             child: Text("Test screen 2"),
           ),
         ],
