@@ -6,7 +6,7 @@ class ItemTag {
   final String title;
   final Color color;
 
-  ItemTag({
+  const ItemTag({
     this.title,
     this.color,
   });

@@ -10,7 +10,7 @@ import 'package:my_utilities/color_utils.dart';
 import 'package:my_utilities/math_utils.dart' as math;
 import 'package:vector_math/vector_math_64.dart' as vec;
 
-typedef ButtonBuilder = Widget Function(BuildContext context, VoidCallback onPressed);
+typedef ButtonBuilder = Widget Function(BuildContext context, VoidCallback onPressed, VoidCallback onLongPressed, VoidCallback onUp);
 typedef WidgetWrapper = Widget Function(BuildContext context, Widget child);
 typedef WithinStateBuilder<T extends State> = Widget Function(BuildContext context, T state, Widget child);
 
@@ -229,8 +229,8 @@ class _CornerDrawerButton extends StatelessWidget {
       end: Alignment.bottomRight,
     );
 
-    var openedButton = cornerDrawer.widget.opennedButton(context, () => cornerDrawer.closeDrawer());
-    var closedButton = cornerDrawer.widget.closedButton(context, () => cornerDrawer.openDrawer());
+    var openedButton = cornerDrawer.widget.opennedButton(context, () => cornerDrawer.closeDrawer(), null, null);
+    var closedButton = cornerDrawer.widget.closedButton(context, () => cornerDrawer.openDrawer(), null, null);
 
     return AnimatedBuilder(
       animation: cornerDrawer.drawerAnimation,

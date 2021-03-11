@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 class HeavyTouchButton extends StatefulWidget {
   final Widget child;
   final VoidCallback onPressed;
+  final VoidCallback onUp;
   final Duration animationDuration;
   final Alignment scaleAlignment;
+  final VoidCallback onLongPress;
 
   /// Scale when the button is pressed. Unpressed is 1.0
   final double pressedScale;
@@ -20,6 +22,8 @@ class HeavyTouchButton extends StatefulWidget {
     this.pressedScale = 0.75,
     this.fullAnimation = true,
     this.scaleAlignment = Alignment.center,
+    this.onLongPress,
+    this.onUp,
   }) : super(key: key);
 
   @override
@@ -61,7 +65,10 @@ class _HeavyTouchButtonState extends State<HeavyTouchButton> with TickerProvider
     return GestureDetector(
       onTapDown: (_) => _anim.animateBack(widget.pressedScale),
       onTapCancel: () => _anim.animateTo(1.0),
+      onLongPressStart: (_) => widget.onLongPress?.call(),
+      onLongPressEnd: (_) => widget.onUp?.call(),
       onTapUp: (_) {
+        widget.onUp?.call();
         if (widget.fullAnimation) {
           if (!_anim.isAnimating && _anim.value <= widget.pressedScale) {
             _anim.animateTo(1.0);

@@ -23,10 +23,7 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
     return Scaffold(
       body: TabsCornerDrawer(
         screens: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text("Test screen 1"),
-          ),
+          ListScreen(),
           Align(
             alignment: Alignment.centerRight,
             child: Text("Test screen 2"),
@@ -46,7 +43,7 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
               builder: (context) => HeavyTouchButton(
                 pressedScale: 0.9,
                 onPressed: () => context.findAncestorStateOfType<TabsCornerDrawerState>().currentIndex = 0,
-                child: Text("Test button 1", style: Theme.of(context).textTheme.headline6),
+                child: Text("Grocery list", style: Theme.of(context).textTheme.headline6),
               ),
             ),
           ),
@@ -61,12 +58,12 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
             ),
           ),
         ],
-        closedButton: (context, onPressed) => HeavyTouchButton(
+        closedButton: (context, onPressed, _, __) => HeavyTouchButton(
           onPressed: onPressed,
           pressedScale: 0.9,
           child: Icon(Icons.menu_outlined, size: 36),
         ),
-        openedButton: (context, onPressed) => HeavyTouchButton(
+        openedButton: (context, onPressed, _, __) => HeavyTouchButton(
           onPressed: onPressed,
           pressedScale: 0.9,
           child: FittedBox(
