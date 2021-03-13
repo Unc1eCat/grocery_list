@@ -20,7 +20,7 @@ class TheApp extends StatelessWidget {
         backgroundColor: Color(0xFF1E1E1E),
         textTheme: TextTheme(
           caption: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
           ),
         ),
       ),

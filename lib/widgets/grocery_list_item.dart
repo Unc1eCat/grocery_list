@@ -47,16 +47,26 @@ class GroceryListItem extends StatelessWidget {
             Hero(
               flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => AnimatedBuilder(
                 animation: animation,
-                builder: (context, child) => SizedBox(
-                  height: 30,
-                  child: Align(
-                    alignment: Alignment.topCenter,
+                builder: (context, child) => Align(
+                  alignment: Alignment.topCenter,
+                  child: Transform.scale(
+                    scale: 1.0 + animation.value * 12 / 18,
                     child: Text(
                       model.title,
-                      style: Theme.of(context).textTheme.caption.copyWith(fontSize: 16 + 12 * animation.value),
+                      style: Theme.of(context).textTheme.caption.copyWith(),
                     ),
                   ),
                 ),
+                // SizedBox(
+                //   height: 30,
+                //   child: Align(
+                //     alignment: Alignment.topCenter,
+                //     child: Text(
+                //       model.title,
+                //       style: Theme.of(context).textTheme.caption.copyWith(fontSize: 16 + 12 * animation.value),
+                //     ),
+                //   ),
+                // ),
               ),
               tag: "title$index",
               child: Text(

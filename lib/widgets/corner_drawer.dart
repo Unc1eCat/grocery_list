@@ -18,7 +18,7 @@ class CornerDrawer extends StatefulWidget {
   final double drawerWidth;
   final Widget screen;
   final Widget expandedChild;
-  final ButtonBuilder opennedButton;
+  final ButtonBuilder openedButton;
   final ButtonBuilder closedButton;
   final Color color;
   final Color backgroundColor;
@@ -40,15 +40,15 @@ class CornerDrawer extends StatefulWidget {
   CornerDrawer({
     @required this.screen,
     @required this.expandedChild,
-    @required this.opennedButton,
+    @required this.openedButton,
     @required this.closedButton,
     this.drawerWidth,
     this.overlap = 0.0,
     this.color,
     this.backgroundColor,
     this.drawerAnimationDuration = const Duration(milliseconds: 300),
-    this.buttonSize = const Size(60, 80),
-    this.buttonRadius = 12,
+    this.buttonSize = const Size(60, 60),
+    this.buttonRadius = 60,
     this.extendedChildAnimationDuration = const Duration(milliseconds: 110),
     this.extendedChildTransitionBuilder,
     this.screenBuilder,
@@ -214,22 +214,22 @@ class _CornerDrawerButton extends StatelessWidget {
     var cornerDrawer = context.findAncestorStateOfType<CornerDrawerState>();
     var buttonDecorationShadows = [
       BoxShadow(
-        blurRadius: 4,
-        color: cornerDrawer.widget.color?.withOpacity(0.35) ?? Theme.of(context).primaryColor.withOpacity(0.35),
-        spreadRadius: 1,
+        blurRadius: 6,
+        color: Theme.of(context).shadowColor.withOpacity(0.0),
+        spreadRadius: 2,
       ),
     ];
-    var buttonDecorationGradient = LinearGradient(
-      colors: [
-        cornerDrawer.widget.color ?? Theme.of(context).accentColor,
-        cornerDrawer.widget.color?.withRotatedHsvHue(40)?.withRangedHsvSaturation(0.9) ??
-            Theme.of(context).accentColor.withRotatedHsvHue(40).withRangedHsvSaturation(0.9),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
+    // var buttonDecorationGradient = LinearGradient(
+    //   colors: [
+    //     cornerDrawer.widget.color ?? Theme.of(context).accentColor,
+    //     cornerDrawer.widget.color?.withRotatedHsvHue(40)?.withRangedHsvSaturation(0.9) ??
+    //         Theme.of(context).accentColor.withRotatedHsvHue(40).withRangedHsvSaturation(0.9),
+    //   ],
+    //   begin: Alignment.topLeft,
+    //   end: Alignment.bottomRight,
+    // );
 
-    var openedButton = cornerDrawer.widget.opennedButton(context, () => cornerDrawer.closeDrawer(), null, null);
+    var openedButton = cornerDrawer.widget.openedButton(context, () => cornerDrawer.closeDrawer(), null, null);
     var closedButton = cornerDrawer.widget.closedButton(context, () => cornerDrawer.openDrawer(), null, null);
 
     return AnimatedBuilder(
@@ -241,15 +241,15 @@ class _CornerDrawerButton extends StatelessWidget {
           child = Stack(
             alignment: Alignment.center,
             children: [
+              Opacity(
+                opacity: cornerDrawer.drawerAnimation.value,
+                child: openedButton,
+              ),
               IgnorePointer(
                 child: Opacity(
                   opacity: 1.0 - cornerDrawer.drawerAnimation.value,
                   child: closedButton,
                 ),
-              ),
-              Opacity(
-                opacity: cornerDrawer.drawerAnimation.value,
-                child: openedButton,
               ),
             ],
           );
@@ -275,49 +275,55 @@ class _CornerDrawerButton extends StatelessWidget {
           child = openedButton;
         }
 
-        return SizedBox(
-          width: cornerDrawer.drawerAnimation.isDismissed ? cornerDrawer.widget.buttonSize.width : cornerDrawer._drawerWidth,
-          height: cornerDrawer.drawerAnimation.isDismissed ? cornerDrawer.widget.buttonSize.height : MediaQuery.of(context).size.height,
-          child: Stack(
-            children: [
-              Align(
-                alignment: Alignment.bottomRight,
-                child: SizedBox(
-                  width: cornerDrawer.drawerAnimation.value * (cornerDrawer._drawerWidth - cornerDrawer.widget.buttonSize.width) +
-                      cornerDrawer.widget.buttonSize.width,
-                  height:
-                      cornerDrawer.drawerAnimation.value * (MediaQuery.of(context).size.height - cornerDrawer.widget.buttonSize.height) +
-                          cornerDrawer.widget.buttonSize.height,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(cornerDrawer.widget.buttonRadius -
-                            math.pow(cornerDrawer.drawerAnimation.value, 2) * cornerDrawer.widget.buttonRadius),
+        var color = cornerDrawer.widget.color ?? Theme.of(context).cardColor;
+
+        return Padding(
+          padding: EdgeInsets.all(16.0 - cornerDrawer.drawerAnimation.value * 16.0),
+          child: SizedBox(
+            width: cornerDrawer.drawerAnimation.isDismissed ? cornerDrawer.widget.buttonSize.width : cornerDrawer._drawerWidth,
+            height: cornerDrawer.drawerAnimation.isDismissed ? cornerDrawer.widget.buttonSize.height : MediaQuery.of(context).size.height,
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: SizedBox(
+                    width: cornerDrawer.drawerAnimation.value * (cornerDrawer._drawerWidth - cornerDrawer.widget.buttonSize.width) +
+                        cornerDrawer.widget.buttonSize.width,
+                    height:
+                        cornerDrawer.drawerAnimation.value * (MediaQuery.of(context).size.height - cornerDrawer.widget.buttonSize.height) +
+                            cornerDrawer.widget.buttonSize.height,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: color.blendedWithInversion(0.05), width: 1.1),
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(cornerDrawer.widget.buttonRadius -
+                              math.pow(cornerDrawer.drawerAnimation.value, 2) * cornerDrawer.widget.buttonRadius),
+                        ),
+                        boxShadow: buttonDecorationShadows,
+                        color: color,
                       ),
-                      boxShadow: buttonDecorationShadows,
-                      gradient: buttonDecorationGradient,
-                    ),
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: HeavyTouchButton(
-                        onPressed: () => cornerDrawer.drawerAnimation.isCompleted ? cornerDrawer.closeDrawer() : cornerDrawer.openDrawer(),
-                        child: SizedBox(
-                          width: cornerDrawer.drawerAnimation.value * (cornerDrawer._drawerWidth - cornerDrawer.widget.buttonSize.width) +
-                              cornerDrawer.widget.buttonSize.width,
-                          height: cornerDrawer.widget.buttonSize.height,
-                          child: ColoredBox(
-                            // Transparent ColoredBox is used to make the button work around the text
-                            color: Colors.transparent,
-                            child: child,
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: HeavyTouchButton(
+                          onPressed: () => cornerDrawer.drawerAnimation.isCompleted ? cornerDrawer.closeDrawer() : cornerDrawer.openDrawer(),
+                          child: SizedBox(
+                            width: cornerDrawer.drawerAnimation.value * (cornerDrawer._drawerWidth - cornerDrawer.widget.buttonSize.width) +
+                                cornerDrawer.widget.buttonSize.width,
+                            height: cornerDrawer.widget.buttonSize.height,
+                            child: ColoredBox(
+                              // Transparent ColoredBox is used to make the button work around the text
+                              color: Colors.transparent,
+                              child: child,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              if (cornerDrawer.drawerAnimation.value >= 0.99) ch,
-            ],
+                if (cornerDrawer.drawerAnimation.value >= 0.99) ch,
+              ],
+            ),
           ),
         );
       },
@@ -405,8 +411,8 @@ class TabsCornerDrawer extends StatefulWidget {
     this.fadeAmount = 0.6,
     this.screenBorderRadius,
     this.drawerAnimationDuration = const Duration(milliseconds: 300),
-    this.buttonSize = const Size(60, 80),
-    this.buttonRadius = 12,
+    this.buttonSize = const Size(60, 60),
+    this.buttonRadius = 60,
     this.extendedChildAnimationDuration = const Duration(milliseconds: 240),
     this.screenBuilder,
     this.tabBarWrapper,
@@ -477,7 +483,7 @@ class TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProviderS
               child: tb,
             ),
       ),
-      opennedButton: widget.openedButton,
+      openedButton: widget.openedButton,
       closedButton: widget.closedButton,
       screen: PageView.builder(
         physics: NeverScrollableScrollPhysics(),

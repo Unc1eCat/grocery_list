@@ -56,7 +56,7 @@ class _NumberInputState extends State<NumberInput> {
 
   @override
   void initState() {
-    _longPress = Stream<void>.periodic(widget.longPressPeriod ?? Duration(milliseconds: 160)).listen((_) => increment());
+    _longPress = Stream<void>.periodic(widget.longPressPeriod ?? const Duration(milliseconds: 240)).listen((_) => increment());
     _longPress.pause();
     _value = widget.value;
     super.initState();
@@ -116,7 +116,7 @@ class _NumberInputState extends State<NumberInput> {
                 ..resume(),
               onUp: () => _longPress.pause(),
               pressedScale: 0.85,
-              animationDuration: Duration(milliseconds: 100),
+              animationDuration: const Duration(milliseconds: 100),
               child: Icon(
                 Icons.remove,
                 size: 30,
@@ -170,7 +170,7 @@ class _NumberInputState extends State<NumberInput> {
               onUp: () => _longPress.pause(),
               onPressed: increment,
               pressedScale: 0.85,
-              animationDuration: Duration(milliseconds: 100),
+              animationDuration: const Duration(milliseconds: 100),
               child: Icon(
                 Icons.add,
                 size: 30,

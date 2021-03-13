@@ -61,7 +61,7 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
         closedButton: (context, onPressed, _, __) => HeavyTouchButton(
           onPressed: onPressed,
           pressedScale: 0.9,
-          child: Icon(Icons.menu_outlined, size: 36),
+          child: Icon(Icons.menu_outlined, size: 32),
         ),
         openedButton: (context, onPressed, _, __) => HeavyTouchButton(
           onPressed: onPressed,
@@ -73,7 +73,7 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
               children: [
                 Text("Close", style: Theme.of(context).textTheme.headline6),
                 SizedBox(width: 20),
-                Icon(Icons.close, size: 36),
+                Icon(Icons.close, size: 32),
               ],
             ),
           ),

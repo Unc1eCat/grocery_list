@@ -4,6 +4,7 @@ import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/models/grocery_item.dart';
 import 'package:grocery_list/widgets/corner_drawer.dart';
 import 'package:grocery_list/widgets/grocery_list_item.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 class ListScreen extends StatefulWidget {
   @override
@@ -28,7 +29,7 @@ class _ListScreenState extends State<ListScreen> {
   @override
   Widget build(BuildContext context) {
     List<Widget> items = [];
-
+    
     for (int i = 0; i < groceryListBloc.items.length; i++) {
       items.add(
         Padding(
