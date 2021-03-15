@@ -18,7 +18,7 @@ class GroceryListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var bloc = BlocProvider.of<GroceryListBloc>(context);
-    var model = bloc.getItemOfId(id);
+    var model = bloc.getItemOfId(id) ?? ((bloc.state is ItemDeletedState) ? (bloc.state as ItemDeletedState).removedItem : null);
 
     return Material(
       color: Colors.transparent,

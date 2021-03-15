@@ -15,8 +15,8 @@ class GroceryItem {
   final double price;
   final double amount;
 
-  const GroceryItem({
-    this.id, 
+  GroceryItem({
+    String id, 
     this.unit = "it.",
     this.quantization = 1.0,
     this.quantizationDecimalNumbersAmount = 0,
@@ -30,7 +30,7 @@ class GroceryItem {
       // ItemTag(color: Colors.blue, title: "Test blue tag"),
       // ItemTag(color: Colors.green, title: "Test green tag"),
     ],
-  });
+  }) : id = id ?? DateTime.now().toString();
 
   Map<String, Object> toJson() {
     return {
@@ -63,6 +63,7 @@ class GroceryItem {
   }
 
   GroceryItem copyWith({
+    String id,
     String title,
     bool checked,
     List<ItemTag> tags,
@@ -74,6 +75,7 @@ class GroceryItem {
     double amount,
   }) {
     return GroceryItem(
+      id: id ?? this.id,
       amount: amount ?? this.amount,
       checked: checked ?? this.checked,
       currency: currency ?? this.currency,

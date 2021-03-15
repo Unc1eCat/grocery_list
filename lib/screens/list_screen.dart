@@ -55,39 +55,51 @@ class _ListScreenState extends State<ListScreen> {
   @override
   Widget build(BuildContext context) {
     var groceryListBloc = BlocProvider.of<GroceryListBloc>(context);
+    GlobalKey<AnimatedListState> animatedList = GlobalKey<AnimatedListState>();
 
     return BlocProvider(
       create: (context) => groceryListBloc,
       child: Scaffold(
         body: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                buildWhen: (previous, current) =>
-                    current is ItemsFetchedState || current is ItemCreatedState || current is ItemDeletedState,
-                cubit: groceryListBloc,
-                builder: (context, state) {
-                  List<Widget> items = [];
-                  print('fsdgs');
-
-                  for (int i = 0; i < groceryListBloc.items.length; i++) {
-                    items.add(
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                          buildWhen: (previous, current) => current is ItemChangedState,
-                          builder: (context, state) => GroceryListItem(index: i),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: BlocListener<GroceryListBloc, GroceryListState>(
+                  listener: (context, state) {
+                    if (state is ItemDeletedState) {
+                      animatedList.currentState.removeItem(
+                        state.index,
+                        (context, animation) => null,
+                        // ScaleTransition(
+                        //   scale: animation,
+                        //   child: GroceryListItem(id: state.removedItem.id),
+                        // ),
+                      );
+                    } else if (state is ItemCreatedState) {
+                      animatedList.currentState.insertItem(groceryListBloc.items.values.toList().indexWhere((e) => e.id == state.id));
+                    } else if (state is ItemsFetchedState) {
+                      setState(() {});
+                    }
+                  },
+                  cubit: groceryListBloc,
+                  child: AnimatedList(
+                    key: animatedList,
+                    initialItemCount: groceryListBloc.items.length,
+                    itemBuilder: (context, index, animation) {
+                      var id = groceryListBloc.items.values.elementAt(index).id;
+                      return ScaleTransition(
+                        scale: animation,
+                        child: GroceryListItem(
+                          id: id,
+                          key: ValueKey(id),
                         ),
-                      ),
-                    );
-                  }
-
-                  return ListView(
+                      );
+                    },
                     physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    children: items,
-                  );
-                },
+                    // children: groceryListBloc.items.values.map((e) => GroceryListItem(id: e.id, key: ValueKey(e.id))).toList(),
+                  ),
+                ),
               ),
             ),
             Positioned(
@@ -95,7 +107,7 @@ class _ListScreenState extends State<ListScreen> {
               left: 24,
               right: 100,
               child: _buildActionButton(
-                onPressed: () => groceryListBloc.createItem(0, GroceryItem()),
+                onPressed: () => groceryListBloc.createItem(GroceryItem()),
                 color: Color(0xff56d17b),
                 icon: Icons.add,
                 title: "Create new item",

@@ -32,7 +32,7 @@ class _TheAppState extends State<TheApp> {
 
   @override
   void initState() {
-    groceryListBloc = GroceryListBloc(<GroceryItem>[]);
+    groceryListBloc = GroceryListBloc(<String, GroceryItem>{});
 
     TheApp.fetchAppDocDirectory().then((value) => groceryListBloc.fetchItems());
 

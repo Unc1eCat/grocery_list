@@ -30,7 +30,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   }
 
   void initItemsFromJson(Map<String, dynamic> json) {
-    for (Map<String, dynamic> i in json["grocery_items"]) {
+    for (Map<String, dynamic> i in json["grocery_item"]) {
       GroceryItem item = GroceryItem.fromJson(i);
       _items.putIfAbsent(item.id, () => item);
     }
@@ -53,25 +53,25 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     emit(ItemsFetchedState(items));
   }
 
-  void createItem(String id, GroceryItem newItem) {
-    _items.putIfAbsent(id, () => newItem);
+  void createItem(GroceryItem newItem) {
+    _items.putIfAbsent(newItem.id, () => newItem);
 
-    emit(ItemCreatedState(id, items));
+    emit(ItemCreatedState(newItem.id, items));
 
     saveItems();
   }
 
   void deleteItem(String id) {
-    _items.remove(id);
+    var index = _items.values.toList().indexWhere((e) => e.id == id);
 
-    emit(ItemDeletedState(id));
+    emit(ItemDeletedState(_items.remove(id), index));
 
     saveItems();
   }
 
   void updateItem(String id, GroceryItem newItem) {
     var updatedChecked = newItem.checked != _items[id].checked;
-
+    print(newItem.quantization);
     _items.update(id, (value) => newItem);
 
     emit(ItemChangedState(items, id));
@@ -113,12 +113,13 @@ class CheckedChangedState extends GroceryListState {
 }
 
 class ItemDeletedState extends GroceryListState {
-  final String id;
+  final GroceryItem removedItem;
+  final int index;
 
-  ItemDeletedState(this.id);
+  ItemDeletedState(this.removedItem, this.index);
 
   @override
-  List<Object> get props => super.props..add(id);
+  List<Object> get props => super.props..add(removedItem);
 }
 
 class ItemCreatedState extends GroceryListState {

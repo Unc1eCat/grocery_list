@@ -23,6 +23,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
 
   ScrollController _scrollController;
   AnimationController _animationController;
+  bool deleting; // Affects transition animation
 
   @override
   bool get opaque => false;
@@ -47,6 +48,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
 
   @override
   void install() {
+    deleting = false;
     _animationController = AnimationController(vsync: this)..animateTo(1.0, duration: const Duration(milliseconds: 600));
     _scrollController = ScrollController()..addListener(_handleScroll);
     super.install();
@@ -59,6 +61,18 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
     _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
+  }
+
+  Widget _wrapHeader({Widget child, Animation<double> animation, String heroTag}) {
+    return deleting
+        ? ScaleTransition(
+            scale: animation,
+            child: child,
+          )
+        : Hero(
+            tag: heroTag,
+            child: child,
+          );
   }
 
   Widget _buildActionButton({
@@ -138,19 +152,20 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
             child: BlocBuilder<GroceryListBloc, GroceryListState>(
               cubit: bloc,
               buildWhen: (previous, current) {
-                // if (current is InitialState) return true;
-                if (!(current is ItemChangedState)) return false;
-                var state = current as ItemChangedState;
-                var model = state.items[state.id];
-                return state.id == id &&
-                    (model.title != titleEdContr.text ||
-                        model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount) != quantizationEdContr.text ||
-                        model.unit != unitEdContr.text ||
-                        model.price.toStringAsFixed(2) != priceEdContr.text ||
-                        model.currency != currencyEdContr.text);
+                if (current is ItemChangedState && current.id == id) {
+                  var model = current.items[current.id];
+                  return model.title != titleEdContr.text ||
+                      model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount) != quantizationEdContr.text ||
+                      model.unit != unitEdContr.text ||
+                      model.price.toStringAsFixed(2) != priceEdContr.text ||
+                      model.currency != currencyEdContr.text;
+                } else if (current is ItemDeletedState) {
+                  return current.removedItem.id == id;
+                }
+                return false;
               },
               builder: (context, state) {
-                var model = bloc.items[id];
+                var model = bloc.items[id] ?? (state as ItemDeletedState).removedItem;
 
                 return ListView(
                   controller: _scrollController,
@@ -164,8 +179,9 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                       height: 30,
                       child: Align(
                         alignment: Alignment.topCenter,
-                        child: Hero(
-                          tag: "title$id",
+                        child: _wrapHeader(
+                          heroTag: "title$id",
+                          animation: animation,
                           child: Material(
                             color: Colors.transparent,
                             child: TextField(
@@ -188,8 +204,9 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Hero(
-                          tag: "check$id",
+                        _wrapHeader(
+                          animation: animation,
+                          heroTag: "check$id",
                           child: HeavyTouchButton(
                             onPressed: () => bloc.updateItem(id, bloc.items[id].copyWith(checked: !bloc.items[id].checked)),
                             child: ColoredBox(
@@ -199,14 +216,15 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                 child: BlocBuilder<GroceryListBloc, GroceryListState>(
                                   cubit: bloc,
                                   buildWhen: (previous, current) => current is CheckedChangedState && current.id == id,
-                                  builder: (context, state) => ListItemCheckBox(checked: bloc.items[id].checked),
+                                  builder: (context, state) => ListItemCheckBox(checked: bloc?.items[id]?.checked ?? model.checked),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        Hero(
-                          tag: "num$id",
+                        _wrapHeader(
+                          animation: animation,
+                          heroTag: "num$id",
                           child: NumberInput(
                             fractionDigits: model.quantizationDecimalNumbersAmount,
                             quantize: model.quantization,
@@ -315,7 +333,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                 Flexible(
                   flex: 5,
                   child: _buildActionButton(
-                    onPressed: () => bloc.createItem(id, bloc.items[id].copyWith()),
+                    onPressed: () => bloc.createItem(bloc.items[id].copyWith(id: DateTime.now().toString())),
                     color: const Color(0xfffaca69),
                     icon: Icons.copy_outlined,
                     title: "Duplicate",
@@ -330,8 +348,9 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                   flex: 5,
                   child: _buildActionButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      setState(() => deleting = true);
                       bloc.deleteItem(id);
+                      Navigator.pop(context);
                     },
                     color: const Color(0xfffa8169),
                     icon: Icons.delete,
