@@ -70,11 +70,10 @@ class _ListScreenState extends State<ListScreen> {
                     if (state is ItemDeletedState) {
                       animatedList.currentState.removeItem(
                         state.index,
-                        (context, animation) => null,
-                        // ScaleTransition(
-                        //   scale: animation,
-                        //   child: GroceryListItem(id: state.removedItem.id),
-                        // ),
+                        (context, animation) => ScaleTransition(
+                          scale: animation,
+                          child: GroceryListItem(id: state.removedItem.id),
+                        ),
                       );
                     } else if (state is ItemCreatedState) {
                       animatedList.currentState.insertItem(groceryListBloc.items.values.toList().indexWhere((e) => e.id == state.id));
@@ -90,9 +89,13 @@ class _ListScreenState extends State<ListScreen> {
                       var id = groceryListBloc.items.values.elementAt(index).id;
                       return ScaleTransition(
                         scale: animation,
-                        child: GroceryListItem(
-                          id: id,
-                          key: ValueKey(id),
+                        child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                          buildWhen: (previous, current) => current is ItemChangedState && current.id == id,
+                          cubit: groceryListBloc,
+                          builder: (context, state) => GroceryListItem(
+                            id: id,
+                            key: ValueKey(id),
+                          ),
                         ),
                       );
                     },

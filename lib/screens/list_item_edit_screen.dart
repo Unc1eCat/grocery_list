@@ -23,7 +23,6 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
 
   ScrollController _scrollController;
   AnimationController _animationController;
-  bool deleting; // Affects transition animation
 
   @override
   bool get opaque => false;
@@ -48,7 +47,6 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
 
   @override
   void install() {
-    deleting = false;
     _animationController = AnimationController(vsync: this)..animateTo(1.0, duration: const Duration(milliseconds: 600));
     _scrollController = ScrollController()..addListener(_handleScroll);
     super.install();
@@ -61,18 +59,6 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
     _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
-  }
-
-  Widget _wrapHeader({Widget child, Animation<double> animation, String heroTag}) {
-    return deleting
-        ? ScaleTransition(
-            scale: animation,
-            child: child,
-          )
-        : Hero(
-            tag: heroTag,
-            child: child,
-          );
   }
 
   Widget _buildActionButton({
@@ -179,9 +165,8 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                       height: 30,
                       child: Align(
                         alignment: Alignment.topCenter,
-                        child: _wrapHeader(
-                          heroTag: "title$id",
-                          animation: animation,
+                        child: Hero(
+                          tag: "title$id",
                           child: Material(
                             color: Colors.transparent,
                             child: TextField(
@@ -204,9 +189,8 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _wrapHeader(
-                          animation: animation,
-                          heroTag: "check$id",
+                        Hero(
+                          tag: "check$id",
                           child: HeavyTouchButton(
                             onPressed: () => bloc.updateItem(id, bloc.items[id].copyWith(checked: !bloc.items[id].checked)),
                             child: ColoredBox(
@@ -222,9 +206,8 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                             ),
                           ),
                         ),
-                        _wrapHeader(
-                          animation: animation,
-                          heroTag: "num$id",
+                        Hero(
+                          tag: "num$id",
                           child: NumberInput(
                             fractionDigits: model.quantizationDecimalNumbersAmount,
                             quantize: model.quantization,
@@ -348,8 +331,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                   flex: 5,
                   child: _buildActionButton(
                     onPressed: () {
-                      setState(() => deleting = true);
-                      bloc.deleteItem(id);
+                      this.completed.then((value) => bloc.deleteItem(id));
                       Navigator.pop(context);
                     },
                     color: const Color(0xfffa8169),
