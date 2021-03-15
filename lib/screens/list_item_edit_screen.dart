@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/src/scheduler/ticker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
@@ -8,6 +9,7 @@ import 'package:grocery_list/utils/ticker_provider_mixin.dart';
 import 'package:grocery_list/widgets/grocery_list_item.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
+import 'package:grocery_list/widgets/list_item_property.dart';
 import 'package:grocery_list/widgets/number_input.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:my_utilities/color_utils.dart';
@@ -15,9 +17,9 @@ import '../utils/golden_ration_utils.dart' as gr;
 
 class ListItemEditRoute extends PageRoute with TickerProviderMixin {
   final GroceryListBloc bloc;
-  final int index;
+  final String id;
 
-  ListItemEditRoute({this.bloc, this.index});
+  ListItemEditRoute({this.bloc, this.id});
 
   ScrollController _scrollController;
   AnimationController _animationController;
@@ -38,9 +40,8 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
     if (_scrollController.offset < -70) {
       _scrollController.removeListener(_handleScroll);
       navigator.pop();
-      print("sgds");
     } else if (_scrollController.offset < 0) {
-      _animationController.value = (60 + _scrollController.offset).clamp(0, 60) / 60;
+      _animationController.value = (60 + _scrollController.offset) / 60;
     }
   }
 
@@ -60,23 +61,75 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
     super.dispose();
   }
 
+  Widget _buildActionButton({
+    @required VoidCallback onPressed,
+    @required Color color,
+    @required IconData icon,
+    @required String title,
+    @required BuildContext context,
+  }) {
+    return HeavyTouchButton(
+      pressedScale: 0.9,
+      onPressed: onPressed,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            width: 1.2,
+            color: color.withRangedHsvSaturation(0.8),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(icon),
+              SizedBox(
+                width: 8,
+              ),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.button,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-    var titleEdContr = TextEditingController(text: bloc.items[index].title);
+    var initialModel = bloc.items[id];
+    var titleEdContr = TextEditingController(text: initialModel.title);
+    var quantizationEdContr =
+        TextEditingController(text: initialModel.quantization.toStringAsFixed(initialModel.quantizationDecimalNumbersAmount));
+    var unitEdContr = TextEditingController(text: initialModel.unit);
+    var priceEdContr = TextEditingController(text: initialModel.price.toStringAsFixed(2));
+    var currencyEdContr = TextEditingController(text: initialModel.currency);
 
     return Stack(
       children: [
+        AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) => BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: animation.value * 2,
+              sigmaY: animation.value * 2,
+            ),
+            child: child,
+          ),
+          child: ColoredBox(
+            color: Colors.transparent,
+            child: SizedBox.expand(),
+          ),
+        ),
         FadeTransition(
           opacity: _animationController,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: 1.8,
-              sigmaY: 1.8,
-            ),
-            child: ColoredBox(
-              color: Colors.black54,
-              child: SizedBox.expand(),
-            ),
+          child: ColoredBox(
+            color: Colors.black54,
+            child: SizedBox.expand(),
           ),
         ),
         BlocProvider<GroceryListBloc>(
@@ -84,9 +137,20 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
           child: SafeArea(
             child: BlocBuilder<GroceryListBloc, GroceryListState>(
               cubit: bloc,
-              buildWhen: (previous, current) => current is GroceryListState,
+              buildWhen: (previous, current) {
+                // if (current is InitialState) return true;
+                if (!(current is ItemChangedState)) return false;
+                var state = current as ItemChangedState;
+                var model = state.items[state.id];
+                return state.id == id &&
+                    (model.title != titleEdContr.text ||
+                        model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount) != quantizationEdContr.text ||
+                        model.unit != unitEdContr.text ||
+                        model.price.toStringAsFixed(2) != priceEdContr.text ||
+                        model.currency != currencyEdContr.text);
+              },
               builder: (context, state) {
-                var model = bloc.items[index];
+                var model = bloc.items[id];
 
                 return ListView(
                   controller: _scrollController,
@@ -101,18 +165,18 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                       child: Align(
                         alignment: Alignment.topCenter,
                         child: Hero(
-                          tag: "title${index}",
+                          tag: "title$id",
                           child: Material(
                             color: Colors.transparent,
                             child: TextField(
                               textAlign: TextAlign.center,
                               scrollPadding: EdgeInsets.zero,
                               decoration:
-                                  InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.all(9.5), hintText: "Item title"),
+                                  InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.all(6), hintText: "Item title"),
                               cursorWidth: 2,
                               cursorRadius: Radius.circular(2),
                               controller: titleEdContr,
-                              onEditingComplete: () => bloc.updateItem(index, model.copyWith(title: titleEdContr.text)),
+                              onEditingComplete: () => bloc.updateItem(id, model.copyWith(title: titleEdContr.text)),
                               onSubmitted: (value) => FocusScope.of(context).unfocus(),
                               style: Theme.of(context).textTheme.caption.copyWith(fontSize: 30),
                             ),
@@ -125,26 +189,30 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Hero(
-                          tag: "check${index}",
+                          tag: "check$id",
                           child: HeavyTouchButton(
-                            onPressed: () => bloc.updateItem(index, model.copyWith(checked: !model.checked)),
+                            onPressed: () => bloc.updateItem(id, bloc.items[id].copyWith(checked: !bloc.items[id].checked)),
                             child: ColoredBox(
                               color: Colors.transparent,
                               child: Padding(
                                 padding: const EdgeInsets.all(8),
-                                child: ListItemCheckBox(checked: model.checked),
+                                child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                                  cubit: bloc,
+                                  buildWhen: (previous, current) => current is CheckedChangedState && current.id == id,
+                                  builder: (context, state) => ListItemCheckBox(checked: bloc.items[id].checked),
+                                ),
                               ),
                             ),
                           ),
                         ),
                         Hero(
-                          tag: "num${index}",
+                          tag: "num$id",
                           child: NumberInput(
-                            fractionDigits: model.integerQuantization ? 0 : 3,
-                            quantize: 0.6,
+                            fractionDigits: model.quantizationDecimalNumbersAmount,
+                            quantize: model.quantization,
                             value: model.amount,
                             unit: model.unit,
-                            onChanged: (value) => bloc.updateItem(index, model.copyWith(amount: value)),
+                            onChanged: (value) => bloc.updateItem(id, model.copyWith(amount: value)),
                           ),
                         ),
                       ],
@@ -152,15 +220,72 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                     AnimatedBuilder(
                       animation: animation,
                       builder: (context, child) => Transform.translate(
-                        offset: Offset(0.0, (1 - animation.value) * MediaQuery.of(context).size.height * gr.invphi),
+                        offset:
+                            Offset(0.0, Curves.easeInCubic.transform(1 - animation.value) * MediaQuery.of(context).size.height * gr.invphi),
                         child: child,
                       ),
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            color: Colors.green,
-                            height: 200,
-                            width: 200,
+                          Padding(
+                            padding: const EdgeInsets.all(18.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ListItemProperty(
+                                    keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
+                                    label: "Quantization",
+                                    textEditingController: quantizationEdContr,
+                                    onEditingComplete: () {
+                                      var value = double.tryParse(quantizationEdContr.text);
+                                      if (value == null || value < 0) {
+                                        quantizationEdContr.text =
+                                            model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
+                                        return;
+                                      }
+
+                                      var dot = quantizationEdContr.text.lastIndexOf(RegExp(",|\\."));
+
+                                      bloc.updateItem(
+                                        id,
+                                        model.copyWith(
+                                            quantization: value,
+                                            quantizationDecimalNumbersAmount: dot == -1 ? 0 : quantizationEdContr.text.length - 1 - dot,
+                                            amount: (model.amount / value).round() * value),
+                                      );
+                                    }),
+                                SizedBox(
+                                  width: 15,
+                                ),
+                                ListItemProperty(
+                                    width: 75,
+                                    label: "Unit",
+                                    textEditingController: unitEdContr,
+                                    onEditingComplete: () => bloc.updateItem(id, model.copyWith(unit: unitEdContr.text))),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ListItemProperty(
+                                keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
+                                label: "Price",
+                                textEditingController: priceEdContr,
+                                onEditingComplete: () {
+                                  bloc.updateItem(id, model.copyWith(price: double.parse(priceEdContr.text)));
+                                },
+                              ), // TODO: Make it constrain number of numbers in decimal fraction part to 2
+                              SizedBox(width: 15),
+                              ListItemProperty(
+                                width: 75,
+                                label: "Currency",
+                                textEditingController: currencyEdContr,
+                                onEditingComplete: () => bloc.updateItem(id, model.copyWith(currency: currencyEdContr.text)),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -171,6 +296,54 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                   ],
                 );
               },
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 20,
+          right: 0,
+          left: 0,
+          child: SlideTransition(
+            position: Tween<Offset>(begin: Offset(0.0, 2), end: Offset(0.0, 0.0)).animate(animation),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Flexible(
+                  flex: 2,
+                  child: SizedBox(),
+                ),
+                Flexible(
+                  flex: 5,
+                  child: _buildActionButton(
+                    onPressed: () => bloc.createItem(id, bloc.items[id].copyWith()),
+                    color: const Color(0xfffaca69),
+                    icon: Icons.copy_outlined,
+                    title: "Duplicate",
+                    context: context,
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: SizedBox(),
+                ),
+                Flexible(
+                  flex: 5,
+                  child: _buildActionButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      bloc.deleteItem(id);
+                    },
+                    color: const Color(0xfffa8169),
+                    icon: Icons.delete,
+                    title: "Delete",
+                    context: context,
+                  ),
+                ),
+                Flexible(
+                  flex: 2,
+                  child: SizedBox(),
+                ),
+              ],
             ),
           ),
         ),

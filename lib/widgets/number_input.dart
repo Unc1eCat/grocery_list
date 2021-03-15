@@ -78,27 +78,28 @@ class _NumberInputState extends State<NumberInput> {
   void increment() {
     if (_value >= widget.max) return;
 
-    widget?.onChanged?.call(value + 1);
+    widget?.onChanged?.call(value + widget.quantize);
 
     setState(() {
       _up = true;
-      _value++;
+      _value += widget.quantize;
     });
   }
 
   void decrement() {
     if (_value <= widget.min) return;
 
-    widget?.onChanged?.call(value - 1);
+    widget?.onChanged?.call(value - widget.quantize);
 
     setState(() {
       _up = false;
-      _value--;
+      _value -= widget.quantize;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // print(widget.fractionDigits);
     return Row(
       children: [
         widget.minusButton?.call(
