@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/models/grocery_item.dart';
+import 'package:grocery_list/screens/add_item_screen.dart';
 import 'package:grocery_list/widgets/corner_drawer.dart';
 import 'package:grocery_list/widgets/grocery_list_item.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
@@ -14,44 +15,6 @@ class ListScreen extends StatefulWidget {
 }
 
 class _ListScreenState extends State<ListScreen> {
-  Widget _buildActionButton({
-    @required VoidCallback onPressed,
-    @required Color color,
-    @required IconData icon,
-    @required String title,
-    @required BuildContext context,
-  }) {
-    return HeavyTouchButton(
-      pressedScale: 0.9,
-      onPressed: onPressed,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            width: 1.2,
-            color: color.withRangedHsvSaturation(0.8),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Icon(icon),
-              SizedBox(
-                width: 8,
-              ),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.button,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     var groceryListBloc = BlocProvider.of<GroceryListBloc>(context);
@@ -109,12 +72,30 @@ class _ListScreenState extends State<ListScreen> {
               bottom: 20,
               left: 24,
               right: 100,
-              child: _buildActionButton(
-                onPressed: () => groceryListBloc.createItem(GroceryItem()),
-                color: Color(0xff56d17b),
-                icon: Icons.add,
-                title: "Create new item",
-                context: context,
+              child: Hero(
+                tag: "addItem",
+                child: HeavyTouchButton(
+                  onPressed: () {
+                    if (ModalRoute.of(context).isCurrent) {
+                      print("Tap");
+                      Navigator.push(context, AddItemScreen());
+                    }
+                  },
+                  pressedScale: 0.9,
+                  child: Material(
+                    color: const Color.fromARGB(255, 250, 250, 250),
+                    elevation: 6,
+                    borderRadius: BorderRadius.circular(8),
+                    type: MaterialType.button,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: Text(
+                        "+  Create item",
+                        style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black38),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

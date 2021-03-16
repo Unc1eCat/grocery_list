@@ -118,19 +118,12 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
               sigmaX: animation.value * 2,
               sigmaY: animation.value * 2,
             ),
-            child: child,
+            child: ColoredBox(
+              color: Colors.black.withOpacity(animation.value * 0.5),
+              child: child,
+            ),
           ),
-          child: ColoredBox(
-            color: Colors.transparent,
-            child: SizedBox.expand(),
-          ),
-        ),
-        FadeTransition(
-          opacity: _animationController,
-          child: ColoredBox(
-            color: Colors.black54,
-            child: SizedBox.expand(),
-          ),
+          child: SizedBox.expand(),
         ),
         BlocProvider<GroceryListBloc>(
           create: (context) => bloc,
@@ -170,6 +163,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                           child: Material(
                             color: Colors.transparent,
                             child: TextField(
+                              textCapitalization: TextCapitalization.sentences,
                               textAlign: TextAlign.center,
                               scrollPadding: EdgeInsets.zero,
                               decoration:

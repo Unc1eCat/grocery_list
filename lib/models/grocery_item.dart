@@ -16,7 +16,7 @@ class GroceryItem {
   final double amount;
 
   GroceryItem({
-    String id, 
+    String id,
     this.unit = "it.",
     this.quantization = 1.0,
     this.quantizationDecimalNumbersAmount = 0,
@@ -85,6 +85,14 @@ class GroceryItem {
       tags: tags ?? this.tags,
       title: title ?? this.title,
       unit: unit ?? this.unit,
+    );
+  }
+
+  GroceryItem createFromThisPrototype() {
+    return copyWith(
+      id: DateTime.now().toString(),
+      amount: 0.0,
+      checked: false,
     );
   }
 }

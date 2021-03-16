@@ -10,7 +10,10 @@ import '../main.dart';
 // TODO: Make separate update state for every property of the grocery item
 class GroceryListBloc extends Cubit<GroceryListState> {
   Map<String, GroceryItem> _items = <String, GroceryItem>{};
+  List<GroceryItem> _prototypes = <GroceryItem>[];
+
   Map<String, GroceryItem> get items => Map<String, GroceryItem>.unmodifiable(_items);
+  List<GroceryItem> get prototypes => List<GroceryItem>.unmodifiable(_prototypes);
 
   GroceryItem getItemOfId(String id) => _items[id];
 
@@ -53,6 +56,52 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     emit(ItemsFetchedState(items));
   }
 
+  void tryAddPrototype(GroceryItem item) {
+    if (!containsPrototype(item)) {
+      _prototypes.add(item);
+
+      emit(PrototypeAddedState(prototypes, item));
+    }
+  }
+
+  List<GroceryItem> getRelevantPrototypes(int limit, String enteredTitle) {
+    if (_prototypes.length == 0) return <GroceryItem>[];
+
+    List<GroceryItem> ret = _prototypes.sublist(0);
+
+    print(ret);
+
+    ret.removeWhere((e) => !e.title.contains(enteredTitle));
+    ret.sort((a, b) => a.title.compareTo(b.title)); // Alphabetic
+    ret.sort((a, b) => a.title.indexOf(enteredTitle).compareTo(b.title.indexOf(enteredTitle))); // Relevance
+
+    return ret;
+
+    // while (true)
+    // {
+    //   for (int i = 0; i < _prototypes.length; i++)
+    //   {
+    //     var v = _prototypes[i];
+    //     var iRel = v.title.indexOf(enteredTitle);
+
+    //     while (iRel > _prototypes[i + 1].title.indexOf(enteredTitle))
+    //     {
+    //       highestRel = iRel;
+
+    //     }
+    //   }
+    // }
+  }
+
+  bool containsPrototype(GroceryItem prototype) {
+    return _prototypes.any((e) =>
+        e.title == prototype.title &&
+        e.tags == prototype.tags &&
+        e.price == prototype.price &&
+        e.currency == prototype.currency &&
+        e.unit == prototype.unit);
+  }
+
   void createItem(GroceryItem newItem) {
     _items.putIfAbsent(newItem.id, () => newItem);
 
@@ -71,8 +120,9 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
   void updateItem(String id, GroceryItem newItem) {
     var updatedChecked = newItem.checked != _items[id].checked;
-    print(newItem.quantization);
     _items.update(id, (value) => newItem);
+
+    tryAddPrototype(newItem);
 
     emit(ItemChangedState(items, id));
     if (updatedChecked) {
@@ -139,4 +189,14 @@ class ItemsFetchedState extends GroceryListState {
 
   @override
   List<Object> get props => super.props..add(items);
+}
+
+class PrototypeAddedState extends GroceryListState {
+  final List<GroceryItem> prototypes;
+  final GroceryItem prototype;
+
+  PrototypeAddedState(this.prototypes, this.prototype);
+
+  @override
+  List<Object> get props => super.props..add(prototypes)..add(prototype);
 }
