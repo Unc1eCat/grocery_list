@@ -7,7 +7,6 @@ import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
 import 'package:grocery_list/widgets/number_input.dart';
 import 'package:grocery_list/widgets/tag_widget.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart' as mbs;
 import 'package:my_utilities/color_utils.dart';
 
 class GroceryListItem extends StatelessWidget {
@@ -54,6 +53,7 @@ class GroceryListItem extends StatelessWidget {
                     scale: 1.0 + animation.value * 12 / 18,
                     child: Text(
                       model.title,
+                      overflow: TextOverflow.fade,
                       style: Theme.of(context).textTheme.caption,
                     ),
                   ),

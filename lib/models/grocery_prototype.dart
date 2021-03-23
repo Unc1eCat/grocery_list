@@ -1,58 +1,41 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:grocery_list/models/grocery_prototype.dart';
-import 'package:grocery_list/models/item_tag.dart';
+import 'package:grocery_list/models/grocery_item.dart';
 
-@immutable
-class GroceryItem {
-  final String id;
+import 'item_tag.dart';
+
+class GroceryPrototype {
   final String title;
-  final bool checked;
   final List<ItemTag> tags;
   final String unit;
   final double quantization;
   final int quantizationDecimalNumbersAmount;
   final String currency;
   final double price;
-  final double amount;
 
-  GroceryItem({
-    String id,
+  GroceryPrototype({
+    this.title = "",
+    this.tags,
     this.unit = "it.",
-    this.quantization = 1.0,
+    this.quantization = 1,
     this.quantizationDecimalNumbersAmount = 0,
-    this.currency = "₽",
-    this.price = 0.0,
-    this.amount = 0.0,
-    this.title = "New item",
-    this.checked = false,
-    this.tags = const [
-      // ItemTag(color: Colors.red, title: "Test red tag"),
-      // ItemTag(color: Colors.blue, title: "Test blue tag"),
-      // ItemTag(color: Colors.green, title: "Test green tag"),
-    ],
-  }) : id = id ?? DateTime.now().toString();
+    this.currency = "\$",
+    this.price = 0,
+  });
 
   Map<String, Object> toJson() {
     return {
-      "id": id,
       "title": title,
-      "checked": checked,
       "tags": "", // TODO: TAGS
       "unit": unit,
       "quantization": quantization,
       "currency": currency,
       "price": price,
-      "amount": amount,
       "fractionDigits": quantizationDecimalNumbersAmount,
     };
   }
 
-  static GroceryItem fromJson(Map<String, dynamic> json) {
-    return GroceryItem(
-      id: json["id"],
-      amount: json["amount"],
-      checked: json["checked"],
+  static GroceryPrototype fromJson(Map<String, dynamic> json) {
+    return GroceryPrototype(
       currency: json["currency"],
       price: json["price"],
       quantization: json["quantization"],
@@ -63,22 +46,17 @@ class GroceryItem {
     );
   }
 
-  GroceryItem copyWith({
+  GroceryPrototype copyWith({
     String id,
     String title,
-    bool checked,
     List<ItemTag> tags,
     String unit,
     double quantization,
     int quantizationDecimalNumbersAmount,
     String currency,
     double price,
-    double amount,
   }) {
-    return GroceryItem(
-      id: id ?? this.id,
-      amount: amount ?? this.amount,
-      checked: checked ?? this.checked,
+    return GroceryPrototype(
       currency: currency ?? this.currency,
       quantizationDecimalNumbersAmount: quantizationDecimalNumbersAmount ?? this.quantizationDecimalNumbersAmount,
       price: price ?? this.price,
@@ -89,8 +67,10 @@ class GroceryItem {
     );
   }
 
-  GroceryPrototype createPrototype() {
-    return GroceryPrototype(
+  GroceryItem createGroceryItem() {
+    return GroceryItem(
+      id: DateTime.now().toString(),
+      amount: 1,
       currency: currency,
       price: price,
       quantization: quantization,
@@ -99,5 +79,9 @@ class GroceryItem {
       title: title,
       unit: unit,
     );
+  }
+
+  bool equals(GroceryPrototype other) {
+    return title == other.title && tags == other.tags && price == other.price && currency == other.currency && unit == other.unit;
   }
 }

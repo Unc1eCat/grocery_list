@@ -6,12 +6,12 @@ import 'package:flutter/src/scheduler/ticker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/utils/ticker_provider_mixin.dart';
+import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/grocery_list_item.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
 import 'package:grocery_list/widgets/list_item_property.dart';
 import 'package:grocery_list/widgets/number_input.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:my_utilities/color_utils.dart';
 import '../utils/golden_ration_utils.dart' as gr;
 
@@ -59,44 +59,6 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
     _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
-  }
-
-  Widget _buildActionButton({
-    @required VoidCallback onPressed,
-    @required Color color,
-    @required IconData icon,
-    @required String title,
-    @required BuildContext context,
-  }) {
-    return HeavyTouchButton(
-      pressedScale: 0.9,
-      onPressed: onPressed,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            width: 1.2,
-            color: color.withRangedHsvSaturation(0.8),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Icon(icon),
-              SizedBox(
-                width: 8,
-              ),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.button,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -309,12 +271,11 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                 ),
                 Flexible(
                   flex: 5,
-                  child: _buildActionButton(
+                  child: ActionButton(
                     onPressed: () => bloc.createItem(bloc.items[id].copyWith(id: DateTime.now().toString())),
                     color: const Color(0xfffaca69),
                     icon: Icons.copy_outlined,
                     title: "Duplicate",
-                    context: context,
                   ),
                 ),
                 Flexible(
@@ -323,7 +284,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                 ),
                 Flexible(
                   flex: 5,
-                  child: _buildActionButton(
+                  child: ActionButton(
                     onPressed: () {
                       this.completed.then((value) => bloc.deleteItem(id));
                       Navigator.pop(context);
@@ -331,7 +292,6 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                     color: const Color(0xfffa8169),
                     icon: Icons.delete,
                     title: "Delete",
-                    context: context,
                   ),
                 ),
                 Flexible(

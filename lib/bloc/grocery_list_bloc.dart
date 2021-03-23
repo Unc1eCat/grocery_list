@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:grocery_list/models/grocery_item.dart';
+import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/models/item_tag.dart';
 import 'dart:convert' as conv;
 import 'dart:io';
@@ -10,10 +11,10 @@ import '../main.dart';
 // TODO: Make separate update state for every property of the grocery item
 class GroceryListBloc extends Cubit<GroceryListState> {
   Map<String, GroceryItem> _items = <String, GroceryItem>{};
-  List<GroceryItem> _prototypes = <GroceryItem>[];
+  List<GroceryPrototype> _prototypes = <GroceryPrototype>[];
 
   Map<String, GroceryItem> get items => Map<String, GroceryItem>.unmodifiable(_items);
-  List<GroceryItem> get prototypes => List<GroceryItem>.unmodifiable(_prototypes);
+  List<GroceryPrototype> get prototypes => List<GroceryPrototype>.unmodifiable(_prototypes);
 
   GroceryItem getItemOfId(String id) => _items[id];
 
@@ -32,6 +33,16 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     return {"grocery_item": ret};
   }
 
+  Map<String, Object> toJsonPrototypes() {
+    var ret = <Map<String, Object>>[];
+
+    for (var i in _prototypes) {
+      ret.add(i.toJson());
+    }
+
+    return {"grocery_prototypes": ret};
+  }
+
   void initItemsFromJson(Map<String, dynamic> json) {
     for (Map<String, dynamic> i in json["grocery_item"]) {
       GroceryItem item = GroceryItem.fromJson(i);
@@ -39,15 +50,30 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     }
   }
 
+  void initPrototypesFromJson(Map<String, dynamic> json) {
+    for (Map<String, dynamic> i in json["grocery_prototypes"]) {
+      GroceryPrototype prototype = GroceryPrototype.fromJson(i);
+
+      if (!containsPrototype(prototype))
+      {
+        _prototypes.add(prototype);
+      }
+    }
+  }
+
   void saveItems() {
     TheApp.groceryItemsFile.writeAsStringSync(conv.jsonEncode(toJsonItems()));
+  }
+
+  void savePrototypes() {
+    TheApp.groceryPrototypesFile.writeAsStringSync(conv.jsonEncode(toJsonPrototypes()));
   }
 
   void fetchItems() {
     try {
       initItemsFromJson(conv.jsonDecode(TheApp.groceryItemsFile.readAsStringSync()));
     } catch (exc) {
-      print("Failed to fetch files from the file or the file is not initialized. Returning empty list");
+      print("Failed to fetch items from the file or the file is not initialized. Returning empty list");
       print(exc);
 
       _items = <String, GroceryItem>{};
@@ -56,18 +82,31 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     emit(ItemsFetchedState(items));
   }
 
-  void tryAddPrototype(GroceryItem item) {
-    if (!containsPrototype(item)) {
-      _prototypes.add(item);
+  void fetchPrototypes() {
+    try {
+      initPrototypesFromJson(conv.jsonDecode(TheApp.groceryPrototypesFile.readAsStringSync()));
+    } catch (exc) {
+      print("Failed to fetch prototypes from the file or the file is not initialized. Returning empty list");
+      print(exc);
 
-      emit(PrototypeAddedState(prototypes, item));
+      _prototypes = <GroceryPrototype>[];
+    }
+
+    emit(PrototypesFetchedState(prototypes));
+  }
+
+  void tryAddPrototype(GroceryPrototype prototype) {
+    if (!containsPrototype(prototype)) {
+      _prototypes.add(prototype);
+
+      emit(PrototypeAddedState(prototypes, prototype));
     }
   }
 
-  List<GroceryItem> getRelevantPrototypes(int limit, String enteredTitle) {
-    if (_prototypes.length == 0) return <GroceryItem>[];
+  List<GroceryPrototype> getRelevantPrototypes(int limit, String enteredTitle) {
+    if (_prototypes.length == 0) return <GroceryPrototype>[];
 
-    List<GroceryItem> ret = _prototypes.sublist(0);
+    var ret = _prototypes.sublist(0);
 
     print(ret);
 
@@ -93,13 +132,8 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     // }
   }
 
-  bool containsPrototype(GroceryItem prototype) {
-    return _prototypes.any((e) =>
-        e.title == prototype.title &&
-        e.tags == prototype.tags &&
-        e.price == prototype.price &&
-        e.currency == prototype.currency &&
-        e.unit == prototype.unit);
+  bool containsPrototype(GroceryPrototype prototype) {
+    return _prototypes.any((e) => e.equals(prototype));
   }
 
   void createItem(GroceryItem newItem) {
@@ -122,7 +156,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     var updatedChecked = newItem.checked != _items[id].checked;
     _items.update(id, (value) => newItem);
 
-    tryAddPrototype(newItem);
+    tryAddPrototype(newItem.createPrototype());
 
     emit(ItemChangedState(items, id));
     if (updatedChecked) {
@@ -192,11 +226,20 @@ class ItemsFetchedState extends GroceryListState {
 }
 
 class PrototypeAddedState extends GroceryListState {
-  final List<GroceryItem> prototypes;
-  final GroceryItem prototype;
+  final List<GroceryPrototype> prototypes;
+  final GroceryPrototype prototype;
 
   PrototypeAddedState(this.prototypes, this.prototype);
 
   @override
   List<Object> get props => super.props..add(prototypes)..add(prototype);
+}
+
+class PrototypesFetchedState extends GroceryListState {
+  final List<GroceryPrototype> prototypes;
+
+  PrototypesFetchedState(this.prototypes);
+
+  @override
+  List<Object> get props => super.props..add(prototypes);
 }

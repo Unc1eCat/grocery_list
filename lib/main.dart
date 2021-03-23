@@ -20,10 +20,12 @@ class TheApp extends StatefulWidget {
 
   static Directory appDocDirectory;
   static File groceryItemsFile;
+  static File groceryPrototypesFile;
 
   static Future<void> fetchAppDocDirectory() async {
     appDocDirectory = await pp.getApplicationDocumentsDirectory();
-    groceryItemsFile = File(path.join(appDocDirectory.absolute.path, "grocery_item.json"))..create(); // TODO: Rename the file to "groery_items.json"
+    groceryItemsFile = await File(path.join(appDocDirectory.absolute.path, "grocery_item.json")).create(); // TODO: Rename the file to "grocery_items.json"
+    groceryPrototypesFile = await File(path.join(appDocDirectory.absolute.path, "grocery_prototypes.json")).create();
   }
 }
 

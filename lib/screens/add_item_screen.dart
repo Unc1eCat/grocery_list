@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/models/grocery_item.dart';
+import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/utils/ticker_provider_mixin.dart';
+import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:my_utilities/color_utils.dart';
 
@@ -106,12 +108,12 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
     );
   }
 
-  Widget _buildPrototype(GroceryItem prototype, BuildContext context) {
+  Widget _buildPrototype(GroceryPrototype prototype, BuildContext context) {
     return HeavyTouchButton(
       pressedScale: 0.85,
       onPressed: () {
         _textField.unfocus();
-        BlocProvider.of<GroceryListBloc>(context).createItem(prototype.createFromThisPrototype());
+        BlocProvider.of<GroceryListBloc>(context).createItem(prototype.createGroceryItem());
         Navigator.pop(context);
       },
       child: Material(
@@ -209,17 +211,20 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
             left: 20,
             child: SlideTransition(
               position: Tween<Offset>(begin: Offset(0, 2.0), end: Offset(0, 0)).animate(animation),
-              child: _buildActionButton(
+              child: ActionButton(
                 color: const Color.fromARGB(255, 40, 210, 110),
-                context: context,
                 icon: Icons.add_rounded,
                 title: "Confirm item",
-                onPressed: () {
-                  _textField.unfocus();
+                onPressed: () async {
                   var newItem = GroceryItem(title: _textEdContr.text);
-                  bloc.tryAddPrototype(newItem);
+
                   bloc.createItem(newItem);
+
+                  _textField.unfocus();
                   Navigator.pop(context);
+
+                  await this.completed; 
+                  bloc.tryAddPrototype(newItem.createPrototype());
                 },
               ),
             ),
