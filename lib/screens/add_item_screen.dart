@@ -151,53 +151,59 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
             ),
             child: SizedBox.expand(),
           ),
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: SafeArea(
-                  child: Hero(
-                    tag: "addItem",
-                    child: Material(
-                      color: const Color.fromARGB(255, 250, 250, 250),
-                      elevation: 6,
-                      borderRadius: BorderRadius.circular(8),
-                      type: MaterialType.button,
-                      child: TextField(
-                        onSubmitted: (value) => _textField.unfocus(),
-                        controller: _textEdContr,
-                        textCapitalization: TextCapitalization.sentences,
-                        focusNode: _textField,
-                        scrollPadding: EdgeInsets.zero,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                          hintText: "+  Create item",
-                          hintStyle: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black87),
+          CustomScrollView(
+            controller: _scrollController,
+            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            slivers: [
+              SliverPersistentHeader(
+                floating: true,
+                delegate: _SearchBarPersistentHeaderDelegate(
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: SafeArea(
+                      child: Hero(
+                        tag: "addItem",
+                        child: Material(
+                          color: const Color.fromARGB(255, 250, 250, 250),
+                          elevation: 6,
+                          borderRadius: BorderRadius.circular(8),
+                          type: MaterialType.button,
+                          child: TextField(
+                            onSubmitted: (value) => _textField.unfocus(),
+                            controller: _textEdContr,
+                            textCapitalization: TextCapitalization.sentences,
+                            focusNode: _textField,
+                            scrollPadding: EdgeInsets.zero,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                              hintText: "+  Create item",
+                              hintStyle: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black87),
+                            ),
+                            style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black),
+                          ),
                         ),
-                        style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black),
                       ),
                     ),
                   ),
                 ),
               ),
-              AnimatedBuilder(
-                animation: _textEdContr,
-                builder: (context, child) => FadeTransition(
-                  opacity: _animationController,
-                  child: ListView(
-                    
-            controller: _scrollController,
-            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    // crossAxisAlignment: CrossAxisAlignment.stretch,
-                    key: ValueKey(_textEdContr.text),
-                    children: bloc
-                        .getRelevantPrototypes(15, _textEdContr.text)
-                        .map((e) => Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                              child: _buildPrototype(e, context),
-                            ))
-                        .toList(), // TODO: Rebuild as the text is typed
+              SliverToBoxAdapter(
+                child: AnimatedBuilder(
+                  animation: _textEdContr,
+                  builder: (context, child) => FadeTransition(
+                    opacity: _animationController,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      key: ValueKey(_textEdContr.text),
+                      children: bloc
+                          .getRelevantPrototypes(15, _textEdContr.text)
+                          .map((e) => Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                child: _buildPrototype(e, context),
+                              ))
+                          .toList(),
+                    ),
                   ),
                 ),
               ),
@@ -251,5 +257,28 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
         ],
       ),
     );
+  }
+}
+
+class _SearchBarPersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _SearchBarPersistentHeaderDelegate(this.child);
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    print(shrinkOffset);
+    return child;
+  }
+
+  @override
+  double get maxExtent => 100;
+
+  @override
+  double get minExtent => 100;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return true;
   }
 }
