@@ -11,14 +11,14 @@ import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorder
 import 'package:my_utilities/color_utils.dart';
 
 class GroceryListItem extends StatelessWidget {
-  final String id;
+  final GroceryItem model;
 
-  const GroceryListItem({Key key, this.id}) : super(key: key);
+  const GroceryListItem({Key key, this.model}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var bloc = BlocProvider.of<GroceryListBloc>(context);
-    var model = bloc.getItemOfId(id) ?? ((bloc.state is ItemDeletedState) ? (bloc.state as ItemDeletedState).removedItem : null);
+    // var model = bloc.getItemOfId(id) ?? ((bloc.state is ItemDeletedState) ? (bloc.state as ItemDeletedState).removedItem : null);
 
     return Material(
       color: Colors.transparent,
@@ -27,13 +27,13 @@ class GroceryListItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         splashColor: Colors.transparent,
         highlightColor: Theme.of(context).colorScheme.onBackground.blendedWith(Theme.of(context).primaryColor, 0.3).withOpacity(0.06),
-        onLongPress: () => Navigator.of(context).push(ListItemEditRoute(bloc: bloc, id: id)),
+        onLongPress: () => Navigator.of(context).push(ListItemEditRoute(bloc: bloc, id: model.id)),
         child: Row(
           children: [
             Hero(
-              tag: "check$id",
+              tag: "check${model.id}",
               child: HeavyTouchButton(
-                onPressed: () => bloc.updateItem(id, model.copyWith(checked: !model.checked)),
+                onPressed: () => bloc.updateItem(model.id, model.copyWith(checked: !model.checked)),
                 child: ColoredBox(
                   color: Colors.transparent,
                   child: Padding(
@@ -71,7 +71,7 @@ class GroceryListItem extends StatelessWidget {
                   //     ),
                   //   ),
                 ),
-                tag: "title$id",
+                tag: "title${model.id}",
                 child: Text(
                   model.title,
                   style: Theme.of(context).textTheme.caption,
@@ -87,7 +87,7 @@ class GroceryListItem extends StatelessWidget {
             ),
             SizedBox(width: 20),
             Hero(
-              tag: "num$id",
+              tag: "num${model.id}",
               child: Text(
                 model.amount.toStringAsFixed(model.quantizationDecimalNumbersAmount) + (model.unit == null ? "" : " " + model.unit),
                 style: Theme.of(context).textTheme.caption,

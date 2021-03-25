@@ -89,8 +89,9 @@ class GroceryItem {
     );
   }
 
-  GroceryPrototype createPrototype() {
+  GroceryPrototype createPrototype({String id}) {
     return GroceryPrototype(
+      id: id,
       currency: currency,
       price: price,
       quantization: quantization,

@@ -27,21 +27,21 @@ class _ListScreenState extends State<ListScreen> {
         body: Stack(
           children: [
             SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                  buildWhen: (prev, state) {
-                    return state is ItemDeletedState || state is ItemCreatedState || state is ItemsFetchedState;
-                  },
-                  cubit: groceryListBloc,
-                  builder: (context, state) => ImplicitlyAnimatedReorderableList(
+              child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                buildWhen: (prev, state) {
+                  return state is ItemDeletedState || state is ItemCreatedState || state is ItemsFetchedState;
+                },
+                cubit: groceryListBloc,
+                builder: (context, state) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                  child: ImplicitlyAnimatedReorderableList(
                     onReorderFinished: (item, from, to, newItems) => groceryListBloc.moveItem(from, to),
                     areItemsTheSame: (a, b) => a.id == b.id,
                     footer: BlocBuilder<GroceryListBloc, GroceryListState>(
-                      buildWhen: (previous, current) => current is CheckedChangedState,
+                      buildWhen: (previous, current) => current is CheckedChangedState || current is ItemDeletedState,
                       cubit: groceryListBloc,
                       builder: (context, state) => AnimatedSwitcher(
-                        duration: Duration(milliseconds: 400),
+                        duration: Duration(milliseconds: 300),
                         transitionBuilder: (child, animation) => FadeTransition(
                           opacity: animation,
                           child: RotationTransition(
@@ -53,10 +53,12 @@ class _ListScreenState extends State<ListScreen> {
                         ),
                         child: groceryListBloc.items.any((e) => e.checked)
                             ? Padding(
-                                padding: const EdgeInsets.all(10),
+                                padding: const EdgeInsets.only(top: 10, right: 12, left: 12, bottom: 100),
                                 child: HeavyTouchButton(
                                   pressedScale: 0.9,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    groceryListBloc.deleteCheckedItems();
+                                  },
                                   child: Material(
                                     borderRadius: BorderRadius.circular(8),
                                     color: Color(0xFF0E1C21),
@@ -85,19 +87,18 @@ class _ListScreenState extends State<ListScreen> {
                             : SizedBox.shrink(),
                       ),
                     ),
+                    // removeItemBuilder: ,
                     itemBuilder: (context, animation, item, i) {
-                      var e = groceryListBloc.items[i];
-
                       return Reorderable(
-                        key: ValueKey(e.id),
+                        key: ValueKey(item.id),
                         child: ScaleTransition(
                           scale: animation,
                           child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                            buildWhen: (previous, current) => current is ItemChangedState && current.id == e.id,
+                            buildWhen: (previous, current) => current is ItemChangedState && current.id == item.id,
                             cubit: groceryListBloc,
                             builder: (context, state) => GroceryListItem(
-                              id: e.id,
-                              key: ValueKey(e.id),
+                              model: groceryListBloc.getItemOfId(item.id) ?? item,
+                              key: ValueKey(item.id),
                             ),
                           ),
                         ),
@@ -112,36 +113,60 @@ class _ListScreenState extends State<ListScreen> {
               ),
             ),
             Positioned(
-              bottom: 20,
-              left: 24,
-              right: 100,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: MainAxisAlignment.end,
+              bottom: 16,
+              left: 16,
+              right: 86,
+              child: Row(
+                // crossAxisAlignment: CrossAxisAlignment.stretch,
+                // mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  SizedBox(height: 14),
-                  Hero(
-                    tag: "addItem",
-                    child: HeavyTouchButton(
-                      onPressed: () {
-                        if (ModalRoute.of(context).isCurrent) {
-                          print("Tap");
-                          Navigator.push(context, AddItemScreen());
-                        }
-                      },
-                      pressedScale: 0.9,
-                      child: Material(
-                        color: const Color.fromARGB(255, 250, 250, 250),
-                        elevation: 6,
-                        borderRadius: BorderRadius.circular(8),
-                        type: MaterialType.button,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          child: Text(
-                            "+  Create item",
-                            style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black87),
+                  Expanded(
+                    child: Hero(
+                      tag: "addItem",
+                      child: HeavyTouchButton(
+                        onPressed: () {
+                          if (ModalRoute.of(context).isCurrent) {
+                            print("Tap");
+                            Navigator.push(context, AddItemScreen());
+                          }
+                        },
+                        pressedScale: 0.9,
+                        child: Material(
+                          color: const Color.fromARGB(255, 250, 250, 250),
+                          elevation: 6,
+                          borderRadius: BorderRadius.circular(8),
+                          type: MaterialType.button,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            child: Text(
+                              "+  Create item",
+                              style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black54),
+                            ),
                           ),
                         ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  HeavyTouchButton(
+                    onPressed: () {},
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Theme.of(context).cardColor.blendedWithInversion(0.05), width: 1.1),
+                        borderRadius: BorderRadius.circular(60),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 6,
+                            color: Theme.of(context).shadowColor.withOpacity(0.0),
+                            spreadRadius: 2,
+                          ),
+                        ],
+                        color: Theme.of(context).cardColor,
+                      ),
+                      child: SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: Icon(Icons.edit_rounded),
                       ),
                     ),
                   ),

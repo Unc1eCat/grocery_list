@@ -49,6 +49,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
   void install() {
     _animationController = AnimationController(vsync: this)..animateTo(1.0, duration: const Duration(milliseconds: 600));
     _scrollController = ScrollController()..addListener(_handleScroll);
+    popped.then((_) => _animationController.animateBack(0.0, duration: const Duration(milliseconds: 600)));
     super.install();
   }
 
@@ -74,14 +75,14 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
     return Stack(
       children: [
         AnimatedBuilder(
-          animation: animation,
+          animation: _animationController,
           builder: (context, child) => BackdropFilter(
             filter: ImageFilter.blur(
-              sigmaX: animation.value * 2,
-              sigmaY: animation.value * 2,
+              sigmaX: _animationController.value * 2,
+              sigmaY: _animationController.value * 2,
             ),
             child: ColoredBox(
-              color: Colors.black.withOpacity(animation.value * 0.5),
+              color: Colors.black.withOpacity(_animationController.value * 0.5),
               child: child,
             ),
           ),
@@ -147,17 +148,21 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                       children: [
                         Hero(
                           tag: "check$id",
-                          child: HeavyTouchButton(
-                            onPressed: () => bloc.updateItem(id, model.copyWith(checked: !model.checked)),
-                            child: ColoredBox(
-                              color: Colors.transparent,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                                  cubit: bloc,
-                                  buildWhen: (previous, current) => current is CheckedChangedState && current.id == id,
-                                  builder: (context, state) => ListItemCheckBox(checked: model?.checked ?? model.checked),
-                                ),
+                          child: ColoredBox(
+                            color: Colors.transparent,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                                cubit: bloc,
+                                buildWhen: (previous, current) => current is CheckedChangedState && current.item.id == id,
+                                builder: (context, state) {
+                                  var model = bloc.getItemOfId(id);
+
+                                  return HeavyTouchButton(
+                                    onPressed: () => bloc.updateItem(id, model.copyWith(checked: !model.checked)),
+                                    child: ListItemCheckBox(checked: model?.checked ?? model.checked),
+                                  );
+                                },
                               ),
                             ),
                           ),
@@ -248,9 +253,9 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                         ],
                       ),
                     ),
-                    SizedBox(
-                      height: 500,
-                    ),
+                    // SizedBox(
+                    //   height: 500,
+                    // ),
                   ],
                 );
               },
@@ -259,45 +264,42 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
         ),
         Positioned(
           bottom: 20,
-          right: 0,
-          left: 0,
+          right: 16,
+          left: 16,
           child: SlideTransition(
             position: Tween<Offset>(begin: Offset(0.0, 2), end: Offset(0.0, 0.0)).animate(animation),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Flexible(
-                  flex: 2,
-                  child: SizedBox(),
+                ActionButton(
+                  onPressed: () {
+                    bloc.updatePrototypeOfTitle(bloc.getItemOfId(id).createPrototype());
+                  },
+                  color: const Color(0xFFBF42C1),
+                  icon: Icons.update_rounded,
+                  title: "Update in history",
                 ),
-                Flexible(
-                  flex: 5,
-                  child: ActionButton(
-                    onPressed: () => bloc.createItem(bloc.getItemOfId(id).copyWith(id: DateTime.now().toString())),
-                    color: const Color(0xfffaca69),
-                    icon: Icons.copy_outlined,
-                    title: "Duplicate",
-                  ),
-                ),
-                Flexible(
-                  flex: 1,
-                  child: SizedBox(),
-                ),
-                Flexible(
-                  flex: 5,
-                  child: ActionButton(
-                    onPressed: () {
-                      this.completed.then((value) => bloc.deleteItem(id));
-                      Navigator.pop(context);
-                    },
-                    color: const Color(0xfffa8169),
-                    icon: Icons.delete,
-                    title: "Delete",
-                  ),
-                ),
-                Flexible(
-                  flex: 2,
-                  child: SizedBox(),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ActionButton(
+                      onPressed: () => bloc.createItem(bloc.getItemOfId(id).copyWith(id: DateTime.now().toString())),
+                      color: const Color(0xFFEDB048),
+                      icon: Icons.copy_outlined,
+                      title: "Duplicate",
+                    ),
+                    // Spacer(),
+                    ActionButton(
+                      onPressed: () {
+                        this.completed.then((value) => bloc.deleteItem(id));
+                        Navigator.pop(context);
+                      },
+                      color: const Color(0xFFF4715D),
+                      icon: Icons.delete,
+                      title: "Delete",
+                    ),
+                  ],
                 ),
               ],
             ),

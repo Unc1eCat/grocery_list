@@ -18,7 +18,7 @@ class ActionButton extends StatelessWidget {
     @required this.icon,
     @required this.title,
     this.borderRadius,
-    this.padding = const EdgeInsets.all(12),
+    this.padding = const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 16),
   }) : super(key: key);
 
   @override
@@ -38,6 +38,7 @@ class ActionButton extends StatelessWidget {
         child: Padding(
           padding: padding,
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icon),
               SizedBox(

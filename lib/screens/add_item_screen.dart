@@ -36,6 +36,7 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
     _scrollController = ScrollController()..addListener(_handleScroll);
     _textField = FocusNode();
     _textEdContr = TextEditingController();
+    popped.then((_) => _animationController.animateBack(0.0, duration: const Duration(milliseconds: 600)));
     super.install();
   }
 
@@ -109,26 +110,45 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
   }
 
   Widget _buildPrototype(GroceryPrototype prototype, BuildContext context) {
-    return HeavyTouchButton(
-      pressedScale: 0.85,
-      onPressed: () {
-        _textField.unfocus();
-        BlocProvider.of<GroceryListBloc>(context).createItem(prototype.createGroceryItem());
-        Navigator.pop(context);
-      },
-      child: Material(
-        borderRadius: BorderRadius.circular(10),
-        shadowColor: Colors.transparent,
-        type: MaterialType.button,
-        color: const Color.fromRGBO(40, 40, 40, 0.7),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Text(
-            prototype.title,
-            style: Theme.of(context).textTheme.headline6,
+    return Row(
+      children: [
+        Expanded(
+          child: HeavyTouchButton(
+            pressedScale: 0.85,
+            onPressed: () async {
+              var bloc = BlocProvider.of<GroceryListBloc>(context);
+
+              _textField.unfocus();
+              Navigator.pop(context);
+
+              await completed;
+
+              bloc.createItem(prototype.createGroceryItem());
+            },
+            child: Material(
+              borderRadius: BorderRadius.circular(10),
+              shadowColor: Colors.transparent,
+              type: MaterialType.button,
+              color: const Color.fromRGBO(40, 40, 40, 0.7),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  prototype.title,
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+        SizedBox(width: 10),
+        HeavyTouchButton(
+          pressedScale: 0.85,
+          onPressed: () {
+            BlocProvider.of<GroceryListBloc>(context).deletePrototype(prototype.id);
+          },
+          child: Icon(Icons.close_rounded),
+        ),
+      ],
     );
   }
 
@@ -151,51 +171,48 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
             ),
             child: SizedBox.expand(),
           ),
-          CustomScrollView(
+          ListView(
             controller: _scrollController,
             physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-            slivers: [
-              SliverPersistentHeader(
-                floating: true,
-                delegate: _SearchBarPersistentHeaderDelegate(
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: SafeArea(
-                      child: Hero(
-                        tag: "addItem",
-                        child: Material(
-                          color: const Color.fromARGB(255, 250, 250, 250),
-                          elevation: 6,
-                          borderRadius: BorderRadius.circular(8),
-                          type: MaterialType.button,
-                          child: TextField(
-                            onSubmitted: (value) => _textField.unfocus(),
-                            controller: _textEdContr,
-                            textCapitalization: TextCapitalization.sentences,
-                            focusNode: _textField,
-                            scrollPadding: EdgeInsets.zero,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                              hintText: "+  Create item",
-                              hintStyle: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black87),
-                            ),
-                            style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black),
-                          ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: SafeArea(
+                  child: Hero(
+                    tag: "addItem",
+                    child: Material(
+                      color: const Color.fromARGB(255, 250, 250, 250),
+                      elevation: 6,
+                      borderRadius: BorderRadius.circular(8),
+                      type: MaterialType.button,
+                      child: TextField(
+                        onSubmitted: (value) => _textField.unfocus(),
+                        controller: _textEdContr,
+                        textCapitalization: TextCapitalization.sentences,
+                        focusNode: _textField,
+                        scrollPadding: EdgeInsets.zero,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                          hintText: "+  Create item",
+                          hintStyle: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black54),
                         ),
+                        style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black),
                       ),
                     ),
                   ),
                 ),
               ),
-              SliverToBoxAdapter(
-                child: AnimatedBuilder(
+              BlocBuilder<GroceryListBloc, GroceryListState>(
+                cubit: bloc,
+                buildWhen: (previous, current) =>
+                    current is PrototypeRemovedState || current is PrototypesFetchedState || current is PrototypeAddedState,
+                builder: (context, state) => AnimatedBuilder(
                   animation: _textEdContr,
                   builder: (context, child) => FadeTransition(
                     opacity: _animationController,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      key: ValueKey(_textEdContr.text),
                       children: bloc
                           .getRelevantPrototypes(15, _textEdContr.text)
                           .map((e) => Padding(
@@ -217,38 +234,45 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
               position: Tween<Offset>(begin: Offset(0, 2.0), end: Offset(0, 0)).animate(animation),
               child: Column(
                 children: [
-                  ActionButton(
-                    color: const Color.fromARGB(255, 40, 210, 110),
-                    icon: Icons.save_rounded,
-                    title: "Create adding prototype",
-                    onPressed: () async {
-                      var newItem = GroceryItem(title: _textEdContr.text);
+                  SizedBox(
+                    width: double.infinity,
+                    child: ActionButton(
+                      color: const Color(0xFF17D368),
+                      icon: Icons.save_rounded,
+                      title: "Create adding to the history",
+                      onPressed: () async {
+                        if (_textEdContr.text == null || _textEdContr.text.isEmpty) return;
 
-                      bloc.createItem(newItem);
+                        var newItem = GroceryItem(title: _textEdContr.text, amount: 1);
 
-                      _textField.unfocus();
-                      Navigator.pop(context);
+                        _textField.unfocus();
+                        Navigator.pop(context);
 
-                      await this.completed;
-                      bloc.tryAddPrototype(newItem.createPrototype());
-                    },
+                        await this.completed;
+
+                        bloc.createItem(newItem);
+                        bloc.tryAddPrototype(newItem.createPrototype());
+                      },
+                    ),
                   ),
                   SizedBox(height: 10),
-                  ActionButton(
-                    color: const Color(0xFF97D76A),
-                    icon: Icons.add_rounded,
-                    title: "Create without adding prototype",
-                    onPressed: () async {
-                      var newItem = GroceryItem(title: _textEdContr.text);
+                  SizedBox(
+                    width: double.infinity,
+                    child: ActionButton(
+                      color: const Color(0xFF92C95B),
+                      icon: Icons.add_rounded,
+                      title: "Create not adding to the history",
+                      onPressed: () {
+                        if (_textEdContr.text == null || _textEdContr.text.isEmpty) return;
 
-                      bloc.createItem(newItem);
+                        var newItem = GroceryItem(title: _textEdContr.text, amount: 1);
 
-                      _textField.unfocus();
-                      Navigator.pop(context);
+                        bloc.createItem(newItem);
 
-                      await this.completed;
-                      bloc.tryAddPrototype(newItem.createPrototype());
-                    },
+                        _textField.unfocus();
+                        Navigator.pop(context);
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -267,7 +291,6 @@ class _SearchBarPersistentHeaderDelegate extends SliverPersistentHeaderDelegate 
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    print(shrinkOffset);
     return child;
   }
 

@@ -24,7 +24,8 @@ class TheApp extends StatefulWidget {
 
   static Future<void> fetchAppDocDirectory() async {
     appDocDirectory = await pp.getApplicationDocumentsDirectory();
-    groceryItemsFile = await File(path.join(appDocDirectory.absolute.path, "grocery_item.json")).create(); // TODO: Rename the file to "grocery_items.json"
+    groceryItemsFile =
+        await File(path.join(appDocDirectory.absolute.path, "grocery_item.json")).create(); // TODO: Rename the file to "grocery_items.json"
     groceryPrototypesFile = await File(path.join(appDocDirectory.absolute.path, "grocery_prototypes.json")).create();
   }
 }
@@ -40,8 +41,6 @@ class _TheAppState extends State<TheApp> {
 
     super.initState();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -62,9 +61,9 @@ class _TheAppState extends State<TheApp> {
             ),
             headline6: TextStyle(
               fontSize: 20,
-              fontWeight: FontWeight.w400,
+              // fontWeight: FontWeight.w400,
             ),
-          ),
+          )
         ),
         routes: {
           "/": (ctx) => TabsScreen(),

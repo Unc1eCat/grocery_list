@@ -4,6 +4,7 @@ import 'package:grocery_list/models/grocery_item.dart';
 import 'item_tag.dart';
 
 class GroceryPrototype {
+  final String id;
   final String title;
   final List<ItemTag> tags;
   final String unit;
@@ -13,6 +14,7 @@ class GroceryPrototype {
   final double price;
 
   GroceryPrototype({
+    String id,
     this.title = "",
     this.tags,
     this.unit = "it.",
@@ -20,10 +22,11 @@ class GroceryPrototype {
     this.quantizationDecimalNumbersAmount = 0,
     this.currency = "\$",
     this.price = 0,
-  });
+  }) : this.id = id ?? DateTime.now().toString();
 
   Map<String, Object> toJson() {
     return {
+      "id": id,
       "title": title,
       "tags": "", // TODO: TAGS
       "unit": unit,
@@ -36,6 +39,7 @@ class GroceryPrototype {
 
   static GroceryPrototype fromJson(Map<String, dynamic> json) {
     return GroceryPrototype(
+      id: json["id"],
       currency: json["currency"],
       price: json["price"],
       quantization: json["quantization"],
@@ -57,6 +61,7 @@ class GroceryPrototype {
     double price,
   }) {
     return GroceryPrototype(
+      id: id ?? this.id,
       currency: currency ?? this.currency,
       quantizationDecimalNumbersAmount: quantizationDecimalNumbersAmount ?? this.quantizationDecimalNumbersAmount,
       price: price ?? this.price,
@@ -70,7 +75,7 @@ class GroceryPrototype {
   GroceryItem createGroceryItem() {
     return GroceryItem(
       id: DateTime.now().toString(),
-      amount: 1,
+      amount: quantization,
       currency: currency,
       price: price,
       quantization: quantization,

@@ -304,7 +304,7 @@ class _CornerDrawerButton extends StatelessWidget {
                       ),
                       child: Align(
                         alignment: Alignment.bottomCenter,
-                        child: HeavyTouchButton(
+                        child: HeavyTouchButton( // TODO: Make the whole button press
                           onPressed: () => cornerDrawer.drawerAnimation.isCompleted ? cornerDrawer.closeDrawer() : cornerDrawer.openDrawer(),
                           child: SizedBox(
                             width: cornerDrawer.drawerAnimation.value * (cornerDrawer._drawerWidth - cornerDrawer.widget.buttonSize.width) +
