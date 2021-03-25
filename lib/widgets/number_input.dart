@@ -18,6 +18,7 @@ class NumberInput extends StatefulWidget {
   final String unit;
   final OnChange onChanged;
   final Duration longPressPeriod;
+  final Object heroTag;
 
   NumberInput({
     this.minusButton,
@@ -31,6 +32,7 @@ class NumberInput extends StatefulWidget {
     this.unit,
     this.onChanged,
     this.longPressPeriod,
+    this.heroTag,
   });
 
   @override
@@ -148,9 +150,12 @@ class _NumberInputState extends State<NumberInput> {
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: Center(
-                child: Text(
-                  _value.toStringAsFixed(widget.fractionDigits) + (widget.unit == null ? "" : " " + widget.unit),
-                  style: widget.style ?? Theme.of(context).textTheme.caption,
+                child: Hero(
+                  tag: widget.heroTag,
+                  child: Text(
+                    _value.toStringAsFixed(widget.fractionDigits) + (widget.unit == null ? "" : " " + widget.unit),
+                    style: widget.style ?? Theme.of(context).textTheme.caption,
+                  ),
                 ),
               ),
             ),

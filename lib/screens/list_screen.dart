@@ -29,46 +29,82 @@ class _ListScreenState extends State<ListScreen> {
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: BlocListener<GroceryListBloc, GroceryListState>(
-                  listener: (context, state) {
-                    if (state is ItemDeletedState) {
-                      animatedList.currentState.removeItem(
-                        state.index,
-                        (context, animation) => ScaleTransition(
-                          scale: animation,
-                          child: GroceryListItem(id: state.removedItem.id),
-                        ),
-                      );
-                    } else if (state is ItemCreatedState) {
-                      animatedList.currentState.insertItem(groceryListBloc.items.values.toList().indexWhere((e) => e.id == state.id));
-                    } else if (state is ItemsFetchedState) {
-                      setState(() {});
-                    }
-                    // else if (state is CheckedChangedState) {
-                    //   if (groceryListBloc.items.values.any((e) => e.checked)) {
-                    //     animatedList.currentState.insertItem(groceryListBloc.items.length);
-                    //   }
-                    // }
+                child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                  buildWhen: (prev, state) {
+                    return state is ItemDeletedState || state is ItemCreatedState || state is ItemsFetchedState;
                   },
                   cubit: groceryListBloc,
-                  child: AnimatedList(
-                    key: animatedList,
-                    initialItemCount: groceryListBloc.items.length,
-                    itemBuilder: (context, index, animation) {
-                      var id = groceryListBloc.items.values.elementAt(index).id;
+                  builder: (context, state) => ImplicitlyAnimatedReorderableList(
+                    onReorderFinished: (item, from, to, newItems) => groceryListBloc.moveItem(from, to),
+                    areItemsTheSame: (a, b) => a.id == b.id,
+                    footer: BlocBuilder<GroceryListBloc, GroceryListState>(
+                      buildWhen: (previous, current) => current is CheckedChangedState,
+                      cubit: groceryListBloc,
+                      builder: (context, state) => AnimatedSwitcher(
+                        duration: Duration(milliseconds: 400),
+                        transitionBuilder: (child, animation) => FadeTransition(
+                          opacity: animation,
+                          child: RotationTransition(
+                            alignment: Alignment(-1.2, -0.8),
+                            turns: Tween<double>(begin: 0.05, end: 0.0).animate(animation),
+                            // position: Tween<Offset>(begin: Offset(0, 1), end: Offset(0, 0)).animate(animation),
+                            child: child,
+                          ),
+                        ),
+                        child: groceryListBloc.items.any((e) => e.checked)
+                            ? Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: HeavyTouchButton(
+                                  pressedScale: 0.9,
+                                  onPressed: () {},
+                                  child: Material(
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: Color(0xFF0E1C21),
+                                    elevation: 3,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.check_box_rounded,
+                                            // color: Colors.white70,
+                                          ),
+                                          SizedBox(width: 12),
+                                          Text(
+                                            "Remove checked items",
+                                            style: Theme.of(context).textTheme.button,
+                                            // .copyWith(color: Colors.white70),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : SizedBox.shrink(),
+                      ),
+                    ),
+                    itemBuilder: (context, animation, item, i) {
+                      var e = groceryListBloc.items[i];
 
-                      return ScaleTransition(
-                        scale: animation,
-                        child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                          buildWhen: (previous, current) => current is ItemChangedState && current.id == id,
-                          cubit: groceryListBloc,
-                          builder: (context, state) => GroceryListItem(
-                            id: id,
-                            key: ValueKey(id),
+                      return Reorderable(
+                        key: ValueKey(e.id),
+                        child: ScaleTransition(
+                          scale: animation,
+                          child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                            buildWhen: (previous, current) => current is ItemChangedState && current.id == e.id,
+                            cubit: groceryListBloc,
+                            builder: (context, state) => GroceryListItem(
+                              id: e.id,
+                              key: ValueKey(e.id),
+                            ),
                           ),
                         ),
                       );
                     },
+                    key: animatedList,
+                    items: groceryListBloc.items,
                     physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                     // children: groceryListBloc.items.values.map((e) => GroceryListItem(id: e.id, key: ValueKey(e.id))).toList(),
                   ),
@@ -83,23 +119,6 @@ class _ListScreenState extends State<ListScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  BlocBuilder<GroceryListBloc, GroceryListState>(
-                    buildWhen: (previous, current) => current is CheckedChangedState,
-                    cubit: groceryListBloc,
-                    builder: (context, state) => AnimatedSwitcher(
-                      duration: Duration(milliseconds: 400),
-                      transitionBuilder: (child, animation) => SlideTransition(
-                        position: Tween<Offset>(begin: Offset(0, 1), end: Offset(0, 0)).animate(animation),
-                        child: child,
-                      ),
-                      child: ActionButton(
-                        onPressed: () {},
-                        color: Color(0xFFC4E464),
-                        icon: Icons.check_box_rounded,
-                        title: "Remove checked items",
-                      ),
-                    ),
-                  ),
                   SizedBox(height: 14),
                   Hero(
                     tag: "addItem",
@@ -120,7 +139,7 @@ class _ListScreenState extends State<ListScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                           child: Text(
                             "+  Create item",
-                            style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black38),
+                            style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black87),
                           ),
                         ),
                       ),

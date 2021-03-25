@@ -7,6 +7,7 @@ import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
 import 'package:grocery_list/widgets/number_input.dart';
 import 'package:grocery_list/widgets/tag_widget.dart';
+import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 import 'package:my_utilities/color_utils.dart';
 
 class GroceryListItem extends StatelessWidget {
@@ -43,36 +44,38 @@ class GroceryListItem extends StatelessWidget {
               ),
             ),
             SizedBox(width: 15),
-            Hero(
-              flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => AnimatedBuilder(
-                animation: animation,
-                builder: (context, child) => 
-                Align(
-                  alignment: Alignment(animation.value - 1.0, 0.0),
-                  child: Transform.scale(
-                    scale: 1.0 + animation.value * 12 / 18,
-                    child: Text(
-                      model.title,
-                      overflow: TextOverflow.fade,
-                      style: Theme.of(context).textTheme.caption,
+            SizedBox(
+              height: 30,
+              child: Hero(
+                flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) => Align(
+                    alignment: Alignment(animation.value - 1.0, 0.0),
+                    child: Transform.scale(
+                      scale: 1.0 + animation.value * 12 / 18,
+                      child: Text(
+                        model.title,
+                        overflow: TextOverflow.fade,
+                        style: Theme.of(context).textTheme.caption,
+                      ),
                     ),
                   ),
+                  //   SizedBox(
+                  //     height: 30,
+                  //     child: Align(
+                  //       alignment: Alignment(animation.value - 1.0, 0.0),
+                  //       child: Text(
+                  //         model.title,
+                  //         style: Theme.of(context).textTheme.caption.copyWith(fontSize: 18 + 12 * animation.value),
+                  //       ),
+                  //     ),
+                  //   ),
                 ),
-              //   SizedBox(
-              //     height: 30,
-              //     child: Align(
-              //       alignment: Alignment(animation.value - 1.0, 0.0),
-              //       child: Text(
-              //         model.title,
-              //         style: Theme.of(context).textTheme.caption.copyWith(fontSize: 18 + 12 * animation.value),
-              //       ),
-              //     ),
-              //   ),
-              ),
-              tag: "title$id",
-              child: Text(
-                model.title,
-                style: Theme.of(context).textTheme.caption,
+                tag: "title$id",
+                child: Text(
+                  model.title,
+                  style: Theme.of(context).textTheme.caption,
+                ),
               ),
             ),
             Spacer(),
@@ -85,14 +88,17 @@ class GroceryListItem extends StatelessWidget {
             SizedBox(width: 20),
             Hero(
               tag: "num$id",
-              child: NumberInput(
-                fractionDigits: model.quantizationDecimalNumbersAmount,
-                quantize: model.quantization,
-                value: model.amount,
-                unit: model.unit,
-                onChanged: (value) => BlocProvider.of<GroceryListBloc>(context).updateItem(id, model.copyWith(amount: value)),
+              child: Text(
+                model.amount.toStringAsFixed(model.quantizationDecimalNumbersAmount) + (model.unit == null ? "" : " " + model.unit),
+                style: Theme.of(context).textTheme.caption,
               ),
             ),
+            SizedBox(width: 20),
+            Handle(
+              child: Icon(Icons.drag_handle_rounded),
+              vibrate: true,
+            ),
+            SizedBox(width: 10),
           ],
         ),
       ),

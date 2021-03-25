@@ -151,9 +151,7 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
             ),
             child: SizedBox.expand(),
           ),
-          ListView(
-            controller: _scrollController,
-            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          Column(
             children: [
               Padding(
                 padding: const EdgeInsets.all(10),
@@ -175,7 +173,7 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                           hintText: "+  Create item",
-                          hintStyle: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black38),
+                          hintStyle: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black87),
                         ),
                         style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black),
                       ),
@@ -183,23 +181,23 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
                   ),
                 ),
               ),
-              SlideTransition(
-                position: Tween<Offset>(begin: Offset(0, 2), end: Offset(0, 0)).animate(animation),
-                child: FadeTransition(
-                  opacity: animation,
-                  child: AnimatedBuilder(
-                    animation: _textEdContr,
-                    builder: (context, child) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      key: ValueKey(_textEdContr.text),
-                      children: bloc
-                          .getRelevantPrototypes(15, _textEdContr.text)
-                          .map((e) => Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                child: _buildPrototype(e, context),
-                              ))
-                          .toList(), // TODO: Rebuild as the text is typed
-                    ),
+              AnimatedBuilder(
+                animation: _textEdContr,
+                builder: (context, child) => FadeTransition(
+                  opacity: _animationController,
+                  child: ListView(
+                    
+            controller: _scrollController,
+            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                    // crossAxisAlignment: CrossAxisAlignment.stretch,
+                    key: ValueKey(_textEdContr.text),
+                    children: bloc
+                        .getRelevantPrototypes(15, _textEdContr.text)
+                        .map((e) => Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              child: _buildPrototype(e, context),
+                            ))
+                        .toList(), // TODO: Rebuild as the text is typed
                   ),
                 ),
               ),
@@ -211,21 +209,42 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
             left: 20,
             child: SlideTransition(
               position: Tween<Offset>(begin: Offset(0, 2.0), end: Offset(0, 0)).animate(animation),
-              child: ActionButton(
-                color: const Color.fromARGB(255, 40, 210, 110),
-                icon: Icons.add_rounded,
-                title: "Confirm item",
-                onPressed: () async {
-                  var newItem = GroceryItem(title: _textEdContr.text);
+              child: Column(
+                children: [
+                  ActionButton(
+                    color: const Color.fromARGB(255, 40, 210, 110),
+                    icon: Icons.save_rounded,
+                    title: "Create adding prototype",
+                    onPressed: () async {
+                      var newItem = GroceryItem(title: _textEdContr.text);
 
-                  bloc.createItem(newItem);
+                      bloc.createItem(newItem);
 
-                  _textField.unfocus();
-                  Navigator.pop(context);
+                      _textField.unfocus();
+                      Navigator.pop(context);
 
-                  await this.completed; 
-                  bloc.tryAddPrototype(newItem.createPrototype());
-                },
+                      await this.completed;
+                      bloc.tryAddPrototype(newItem.createPrototype());
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  ActionButton(
+                    color: const Color(0xFF97D76A),
+                    icon: Icons.add_rounded,
+                    title: "Create without adding prototype",
+                    onPressed: () async {
+                      var newItem = GroceryItem(title: _textEdContr.text);
+
+                      bloc.createItem(newItem);
+
+                      _textField.unfocus();
+                      Navigator.pop(context);
+
+                      await this.completed;
+                      bloc.tryAddPrototype(newItem.createPrototype());
+                    },
+                  ),
+                ],
               ),
             ),
           ),

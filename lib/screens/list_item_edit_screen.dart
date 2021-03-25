@@ -63,7 +63,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-    var initialModel = bloc.items[id];
+    var initialModel = bloc.getItemOfId(id);
     var titleEdContr = TextEditingController(text: initialModel.title);
     var quantizationEdContr =
         TextEditingController(text: initialModel.quantization.toStringAsFixed(initialModel.quantizationDecimalNumbersAmount));
@@ -94,7 +94,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
               cubit: bloc,
               buildWhen: (previous, current) {
                 if (current is ItemChangedState && current.id == id) {
-                  var model = current.items[current.id];
+                  var model = current.item;
                   return model.title != titleEdContr.text ||
                       model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount) != quantizationEdContr.text ||
                       model.unit != unitEdContr.text ||
@@ -106,7 +106,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                 return false;
               },
               builder: (context, state) {
-                var model = bloc.items[id] ?? (state as ItemDeletedState).removedItem;
+                var model = bloc.getItemOfId(id) ?? (state as ItemDeletedState).removedItem;
 
                 return ListView(
                   controller: _scrollController,
@@ -148,7 +148,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                         Hero(
                           tag: "check$id",
                           child: HeavyTouchButton(
-                            onPressed: () => bloc.updateItem(id, bloc.items[id].copyWith(checked: !bloc.items[id].checked)),
+                            onPressed: () => bloc.updateItem(id, model.copyWith(checked: !model.checked)),
                             child: ColoredBox(
                               color: Colors.transparent,
                               child: Padding(
@@ -156,15 +156,16 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                 child: BlocBuilder<GroceryListBloc, GroceryListState>(
                                   cubit: bloc,
                                   buildWhen: (previous, current) => current is CheckedChangedState && current.id == id,
-                                  builder: (context, state) => ListItemCheckBox(checked: bloc?.items[id]?.checked ?? model.checked),
+                                  builder: (context, state) => ListItemCheckBox(checked: model?.checked ?? model.checked),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        Hero(
-                          tag: "num$id",
+                        FadeTransition(
+                          opacity: animation,
                           child: NumberInput(
+                            heroTag: "num$id",
                             fractionDigits: model.quantizationDecimalNumbersAmount,
                             quantize: model.quantization,
                             value: model.amount,
@@ -272,7 +273,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                 Flexible(
                   flex: 5,
                   child: ActionButton(
-                    onPressed: () => bloc.createItem(bloc.items[id].copyWith(id: DateTime.now().toString())),
+                    onPressed: () => bloc.createItem(bloc.getItemOfId(id).copyWith(id: DateTime.now().toString())),
                     color: const Color(0xfffaca69),
                     icon: Icons.copy_outlined,
                     title: "Duplicate",

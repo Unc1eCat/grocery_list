@@ -34,12 +34,14 @@ class _TheAppState extends State<TheApp> {
 
   @override
   void initState() {
-    groceryListBloc = GroceryListBloc(<String, GroceryItem>{});
+    groceryListBloc = GroceryListBloc(<GroceryItem>[]);
 
     TheApp.fetchAppDocDirectory().then((value) => groceryListBloc.fetchItems());
 
     super.initState();
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +59,10 @@ class _TheAppState extends State<TheApp> {
           textTheme: TextTheme(
             caption: TextStyle(
               fontSize: 18,
+            ),
+            headline6: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),

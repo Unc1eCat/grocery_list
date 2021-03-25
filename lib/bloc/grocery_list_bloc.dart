@@ -10,13 +10,14 @@ import '../main.dart';
 
 // TODO: Make separate update state for every property of the grocery item
 class GroceryListBloc extends Cubit<GroceryListState> {
-  Map<String, GroceryItem> _items = <String, GroceryItem>{};
+  List<GroceryItem> _items = <GroceryItem>[];
   List<GroceryPrototype> _prototypes = <GroceryPrototype>[];
 
-  Map<String, GroceryItem> get items => Map<String, GroceryItem>.unmodifiable(_items);
+  List<GroceryItem> get items => List<GroceryItem>.unmodifiable(_items);
   List<GroceryPrototype> get prototypes => List<GroceryPrototype>.unmodifiable(_prototypes);
 
-  GroceryItem getItemOfId(String id) => _items[id];
+  GroceryItem getItemOfId(String id) => _items.firstWhere((e) => e.id == id);
+  int getIndexOfId(String id) => _items.indexWhere((e) => e.id == id);
 
   GroceryListBloc(this._items) : super(GroceryListState());
   GroceryListBloc.initFromFiles() : super(GroceryListState()) {
@@ -26,7 +27,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   Map<String, Object> toJsonItems() {
     var ret = <Map<String, Object>>[];
 
-    for (var i in _items.values) {
+    for (var i in _items) {
       ret.add(i.toJson());
     }
 
@@ -46,7 +47,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   void initItemsFromJson(Map<String, dynamic> json) {
     for (Map<String, dynamic> i in json["grocery_item"]) {
       GroceryItem item = GroceryItem.fromJson(i);
-      _items.putIfAbsent(item.id, () => item);
+      _items.add(item);
     }
   }
 
@@ -76,7 +77,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
       print("Failed to fetch items from the file or the file is not initialized. Returning empty list");
       print(exc);
 
-      _items = <String, GroceryItem>{};
+      _items = <GroceryItem>[];
     }
 
     emit(ItemsFetchedState(items));
@@ -101,6 +102,15 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
       emit(PrototypeAddedState(prototypes, prototype));
     }
+  }
+
+  void moveItem(int fromIndex, int toIndex)
+  {
+    _items.insert(toIndex, _items.removeAt(fromIndex));
+
+    emit(ItemMovedState(items));
+
+    saveItems();
   }
 
   List<GroceryPrototype> getRelevantPrototypes(int limit, String enteredTitle) {
@@ -137,7 +147,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   }
 
   void createItem(GroceryItem newItem) {
-    _items.putIfAbsent(newItem.id, () => newItem);
+    _items.add(newItem);
 
     emit(ItemCreatedState(newItem.id, items));
 
@@ -145,20 +155,20 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   }
 
   void deleteItem(String id) {
-    var index = _items.values.toList().indexWhere((e) => e.id == id);
+    var index = _items.indexWhere((e) => e.id == id);
 
-    emit(ItemDeletedState(_items.remove(id), index));
+    emit(ItemDeletedState(_items.removeAt(index), index));
 
     saveItems();
   }
 
   void updateItem(String id, GroceryItem newItem) {
-    var updatedChecked = newItem.checked != _items[id].checked;
-    _items.update(id, (value) => newItem);
+    var updatedChecked = newItem.checked != getItemOfId(id).checked;
+    _items[getIndexOfId(id)] = newItem;
 
     tryAddPrototype(newItem.createPrototype());
 
-    emit(ItemChangedState(items, id));
+    emit(ItemChangedState(items, id, newItem));
     if (updatedChecked) {
       emit(CheckedChangedState(id, newItem.checked));
     }
@@ -177,13 +187,14 @@ class GroceryListState extends Equatable {
 // class InitialState extends GroceryListState {}
 
 class ItemChangedState extends GroceryListState {
-  final Map<String, GroceryItem> items;
+  final List<GroceryItem> items;
   final String id;
+  final GroceryItem item;
 
-  ItemChangedState(this.items, this.id);
+  ItemChangedState(this.items, this.id, this.item);
 
   @override
-  List<Object> get props => super.props..add(items)..add(id);
+  List<Object> get props => super.props..add(items)..add(id)..add(item);
 }
 
 class CheckedChangedState extends GroceryListState {
@@ -208,7 +219,7 @@ class ItemDeletedState extends GroceryListState {
 
 class ItemCreatedState extends GroceryListState {
   final String id;
-  final Map<String, GroceryItem> items;
+  final List<GroceryItem> items;
 
   ItemCreatedState(this.id, this.items);
 
@@ -217,7 +228,7 @@ class ItemCreatedState extends GroceryListState {
 }
 
 class ItemsFetchedState extends GroceryListState {
-  final Map<String, GroceryItem> items;
+  final List<GroceryItem> items;
 
   ItemsFetchedState(this.items);
 
@@ -242,4 +253,13 @@ class PrototypesFetchedState extends GroceryListState {
 
   @override
   List<Object> get props => super.props..add(prototypes);
+}
+
+class ItemMovedState extends GroceryListState {
+  final List<GroceryItem> items;
+
+  ItemMovedState(this.items);
+
+  @override
+  List<Object> get props => super.props..add(items);
 }
