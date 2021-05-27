@@ -68,15 +68,14 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     var model = bloc.getItemOfId(id);
     var titleEdContr = TextEditingController(text: model.title);
-    var quantizationEdContr =
-        TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount));
+    var quantizationEdContr = TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount));
     var unitEdContr = TextEditingController(text: model.unit);
     var priceEdContr = TextEditingController(text: model.price.toStringAsFixed(2));
     var currencyEdContr = TextEditingController(text: model.currency);
 
     return Stack(
       children: [
-        AnimatedBuilder(
+        AnimatedBuilder( // TODO: You can change the bbuilder to blistener where you can update just the text editing controller values
           animation: _animationController,
           builder: (context, child) => BackdropFilter(
             filter: ImageFilter.blur(
@@ -106,16 +105,15 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                       current.reboundPrototype;
                 } else if (current is ItemDeletedState) {
                   return current.removedItem.id == id;
-                } else if (current is PrototypeChangedState && current.updatedPrototypes.id == model.boundPrototype?.id)
-                {
-                  print("ЗКЩЕЫА");
+                } else if (current is PrototypeChangedState && current.updatedPrototypes.id == model.boundPrototypeId) {
                   return true;
                 }
                 return false;
               },
               builder: (context, state) {
                 model = bloc.getItemOfId(id) ?? (state as ItemDeletedState).removedItem;
-                var isPrototypeless = model.boundPrototype == null;
+                var prototype = bloc.getPrototypeOfId(model.boundPrototypeId);
+                var isPrototypeless = model.boundPrototypeId == null;
 
                 // TODO: if prototyped set data from the prot
 
@@ -282,7 +280,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                   ),
                                 ),
                                 Text(
-                                  "${model.boundPrototype.quantization} ${model.boundPrototype.unit}   ${model.boundPrototype.price} ${model.boundPrototype.currency}",
+                                  "${prototype.quantization} ${prototype.unit}   ${prototype.price} ${prototype.currency}",
                                   style: Theme.of(context).textTheme.headline6,
                                 ),
                               ],
@@ -309,10 +307,11 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                 BlocBuilder<GroceryListBloc, GroceryListState>(
                     cubit: bloc,
                     buildWhen: (previous, current) =>
-                        current is ItemChangedState, // TODO: Separate bound prototype change in a separeate state
+                        current is ItemChangedState && current.reboundPrototype,
                     builder: (context, state) {
                       var model = bloc.getItemOfId(id) ?? (state as ItemDeletedState).removedItem;
-                      var isPrototypeless = model.boundPrototype == null;
+                      var prototype = bloc.getPrototypeOfId(model.boundPrototypeId);
+                      var isPrototypeless = model.boundPrototypeId == null;
 
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -324,7 +323,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                 var p = m.createPrototype();
 
                                 bloc.addPrototype(p);
-                                bloc.updateItem(id, m.copyWith(boundPrototype: p, rebindPrototype: true));
+                                bloc.updateItem(id, m.copyWith(boundPrototypeId: p.id, rebindPrototype: true));
                               },
                               color: const Color(0xFFBF42C1),
                               icon: Icons.save_rounded,
@@ -343,7 +342,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                           if (!isPrototypeless)
                             ActionButton(
                               onPressed: () {
-                                Navigator.push(context, ProductItemEditRoute(id: bloc.getItemOfId(id).boundPrototype.id));
+                                Navigator.push(context, ProductItemEditRoute(id: bloc.getItemOfId(id).boundPrototypeId));
                               },
                               color: const Color(0xFFBF42C1),
                               icon: Icons.edit_outlined,
@@ -355,7 +354,11 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                               onPressed: () {
                                 var m = bloc.getItemOfId(id);
 
-                                bloc.updateItem(id, m.boundPrototype.createGroceryItem().copyWith(id: id, amount: m.amount, boundPrototype: null, rebindPrototype: true));
+                                bloc.updateItem(
+                                    id,
+                                    prototype
+                                        .createGroceryItem()
+                                        .copyWith(id: id, amount: m.amount, boundPrototypeId: null, rebindPrototype: true));
                               },
                               color: const Color(0xFF3ABD85),
                               icon: Icons.merge_type_rounded,

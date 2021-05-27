@@ -15,7 +15,7 @@ class GroceryItem {
   final String currency;
   final double price;
   final double amount;
-  final GroceryPrototype boundPrototype;
+  final String boundPrototypeId;
 
   GroceryItem({
     String id,
@@ -27,7 +27,7 @@ class GroceryItem {
     this.amount = 0.0,
     this.title = "New item",
     this.checked = false,
-    this.boundPrototype,
+    this.boundPrototypeId,
     this.tags = const [
       // ItemTag(color: Colors.red, title: "Test red tag"),
       // ItemTag(color: Colors.blue, title: "Test blue tag"),
@@ -36,7 +36,7 @@ class GroceryItem {
   }) : id = id ?? DateTime.now().toString();
 
   Map<String, Object> toJson() {
-    return boundPrototype == null
+    return boundPrototypeId == null
         ? {
             "id": id,
             "title": title,
@@ -53,7 +53,7 @@ class GroceryItem {
             "id": id,
             "checked": checked,
             "amount": amount,
-            "boundPrototypeId": boundPrototype.id,
+            "boundPrototypeId": boundPrototypeId,
           };
   }
 
@@ -63,7 +63,7 @@ class GroceryItem {
         id: json["id"],
         amount: json["amount"],
         checked: json["checked"],
-        boundPrototype: json["boundPrototypeId"],
+        boundPrototypeId: json["boundPrototypeId"],
       );
     } else {
       return GroceryItem(
@@ -92,7 +92,7 @@ class GroceryItem {
     String currency,
     double price,
     double amount,
-    GroceryPrototype boundPrototype,
+    String boundPrototypeId,
     bool rebindPrototype = false,
   }) {
     return GroceryItem(
@@ -106,7 +106,7 @@ class GroceryItem {
       tags: tags ?? this.tags,
       title: title ?? this.title,
       unit: unit ?? this.unit,
-      boundPrototype: rebindPrototype ? boundPrototype : this.boundPrototype,
+      boundPrototypeId: rebindPrototype ? boundPrototypeId : this.boundPrototypeId,
     );
   }
 
