@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:grocery_list/models/grocery_item.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/models/item_tag.dart';
+import 'package:grocery_list/widgets/rounded_rolling_switch.dart';
 import 'dart:convert' as conv;
 import 'dart:io';
 
@@ -32,6 +33,12 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     }
 
     return {"grocery_item": ret};
+  }
+
+  @override
+  onChange(Change change) {
+    print("$this has emitted $change");
+    super.onChange(change);
   }
 
   Map<String, Object> toJsonPrototypes() {
@@ -103,6 +110,16 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     }
   }
 
+  void addPrototype(GroceryPrototype prototype) {
+    _prototypes.add(prototype);
+
+    emit(PrototypeAddedState(prototypes, prototype));
+  }
+
+  GroceryPrototype getPrototypeOfTitle(String title) {
+    return _prototypes.firstWhere((e) => e.title == title);
+  }
+
   void deletePrototype(String id) {
     var index = _prototypes.indexWhere((e) => e.id == id);
 
@@ -113,10 +130,10 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     savePrototypes();
   }
 
-  void updatePrototypeOfTitle(GroceryPrototype newPrototype) {
-    var index = _prototypes.indexWhere((e) => e.title == newPrototype.title);
+  void updatePrototype(GroceryPrototype newPrototype) {
+    var index = _prototypes.indexWhere((e) => e.id == newPrototype.id);
 
-    _prototypes[index] = newPrototype.copyWith(id: _prototypes[index].id);
+    _prototypes[index] = newPrototype;
 
     emit(PrototypeChangedState(newPrototype));
 
@@ -161,7 +178,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   }
 
   bool containsPrototype(GroceryPrototype prototype) {
-    return _prototypes.any((e) => e.title == prototype.title);
+    return _prototypes.any((e) => e.id == prototype.id);
   }
 
   void createItem(GroceryItem newItem) {
@@ -190,11 +207,12 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
   void updateItem(String id, GroceryItem newItem) {
     var updatedChecked = newItem.checked != getItemOfId(id).checked;
+    var updatedProtBinding = newItem.boundPrototype?.id != getItemOfId(id).boundPrototype?.id;
     _items[getIndexOfId(id)] = newItem;
 
-    tryAddPrototype(newItem.createPrototype());
+    // tryAddPrototype(newItem.createPrototype());
 
-    emit(ItemChangedState(items, id, newItem));
+    emit(ItemChangedState(items, id, newItem, updatedProtBinding));
     if (updatedChecked) {
       emit(CheckedChangedState(newItem.checked, newItem));
     }
@@ -216,11 +234,12 @@ class ItemChangedState extends GroceryListState {
   final List<GroceryItem> items;
   final String id;
   final GroceryItem item;
+  final bool reboundPrototype;
 
-  ItemChangedState(this.items, this.id, this.item);
+  ItemChangedState(this.items, this.id, this.item, this.reboundPrototype);
 
   @override
-  List<Object> get props => super.props..add(items)..add(id)..add(item);
+  List<Object> get props => super.props..add(items)..add(id)..add(item)..add(reboundPrototype);
 }
 
 class CheckedChangedState extends GroceryListState {
@@ -236,7 +255,7 @@ class CheckedChangedState extends GroceryListState {
 class ItemDeletedState extends GroceryListState {
   final GroceryItem removedItem;
   final int index;
-  
+
   ItemDeletedState(this.removedItem, this.index);
 
   @override
@@ -282,7 +301,8 @@ class PrototypeRemovedState extends GroceryListState {
   List<Object> get props => super.props..add(prototypes)..add(prototype);
 }
 
-class PrototypesFetchedState extends GroceryListState {// TODO: Combine prototype added, fetched and removed into a single state. Do the same thing for the grocery items
+class PrototypesFetchedState extends GroceryListState {
+  // TODO: Combine prototype added, fetched and removed into a single state. Do the same thing for the grocery items
   final List<GroceryPrototype> prototypes;
 
   PrototypesFetchedState(this.prototypes);
@@ -291,8 +311,7 @@ class PrototypesFetchedState extends GroceryListState {// TODO: Combine prototyp
   List<Object> get props => super.props..add(prototypes);
 }
 
-class PrototypeChangedState extends GroceryListState
-{
+class PrototypeChangedState extends GroceryListState {
   final GroceryPrototype updatedPrototypes;
 
   PrototypeChangedState(this.updatedPrototypes);

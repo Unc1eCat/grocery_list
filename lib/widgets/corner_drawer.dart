@@ -304,8 +304,10 @@ class _CornerDrawerButton extends StatelessWidget {
                       ),
                       child: Align(
                         alignment: Alignment.bottomCenter,
-                        child: HeavyTouchButton( // TODO: Make the whole button press
-                          onPressed: () => cornerDrawer.drawerAnimation.isCompleted ? cornerDrawer.closeDrawer() : cornerDrawer.openDrawer(),
+                        child: HeavyTouchButton(
+                          // TODO: Make the whole button press
+                          onPressed: () =>
+                              cornerDrawer.drawerAnimation.isCompleted ? cornerDrawer.closeDrawer() : cornerDrawer.openDrawer(),
                           child: SizedBox(
                             width: cornerDrawer.drawerAnimation.value * (cornerDrawer._drawerWidth - cornerDrawer.widget.buttonSize.width) +
                                 cornerDrawer.widget.buttonSize.width,
@@ -350,7 +352,7 @@ class _CornerDrawerButton extends StatelessWidget {
 }
 
 class TabsCornerDrawer extends StatefulWidget {
-  final Duration animationDuration;
+  // final Duration animationDuration;
 
   /// List of the screens(tabs) this drawer switches among
   final List<Widget> screens;
@@ -376,6 +378,7 @@ class TabsCornerDrawer extends StatefulWidget {
   final WithinStateBuilder<CornerDrawerState> screenBuilder;
   final WidgetWrapper tabBarWrapper;
   final Duration screenChangeDuration;
+  final Duration pointerMovementDuration;
 
   /// Size of the button in the closed position
   final Size buttonSize;
@@ -401,7 +404,7 @@ class TabsCornerDrawer extends StatefulWidget {
     @required this.closedButton,
     @required this.tabButtons,
     @required this.screens,
-    this.animationDuration = const Duration(milliseconds: 135),
+    // this.animationDuration = const Duration(milliseconds: 135),
     this.drawerWidth,
     this.overlap = 0.0,
     this.scaleDownAmount = 0.1,
@@ -417,6 +420,7 @@ class TabsCornerDrawer extends StatefulWidget {
     this.screenBuilder,
     this.tabBarWrapper,
     this.screenChangeDuration = const Duration(milliseconds: 150),
+    this.pointerMovementDuration = const Duration(milliseconds: 230),
   });
 
   @override
@@ -464,6 +468,7 @@ class TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProviderS
       selectedIndex: _currentIndex, // TODO
       pointer: widget.pointer,
       tabs: widget.tabButtons,
+      duration: widget.pointerMovementDuration,
     );
 
     return CornerDrawer(
@@ -519,7 +524,7 @@ class DrawerTabBar extends MultiChildRenderObjectWidget {
 
   DrawerTabBar({
     this.pointerIndentation,
-    this.duration,
+    this.duration = const Duration(milliseconds: 230),
     this.vsync,
     this.selectedIndex = 0,
     this.transitionAnimation,
@@ -543,7 +548,8 @@ class DrawerTabBar extends MultiChildRenderObjectWidget {
       .._vsync = vsync
       ..transitionAnimation = transitionAnimation ?? context.findAncestorStateOfType<CornerDrawerState>()?.extendedChildAniamtion
       ..selectedIndex = selectedIndex
-      ..pointerIndentation = pointerIndentation ?? 0;
+      ..pointerIndentation = pointerIndentation ?? 0
+      ..duration = duration;
   }
 }
 

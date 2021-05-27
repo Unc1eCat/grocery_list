@@ -52,18 +52,30 @@ class _TheAppState extends State<TheApp> {
           // tabBarTheme: TabBarTheme(),
           primaryColor: Colors.purple,
           bottomAppBarColor: Color(0xFF081524),
-          scaffoldBackgroundColor: Color(0xFF08111c),
+          scaffoldBackgroundColor: Color(0xFF11181F),
           // canvasColor: Colors.red,
           backgroundColor: Color(0xFF1E1E1E),
           textTheme: TextTheme(
             caption: TextStyle(
-              fontSize: 18,
+              fontSize: 17,
             ),
             headline6: TextStyle(
               fontSize: 20,
               // fontWeight: FontWeight.w400,
             ),
-          )
+            headline5: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w500,
+            ),
+            headline4: TextStyle(
+              fontSize: 29,
+              fontWeight: FontWeight.w500,
+            ),
+            headline3: TextStyle(
+              fontSize: 34,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
         ),
         routes: {
           "/": (ctx) => TabsScreen(),

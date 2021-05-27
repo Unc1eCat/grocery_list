@@ -18,7 +18,6 @@ class GroceryListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var bloc = BlocProvider.of<GroceryListBloc>(context);
-    // var model = bloc.getItemOfId(id) ?? ((bloc.state is ItemDeletedState) ? (bloc.state as ItemDeletedState).removedItem : null);
 
     return Material(
       color: Colors.transparent,
@@ -72,19 +71,22 @@ class GroceryListItem extends StatelessWidget {
                   //   ),
                 ),
                 tag: "title${model.id}",
-                child: Text(
-                  model.title,
-                  style: Theme.of(context).textTheme.caption,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    model.title,
+                    style: Theme.of(context).textTheme.caption,
+                  ),
                 ),
               ),
             ),
             Spacer(),
-            SizedBox(
-              height: 30,
-              child: TagWidget(
-                tags: model.tags,
-              ),
-            ),
+            // SizedBox(
+            //   height: 30,
+            //   child: TagWidget(
+            //     tags: model.tags,
+            //   ),
+            // ),
             SizedBox(width: 20),
             Hero(
               tag: "num${model.id}",

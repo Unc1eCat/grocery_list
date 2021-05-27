@@ -239,19 +239,20 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
                     child: ActionButton(
                       color: const Color(0xFF17D368),
                       icon: Icons.save_rounded,
-                      title: "Create adding to the history",
+                      title: "Create product",
                       onPressed: () async {
                         if (_textEdContr.text == null || _textEdContr.text.isEmpty) return;
 
-                        var newItem = GroceryItem(title: _textEdContr.text, amount: 1);
+                        var prototype = GroceryPrototype(title: _textEdContr.text);
+                        var newItem = prototype.createGroceryItem();
 
                         _textField.unfocus();
                         Navigator.pop(context);
 
                         await this.completed;
 
+                        bloc.tryAddPrototype(prototype);
                         bloc.createItem(newItem);
-                        bloc.tryAddPrototype(newItem.createPrototype());
                       },
                     ),
                   ),
@@ -261,7 +262,7 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
                     child: ActionButton(
                       color: const Color(0xFF92C95B),
                       icon: Icons.add_rounded,
-                      title: "Create not adding to the history",
+                      title: "Create without product",
                       onPressed: () {
                         if (_textEdContr.text == null || _textEdContr.text.isEmpty) return;
 

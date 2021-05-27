@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grocery_list/screens/list_screen.dart';
+import 'package:grocery_list/screens/products_screen.dart';
+import 'package:grocery_list/screens/settings_screen.dart';
 import 'package:grocery_list/widgets/corner_drawer.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 
@@ -24,10 +26,8 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
       body: TabsCornerDrawer(
         screens: [
           ListScreen(),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text("Test screen 2"),
-          ),
+          SettingsScreen(),
+          ProductsScreen(),
         ],
         pointer: Padding(
           padding: const EdgeInsets.only(left: 16),
@@ -53,11 +53,22 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
               builder: (context) => HeavyTouchButton(
                 pressedScale: 0.9,
                 onPressed: () => context.findAncestorStateOfType<TabsCornerDrawerState>().currentIndex = 1,
-                child: Text("Test button 2", style: Theme.of(context).textTheme.headline6),
+                child: Text("Settings", style: Theme.of(context).textTheme.headline6),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Builder(
+              builder: (context) => HeavyTouchButton(
+                pressedScale: 0.9,
+                onPressed: () => context.findAncestorStateOfType<TabsCornerDrawerState>().currentIndex = 2,
+                child: Text("Products", style: Theme.of(context).textTheme.headline6),
               ),
             ),
           ),
         ],
+        screenChangeDuration: Duration(milliseconds: 400),
         closedButton: (context, onPressed, _, __) => HeavyTouchButton(
           onPressed: onPressed,
           pressedScale: 0.9,

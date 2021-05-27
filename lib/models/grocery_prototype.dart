@@ -83,6 +83,7 @@ class GroceryPrototype {
       tags: tags,
       title: title,
       unit: unit,
+      boundPrototype: this,
     );
   }
 

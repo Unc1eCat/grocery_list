@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/src/scheduler/ticker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
+import 'package:grocery_list/screens/product_edit_screen.dart';
 import 'package:grocery_list/utils/ticker_provider_mixin.dart';
 import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/grocery_list_item.dart';
@@ -13,6 +14,7 @@ import 'package:grocery_list/widgets/list_item_check_box.dart';
 import 'package:grocery_list/widgets/list_item_property.dart';
 import 'package:grocery_list/widgets/number_input.dart';
 import 'package:my_utilities/color_utils.dart';
+import 'package:path/path.dart';
 import '../utils/golden_ration_utils.dart' as gr;
 
 class ListItemEditRoute extends PageRoute with TickerProviderMixin {
@@ -64,13 +66,13 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-    var initialModel = bloc.getItemOfId(id);
-    var titleEdContr = TextEditingController(text: initialModel.title);
+    var model = bloc.getItemOfId(id);
+    var titleEdContr = TextEditingController(text: model.title);
     var quantizationEdContr =
-        TextEditingController(text: initialModel.quantization.toStringAsFixed(initialModel.quantizationDecimalNumbersAmount));
-    var unitEdContr = TextEditingController(text: initialModel.unit);
-    var priceEdContr = TextEditingController(text: initialModel.price.toStringAsFixed(2));
-    var currencyEdContr = TextEditingController(text: initialModel.currency);
+        TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount));
+    var unitEdContr = TextEditingController(text: model.unit);
+    var priceEdContr = TextEditingController(text: model.price.toStringAsFixed(2));
+    var currencyEdContr = TextEditingController(text: model.currency);
 
     return Stack(
       children: [
@@ -100,14 +102,22 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                       model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount) != quantizationEdContr.text ||
                       model.unit != unitEdContr.text ||
                       model.price.toStringAsFixed(2) != priceEdContr.text ||
-                      model.currency != currencyEdContr.text;
+                      model.currency != currencyEdContr.text ||
+                      current.reboundPrototype;
                 } else if (current is ItemDeletedState) {
                   return current.removedItem.id == id;
+                } else if (current is PrototypeChangedState && current.updatedPrototypes.id == model.boundPrototype?.id)
+                {
+                  print("ЗКЩЕЫА");
+                  return true;
                 }
                 return false;
               },
               builder: (context, state) {
-                var model = bloc.getItemOfId(id) ?? (state as ItemDeletedState).removedItem;
+                model = bloc.getItemOfId(id) ?? (state as ItemDeletedState).removedItem;
+                var isPrototypeless = model.boundPrototype == null;
+
+                // TODO: if prototyped set data from the prot
 
                 return ListView(
                   controller: _scrollController,
@@ -116,32 +126,33 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                     SizedBox(
                       height: MediaQuery.of(context).size.height * (1 - gr.invphi),
                     ),
-                    SizedBox(
-                      width: 300,
-                      height: 30,
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: Hero(
-                          tag: "title$id",
-                          child: Material(
-                            color: Colors.transparent,
-                            child: TextField(
-                              textCapitalization: TextCapitalization.sentences,
-                              textAlign: TextAlign.center,
-                              scrollPadding: EdgeInsets.zero,
-                              decoration:
-                                  InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.all(6), hintText: "Item title"),
-                              cursorWidth: 2,
-                              cursorRadius: Radius.circular(2),
-                              controller: titleEdContr,
-                              onEditingComplete: () => bloc.updateItem(id, model.copyWith(title: titleEdContr.text)),
-                              onSubmitted: (value) => FocusScope.of(context).unfocus(),
-                              style: Theme.of(context).textTheme.caption.copyWith(fontSize: 30),
+                    if (isPrototypeless)
+                      SizedBox(
+                        width: 300,
+                        height: 30,
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: Hero(
+                            tag: "title$id",
+                            child: Material(
+                              color: Colors.transparent,
+                              child: TextField(
+                                textCapitalization: TextCapitalization.sentences,
+                                textAlign: TextAlign.center,
+                                scrollPadding: EdgeInsets.zero,
+                                decoration:
+                                    InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.all(6), hintText: "Item title"),
+                                cursorWidth: 2,
+                                cursorRadius: Radius.circular(2),
+                                controller: titleEdContr,
+                                onEditingComplete: () => bloc.updateItem(id, model.copyWith(title: titleEdContr.text)),
+                                onSubmitted: (value) => FocusScope.of(context).unfocus(),
+                                style: Theme.of(context).textTheme.caption.copyWith(fontSize: 30),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -190,72 +201,95 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.all(18.0),
-                            child: Row(
+                          if (isPrototypeless)
+                            Padding(
+                              padding: const EdgeInsets.all(18.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  ListItemProperty(
+                                      keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
+                                      label: "Quantization",
+                                      textEditingController: quantizationEdContr,
+                                      onEditingComplete: () {
+                                        var value = double.tryParse(quantizationEdContr.text);
+                                        if (value == null || value < 0) {
+                                          quantizationEdContr.text =
+                                              model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
+                                          return;
+                                        }
+
+                                        var dot = quantizationEdContr.text.lastIndexOf(RegExp(",|\\."));
+
+                                        bloc.updateItem(
+                                          id,
+                                          model.copyWith(
+                                              quantization: value,
+                                              quantizationDecimalNumbersAmount: dot == -1 ? 0 : quantizationEdContr.text.length - 1 - dot,
+                                              amount: (model.amount / value).round() * value),
+                                        );
+                                      }),
+                                  SizedBox(
+                                    width: 15,
+                                  ),
+                                  ListItemProperty(
+                                      width: 75,
+                                      label: "Unit",
+                                      textEditingController: unitEdContr,
+                                      onEditingComplete: () => bloc.updateItem(id, model.copyWith(unit: unitEdContr.text))),
+                                ],
+                              ),
+                            ),
+                          if (isPrototypeless)
+                            Row(
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 ListItemProperty(
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
-                                    label: "Quantization",
-                                    textEditingController: quantizationEdContr,
-                                    onEditingComplete: () {
-                                      var value = double.tryParse(quantizationEdContr.text);
-                                      if (value == null || value < 0) {
-                                        quantizationEdContr.text =
-                                            model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
-                                        return;
-                                      }
-
-                                      var dot = quantizationEdContr.text.lastIndexOf(RegExp(",|\\."));
-
-                                      bloc.updateItem(
-                                        id,
-                                        model.copyWith(
-                                            quantization: value,
-                                            quantizationDecimalNumbersAmount: dot == -1 ? 0 : quantizationEdContr.text.length - 1 - dot,
-                                            amount: (model.amount / value).round() * value),
-                                      );
-                                    }),
-                                SizedBox(
-                                  width: 15,
-                                ),
+                                  keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
+                                  label: "Price",
+                                  textEditingController: priceEdContr,
+                                  onEditingComplete: () {
+                                    bloc.updateItem(id, model.copyWith(price: double.parse(priceEdContr.text)));
+                                  },
+                                ), // TODO: Make it constrain number of numbers in decimal fraction part to 2
+                                SizedBox(width: 15),
                                 ListItemProperty(
-                                    width: 75,
-                                    label: "Unit",
-                                    textEditingController: unitEdContr,
-                                    onEditingComplete: () => bloc.updateItem(id, model.copyWith(unit: unitEdContr.text))),
+                                  width: 75,
+                                  label: "Currency",
+                                  textEditingController: currencyEdContr,
+                                  onEditingComplete: () => bloc.updateItem(id, model.copyWith(currency: currencyEdContr.text)),
+                                ),
                               ],
                             ),
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              ListItemProperty(
-                                keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
-                                label: "Price",
-                                textEditingController: priceEdContr,
-                                onEditingComplete: () {
-                                  bloc.updateItem(id, model.copyWith(price: double.parse(priceEdContr.text)));
-                                },
-                              ), // TODO: Make it constrain number of numbers in decimal fraction part to 2
-                              SizedBox(width: 15),
-                              ListItemProperty(
-                                width: 75,
-                                label: "Currency",
-                                textEditingController: currencyEdContr,
-                                onEditingComplete: () => bloc.updateItem(id, model.copyWith(currency: currencyEdContr.text)),
-                              ),
-                            ],
-                          ),
+                          SizedBox(height: 30),
+                          if (!isPrototypeless)
+                            Text(
+                              "Bound to prototype",
+                              style: Theme.of(context).textTheme.caption.copyWith(color: Colors.white70),
+                            ),
+                          SizedBox(height: 12),
+                          if (!isPrototypeless)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Hero(
+                                  tag: "title${model.id}",
+                                  child: Text(
+                                    model.title,
+                                    style: Theme.of(context).textTheme.headline6,
+                                  ),
+                                ),
+                                Text(
+                                  "${model.boundPrototype.quantization} ${model.boundPrototype.unit}   ${model.boundPrototype.price} ${model.boundPrototype.currency}",
+                                  style: Theme.of(context).textTheme.headline6,
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                     ),
-                    // SizedBox(
-                    //   height: 500,
-                    // ),
                   ],
                 );
               },
@@ -263,6 +297,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
           ),
         ),
         Positioned(
+          // TODO: Make buttons layout automatically
           bottom: 20,
           right: 16,
           left: 16,
@@ -271,14 +306,64 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ActionButton(
-                  onPressed: () {
-                    bloc.updatePrototypeOfTitle(bloc.getItemOfId(id).createPrototype());
-                  },
-                  color: const Color(0xFFBF42C1),
-                  icon: Icons.update_rounded,
-                  title: "Update in history",
-                ),
+                BlocBuilder<GroceryListBloc, GroceryListState>(
+                    cubit: bloc,
+                    buildWhen: (previous, current) =>
+                        current is ItemChangedState, // TODO: Separate bound prototype change in a separeate state
+                    builder: (context, state) {
+                      var model = bloc.getItemOfId(id) ?? (state as ItemDeletedState).removedItem;
+                      var isPrototypeless = model.boundPrototype == null;
+
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          if (isPrototypeless)
+                            ActionButton(
+                              onPressed: () {
+                                var m = bloc.getItemOfId(id);
+                                var p = m.createPrototype();
+
+                                bloc.addPrototype(p);
+                                bloc.updateItem(id, m.copyWith(boundPrototype: p, rebindPrototype: true));
+                              },
+                              color: const Color(0xFFBF42C1),
+                              icon: Icons.save_rounded,
+                              title: "Create product",
+                            ),
+                          // SizedBox(width: 10),
+                          if (isPrototypeless)
+                            ActionButton(
+                              onPressed: () {
+                                bloc.updatePrototype(bloc.getItemOfId(id).createPrototype(id: "TODO!")); // TODO
+                              },
+                              color: const Color(0xFF3ABD85),
+                              icon: Icons.merge_type_rounded,
+                              title: "Bind to product",
+                            ),
+                          if (!isPrototypeless)
+                            ActionButton(
+                              onPressed: () {
+                                Navigator.push(context, ProductItemEditRoute(id: bloc.getItemOfId(id).boundPrototype.id));
+                              },
+                              color: const Color(0xFFBF42C1),
+                              icon: Icons.edit_outlined,
+                              title: "Edit product",
+                            ),
+                          // SizedBox(width: 10),
+                          if (!isPrototypeless)
+                            ActionButton(
+                              onPressed: () {
+                                var m = bloc.getItemOfId(id);
+
+                                bloc.updateItem(id, m.boundPrototype.createGroceryItem().copyWith(id: id, amount: m.amount, boundPrototype: null, rebindPrototype: true));
+                              },
+                              color: const Color(0xFF3ABD85),
+                              icon: Icons.merge_type_rounded,
+                              title: "Unbind the product",
+                            ),
+                        ],
+                      );
+                    }),
                 SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

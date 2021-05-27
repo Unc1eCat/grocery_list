@@ -15,6 +15,7 @@ class GroceryItem {
   final String currency;
   final double price;
   final double amount;
+  final GroceryPrototype boundPrototype;
 
   GroceryItem({
     String id,
@@ -26,6 +27,7 @@ class GroceryItem {
     this.amount = 0.0,
     this.title = "New item",
     this.checked = false,
+    this.boundPrototype,
     this.tags = const [
       // ItemTag(color: Colors.red, title: "Test red tag"),
       // ItemTag(color: Colors.blue, title: "Test blue tag"),
@@ -34,33 +36,49 @@ class GroceryItem {
   }) : id = id ?? DateTime.now().toString();
 
   Map<String, Object> toJson() {
-    return {
-      "id": id,
-      "title": title,
-      "checked": checked,
-      "tags": "", // TODO: TAGS
-      "unit": unit,
-      "quantization": quantization,
-      "currency": currency,
-      "price": price,
-      "amount": amount,
-      "fractionDigits": quantizationDecimalNumbersAmount,
-    };
+    return boundPrototype == null
+        ? {
+            "id": id,
+            "title": title,
+            "checked": checked,
+            "tags": "", // TODO: TAGS
+            "unit": unit,
+            "quantization": quantization,
+            "currency": currency,
+            "price": price,
+            "amount": amount,
+            "fractionDigits": quantizationDecimalNumbersAmount,
+          }
+        : {
+            "id": id,
+            "checked": checked,
+            "amount": amount,
+            "boundPrototypeId": boundPrototype.id,
+          };
   }
 
   static GroceryItem fromJson(Map<String, dynamic> json) {
-    return GroceryItem(
-      id: json["id"],
-      amount: json["amount"],
-      checked: json["checked"],
-      currency: json["currency"],
-      price: json["price"],
-      quantization: json["quantization"],
-      quantizationDecimalNumbersAmount: json["fractionDigits"],
-      tags: <ItemTag>[], // TODO: TAGS
-      title: json["title"],
-      unit: json["unit"],
-    );
+    if (json.containsKey("boundPrototypeId")) {
+      return GroceryItem(
+        id: json["id"],
+        amount: json["amount"],
+        checked: json["checked"],
+        boundPrototype: json["boundPrototypeId"],
+      );
+    } else {
+      return GroceryItem(
+        id: json["id"],
+        amount: json["amount"],
+        checked: json["checked"],
+        currency: json["currency"],
+        price: json["price"],
+        quantization: json["quantization"],
+        quantizationDecimalNumbersAmount: json["fractionDigits"],
+        tags: <ItemTag>[], // TODO: TAGS
+        title: json["title"],
+        unit: json["unit"],
+      );
+    }
   }
 
   GroceryItem copyWith({
@@ -74,6 +92,8 @@ class GroceryItem {
     String currency,
     double price,
     double amount,
+    GroceryPrototype boundPrototype,
+    bool rebindPrototype = false,
   }) {
     return GroceryItem(
       id: id ?? this.id,
@@ -86,6 +106,7 @@ class GroceryItem {
       tags: tags ?? this.tags,
       title: title ?? this.title,
       unit: unit ?? this.unit,
+      boundPrototype: rebindPrototype ? boundPrototype : this.boundPrototype,
     );
   }
 
