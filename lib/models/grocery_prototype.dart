@@ -73,16 +73,9 @@ class GroceryPrototype {
   }
 
   GroceryItem createGroceryItem() {
-    return GroceryItem(
+    return ProductfulGroceryItem(
       id: DateTime.now().toString(),
       amount: quantization,
-      currency: currency,
-      price: price,
-      quantization: quantization,
-      quantizationDecimalNumbersAmount: quantizationDecimalNumbersAmount,
-      tags: tags,
-      title: title,
-      unit: unit,
       boundPrototype: this,
     );
   }

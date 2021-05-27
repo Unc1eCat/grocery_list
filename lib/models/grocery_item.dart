@@ -14,7 +14,7 @@ abstract class GroceryItem {
   String get currency;
   double get price;
   double get amount;
-  String get boundPrototypeId;
+  GroceryPrototype get boundPrototype;
 
   GroceryItem copyWith({
     String id,
@@ -27,9 +27,16 @@ abstract class GroceryItem {
     String currency,
     double price,
     double amount,
-    String boundPrototypeId,
+    GroceryPrototype boundPrototype,
     bool updatePrototype = false,
   });
+
+  factory GroceryItem.fromJson(Map<String, Object> from)
+  {
+    // TODO: Implement
+  }
+
+  Map<String, Object> toJson();
 }
 
 @immutable
@@ -44,7 +51,7 @@ class ProductlessGroceryItem implements GroceryItem {
   final String currency;
   final double price;
   final double amount;
-  final String boundPrototypeId;
+  final GroceryPrototype boundPrototype;
 
   ProductlessGroceryItem({
     String id,
@@ -56,7 +63,7 @@ class ProductlessGroceryItem implements GroceryItem {
     this.amount = 0.0,
     this.title = "New item",
     this.checked = false,
-    this.boundPrototypeId,
+    this.boundPrototype,
     this.tags = const [
       // ItemTag(color: Colors.red, title: "Test red tag"),
       // ItemTag(color: Colors.blue, title: "Test blue tag"),
@@ -122,10 +129,10 @@ class ProductlessGroceryItem implements GroceryItem {
     String currency,
     double price,
     double amount,
-    String boundPrototypeId,
+    GroceryPrototype boundPrototype,
     bool updatePrototype = false,
   }) {
-    bool wontHavePrototype = updatePrototype ? boundPrototypeId == null : this.boundPrototypeId == null;
+    bool wontHavePrototype = updatePrototype ? boundPrototype == null : this.boundPrototype == null;
     return wontHavePrototype
         ? ProductlessGroceryItem(
             id: id ?? this.id,
@@ -138,9 +145,14 @@ class ProductlessGroceryItem implements GroceryItem {
             tags: tags ?? this.tags,
             title: title ?? this.title,
             unit: unit ?? this.unit,
-            boundPrototypeId: updatePrototype ? boundPrototypeId : this.boundPrototypeId,
+            boundPrototype: updatePrototype ? boundPrototype : this.boundPrototype,
           )
-        : null;
+        : ProductfulGroceryItem(
+            amount: amount ?? this.amount,
+            checked: checked ?? this.checked,
+            id: id ?? this.id,
+            boundPrototype: boundPrototype,
+          );
   }
 
   GroceryPrototype createPrototype({String id}) {
@@ -155,44 +167,55 @@ class ProductlessGroceryItem implements GroceryItem {
       unit: unit,
     );
   }
+
+  @override
+  Map<String, Object> toJson() {
+    // TODO: implement toJson
+    throw UnimplementedError();
+  }
 }
 
 class ProductfulGroceryItem implements GroceryItem {
   @override
-  double get amount => throw UnimplementedError();
+  final double amount;
 
   @override
-  String get boundPrototypeId => throw UnimplementedError();
+  final GroceryPrototype boundPrototype;
 
   @override
-  bool get checked => throw UnimplementedError();
-
-  
+  final bool checked;
 
   @override
-  String get currency => throw UnimplementedError();
+  String get currency => boundPrototype.currency;
 
   @override
-  String get id => throw UnimplementedError();
+  final String id;
 
   @override
-  double get price => throw UnimplementedError();
+  double get price => boundPrototype.price;
 
   @override
-  double get quantization => throw UnimplementedError();
+  double get quantization => boundPrototype.quantization;
 
   @override
-  int get quantizationDecimalNumbersAmount => throw UnimplementedError();
+  int get quantizationDecimalNumbersAmount => boundPrototype.quantizationDecimalNumbersAmount;
 
   @override
   List<ItemTag> get tags => throw UnimplementedError();
 
   @override
-  String get title => throw UnimplementedError();
+  String get title => boundPrototype.title;
 
   @override
-  String get unit => throw UnimplementedError();
-  
+  String get unit => boundPrototype.unit;
+
+  ProductfulGroceryItem({
+    this.amount = 0.0,
+    this.boundPrototype,
+    this.checked = false,
+    this.id,
+  });
+
   @override
   GroceryItem copyWith(
       {String id,
@@ -205,8 +228,34 @@ class ProductfulGroceryItem implements GroceryItem {
       String currency,
       double price,
       double amount,
-      String boundPrototypeId,
+      GroceryPrototype boundPrototype,
       bool updatePrototype = false}) {
+    bool wontHavePrototype = updatePrototype ? boundPrototype == null : this.boundPrototype == null;
+    return wontHavePrototype
+        ? ProductlessGroceryItem(
+            id: id ?? this.id,
+            amount: amount ?? this.amount,
+            checked: checked ?? this.checked,
+            currency: currency ?? this.currency,
+            quantizationDecimalNumbersAmount: quantizationDecimalNumbersAmount ?? this.quantizationDecimalNumbersAmount,
+            price: price ?? this.price,
+            quantization: quantization ?? this.quantization,
+            tags: tags ?? this.tags,
+            title: title ?? this.title,
+            unit: unit ?? this.unit,
+            boundPrototype: updatePrototype ? boundPrototype : this.boundPrototype,
+          )
+        : ProductfulGroceryItem(
+            amount: amount ?? this.amount,
+            checked: checked ?? this.checked,
+            id: id ?? this.id,
+            boundPrototype: boundPrototype,
+          );
+  }
+
+  @override
+  Map<String, Object> toJson() {
+    // TODO: implement toJson
     throw UnimplementedError();
   }
 }

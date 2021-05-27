@@ -135,6 +135,14 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     _prototypes[index] = newPrototype;
 
+    for (int i = 0; i < _items.length; i++)
+    {
+      if (_items[i].boundPrototype.id == newPrototype.id)
+      {
+        _items[i] = _items[i].copyWith(boundPrototype: newPrototype, updatePrototype: true);
+      }
+    }
+    
     emit(PrototypeChangedState(newPrototype));
 
     savePrototypes();

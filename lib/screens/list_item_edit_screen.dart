@@ -93,9 +93,9 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
         BlocProvider<GroceryListBloc>(
           create: (context) => bloc,
           child: SafeArea(
-            child: BlocBuilder<GroceryListBloc, GroceryListState>(
+            child: BlocListener<GroceryListBloc, GroceryListState>(
               cubit: bloc,
-              buildWhen: (previous, current) {
+              listener: (previous, current) {
                 if (current is ItemChangedState && current.id == id) {
                   var model = current.item;
                   return model.title != titleEdContr.text ||
@@ -108,7 +108,6 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                   return current.removedItem.id == id;
                 } else if (current is PrototypeChangedState && current.updatedPrototypes.id == model.boundPrototype?.id)
                 {
-                  print("ЗКЩЕЫА");
                   return true;
                 }
                 return false;
