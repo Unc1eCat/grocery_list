@@ -17,7 +17,10 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   List<GroceryItem> get items => List<GroceryItem>.unmodifiable(_items);
   List<GroceryPrototype> get prototypes => List<GroceryPrototype>.unmodifiable(_prototypes);
 
-  GroceryItem getItemOfId(String id) => _items.firstWhere((e) => e.id == id, orElse: () => null);
+  GroceryItem getItemOfId(String id) => _items.firstWhere((e) => e.id == id, orElse: () {
+    print("DO I WANNA KNOW");
+    return null;
+  });
   int getIndexOfId(String id) => _items.indexWhere((e) => e.id == id);
 
   GroceryListBloc(this._items) : super(GroceryListState());
@@ -122,6 +125,14 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
   void deletePrototype(String id) {
     var index = _prototypes.indexWhere((e) => e.id == id);
+
+    for (int i = 0; i < _items.length; i++)
+    {
+      if (_items[i].boundPrototype.id == id)
+      {
+        _items[i] = _items[i].copyWith(boundPrototype: null, updatePrototype: true);
+      }
+    }
 
     if (index == -1) return;
 

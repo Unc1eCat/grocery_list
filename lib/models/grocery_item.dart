@@ -31,10 +31,11 @@ abstract class GroceryItem {
     bool updatePrototype = false,
   });
 
-  factory GroceryItem.fromJson(Map<String, Object> from)
-  {
+  factory GroceryItem.fromJson(Map<String, Object> from) {
     // TODO: Implement
   }
+
+  GroceryPrototype createPrototype();
 
   Map<String, Object> toJson();
 }
@@ -151,13 +152,14 @@ class ProductlessGroceryItem implements GroceryItem {
             amount: amount ?? this.amount,
             checked: checked ?? this.checked,
             id: id ?? this.id,
-            boundPrototype: boundPrototype,
+            boundPrototype: updatePrototype ? boundPrototype : this.boundPrototype,
           );
   }
 
-  GroceryPrototype createPrototype({String id}) {
+  @override
+  GroceryPrototype createPrototype() {
     return GroceryPrototype(
-      id: id,
+      id: DateTime.now().toString(),
       currency: currency,
       price: price,
       quantization: quantization,
@@ -249,13 +251,17 @@ class ProductfulGroceryItem implements GroceryItem {
             amount: amount ?? this.amount,
             checked: checked ?? this.checked,
             id: id ?? this.id,
-            boundPrototype: boundPrototype,
+            boundPrototype: updatePrototype ? boundPrototype : this.boundPrototype,
           );
   }
 
   @override
   Map<String, Object> toJson() {
     // TODO: implement toJson
-    throw UnimplementedError();
+  }
+
+  @override
+  GroceryPrototype createPrototype() {
+    return boundPrototype;
   }
 }

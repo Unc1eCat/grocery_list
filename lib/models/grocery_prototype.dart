@@ -72,7 +72,7 @@ class GroceryPrototype {
     );
   }
 
-  GroceryItem createGroceryItem() {
+  ProductfulGroceryItem createGroceryItem() {
     return ProductfulGroceryItem(
       id: DateTime.now().toString(),
       amount: quantization,

@@ -18,6 +18,7 @@ class GroceryListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var bloc = BlocProvider.of<GroceryListBloc>(context);
+    var model = bloc.getItemOfId(this.model.id);
 
     return Material(
       color: Colors.transparent,
@@ -59,16 +60,6 @@ class GroceryListItem extends StatelessWidget {
                       ),
                     ),
                   ),
-                  //   SizedBox(
-                  //     height: 30,
-                  //     child: Align(
-                  //       alignment: Alignment(animation.value - 1.0, 0.0),
-                  //       child: Text(
-                  //         model.title,
-                  //         style: Theme.of(context).textTheme.caption.copyWith(fontSize: 18 + 12 * animation.value),
-                  //       ),
-                  //     ),
-                  //   ),
                 ),
                 tag: "title${model.id}",
                 child: Align(

@@ -68,8 +68,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     var model = bloc.getItemOfId(id);
     var titleEdContr = TextEditingController(text: model.title);
-    var quantizationEdContr =
-        TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount));
+    var quantizationEdContr = TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount));
     var unitEdContr = TextEditingController(text: model.unit);
     var priceEdContr = TextEditingController(text: model.price.toStringAsFixed(2));
     var currencyEdContr = TextEditingController(text: model.currency);
@@ -95,203 +94,214 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
           child: SafeArea(
             child: BlocListener<GroceryListBloc, GroceryListState>(
               cubit: bloc,
-              listener: (previous, current) {
-                if (current is ItemChangedState && current.id == id) {
-                  var model = current.item;
-                  return model.title != titleEdContr.text ||
-                      model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount) != quantizationEdContr.text ||
-                      model.unit != unitEdContr.text ||
-                      model.price.toStringAsFixed(2) != priceEdContr.text ||
-                      model.currency != currencyEdContr.text ||
-                      current.reboundPrototype;
-                } else if (current is ItemDeletedState) {
-                  return current.removedItem.id == id;
-                } else if (current is PrototypeChangedState && current.updatedPrototypes.id == model.boundPrototype?.id)
-                {
-                  return true;
+              listener: (context, state) {
+                if (state is ItemChangedState && state.id == id) {
+                  titleEdContr.text = state.item.title;
+                  quantizationEdContr.text = state.item.quantization.toStringAsFixed(state.item.quantizationDecimalNumbersAmount);
+                  unitEdContr.text = state.item.unit;
+                  priceEdContr.text = state.item.price.toStringAsFixed(2);
+                  currencyEdContr.text = state.item.currency;
+                } else if (state is ItemDeletedState) {
+                  return state.removedItem.id == id;
+                } else if (state is PrototypeChangedState && state.updatedPrototypes.id == model.boundPrototype.id) {
+                  titleEdContr.text = state.updatedPrototypes.title;
+                  quantizationEdContr.text =
+                      state.updatedPrototypes.quantization.toStringAsFixed(state.updatedPrototypes.quantizationDecimalNumbersAmount);
+                  unitEdContr.text = state.updatedPrototypes.unit;
+                  priceEdContr.text = state.updatedPrototypes.price.toStringAsFixed(2);
+                  currencyEdContr.text = state.updatedPrototypes.currency;
                 }
-                return false;
               },
-              builder: (context, state) {
-                model = bloc.getItemOfId(id) ?? (state as ItemDeletedState).removedItem;
-                var isPrototypeless = model.boundPrototype == null;
-
-                // TODO: if prototyped set data from the prot
-
-                return ListView(
-                  controller: _scrollController,
-                  physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                  children: [
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * (1 - gr.invphi),
-                    ),
-                    if (isPrototypeless)
-                      SizedBox(
-                        width: 300,
-                        height: 30,
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: Hero(
-                            tag: "title$id",
-                            child: Material(
-                              color: Colors.transparent,
-                              child: TextField(
-                                textCapitalization: TextCapitalization.sentences,
-                                textAlign: TextAlign.center,
-                                scrollPadding: EdgeInsets.zero,
-                                decoration:
-                                    InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.all(6), hintText: "Item title"),
-                                cursorWidth: 2,
-                                cursorRadius: Radius.circular(2),
-                                controller: titleEdContr,
-                                onEditingComplete: () => bloc.updateItem(id, model.copyWith(title: titleEdContr.text)),
-                                onSubmitted: (value) => FocusScope.of(context).unfocus(),
-                                style: Theme.of(context).textTheme.caption.copyWith(fontSize: 30),
+              child: ListView(
+                controller: _scrollController,
+                physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * (1 - gr.invphi),
+                  ),
+                  BlocBuilder<GroceryListBloc, GroceryListState>(
+                    cubit: bloc,
+                    buildWhen: (previous, current) =>
+                        (current is ItemChangedState && current.reboundPrototype == true && current.item.id == id) ||
+                        (current is PrototypeRemovedState && current.prototype.id == bloc.getItemOfId(id).boundPrototype.id),
+                    builder: (context, state) => bloc.getItemOfId(id).boundPrototype == null
+                        ? SizedBox(
+                            width: 300,
+                            height: 30,
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: Hero(
+                                tag: "title$id",
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: TextField(
+                                    textCapitalization: TextCapitalization.sentences,
+                                    textAlign: TextAlign.center,
+                                    scrollPadding: EdgeInsets.zero,
+                                    decoration: InputDecoration(
+                                        border: InputBorder.none, contentPadding: EdgeInsets.all(6), hintText: "Item title"),
+                                    cursorWidth: 2,
+                                    cursorRadius: Radius.circular(2),
+                                    controller: titleEdContr,
+                                    onEditingComplete: () => bloc.updateItem(id, model.copyWith(title: titleEdContr.text)),
+                                    onSubmitted: (value) => FocusScope.of(context).unfocus(),
+                                    style: Theme.of(context).textTheme.caption.copyWith(fontSize: 30),
+                                  ),
+                                ),
                               ),
+                            ),
+                          )
+                        : SizedBox.shrink(),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Hero(
+                        tag: "check$id",
+                        child: ColoredBox(
+                          color: Colors.transparent,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                              cubit: bloc,
+                              buildWhen: (previous, current) => current is CheckedChangedState && current.item.id == id,
+                              builder: (context, state) {
+                                var model = bloc.getItemOfId(id);
+
+                                return HeavyTouchButton(
+                                  onPressed: () => bloc.updateItem(id, model.copyWith(checked: !model.checked)),
+                                  child: ListItemCheckBox(checked: model?.checked ?? model.checked),
+                                );
+                              },
                             ),
                           ),
                         ),
                       ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Hero(
-                          tag: "check$id",
-                          child: ColoredBox(
-                            color: Colors.transparent,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                                cubit: bloc,
-                                buildWhen: (previous, current) => current is CheckedChangedState && current.item.id == id,
-                                builder: (context, state) {
-                                  var model = bloc.getItemOfId(id);
-
-                                  return HeavyTouchButton(
-                                    onPressed: () => bloc.updateItem(id, model.copyWith(checked: !model.checked)),
-                                    child: ListItemCheckBox(checked: model?.checked ?? model.checked),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
+                      FadeTransition(
+                        opacity: animation,
+                        child: NumberInput(
+                          heroTag: "num$id",
+                          fractionDigits: model.quantizationDecimalNumbersAmount,
+                          quantize: model.quantization,
+                          value: model.amount,
+                          unit: model.unit,
+                          onChanged: (value) => bloc.updateItem(id, model.copyWith(amount: value)),
                         ),
-                        FadeTransition(
-                          opacity: animation,
-                          child: NumberInput(
-                            heroTag: "num$id",
-                            fractionDigits: model.quantizationDecimalNumbersAmount,
-                            quantize: model.quantization,
-                            value: model.amount,
-                            unit: model.unit,
-                            onChanged: (value) => bloc.updateItem(id, model.copyWith(amount: value)),
-                          ),
-                        ),
-                      ],
-                    ),
-                    AnimatedBuilder(
-                      animation: animation,
-                      builder: (context, child) => Transform.translate(
-                        offset:
-                            Offset(0.0, Curves.easeInCubic.transform(1 - animation.value) * MediaQuery.of(context).size.height * gr.invphi),
-                        child: child,
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isPrototypeless)
-                            Padding(
-                              padding: const EdgeInsets.all(18.0),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  ListItemProperty(
+                    ],
+                  ),
+                  AnimatedBuilder(
+                    animation: animation,
+                    builder: (context, child) => Transform.translate(
+                      offset:
+                          Offset(0.0, Curves.easeInCubic.transform(1 - animation.value) * MediaQuery.of(context).size.height * gr.invphi),
+                      child: child,
+                    ),
+                    child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                        cubit: bloc,
+                        buildWhen: (previous, current) =>
+                            (current is ItemChangedState && current.reboundPrototype == true && current.item.id == id) ||
+                            (current is PrototypeRemovedState && current.prototype.id == bloc.getItemOfId(id).boundPrototype.id),
+                        builder: (context, state) {
+                          var isPrototypeless = bloc.getItemOfId(id).boundPrototype == null;
+
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isPrototypeless)
+                                Padding(
+                                  padding: const EdgeInsets.all(18.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ListItemProperty(
+                                          keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
+                                          label: "Quantization",
+                                          textEditingController: quantizationEdContr,
+                                          onEditingComplete: () {
+                                            var value = double.tryParse(quantizationEdContr.text);
+                                            if (value == null || value < 0) {
+                                              quantizationEdContr.text =
+                                                  model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
+                                              return;
+                                            }
+
+                                            var dot = quantizationEdContr.text.lastIndexOf(RegExp(",|\\."));
+
+                                            bloc.updateItem(
+                                              id,
+                                              model.copyWith(
+                                                  quantization: value,
+                                                  quantizationDecimalNumbersAmount:
+                                                      dot == -1 ? 0 : quantizationEdContr.text.length - 1 - dot,
+                                                  amount: (model.amount / value).round() * value),
+                                            );
+                                          }),
+                                      SizedBox(
+                                        width: 15,
+                                      ),
+                                      ListItemProperty(
+                                          width: 75,
+                                          label: "Unit",
+                                          textEditingController: unitEdContr,
+                                          onEditingComplete: () => bloc.updateItem(id, model.copyWith(unit: unitEdContr.text))),
+                                    ],
+                                  ),
+                                ),
+                              if (isPrototypeless)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ListItemProperty(
                                       keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
-                                      label: "Quantization",
-                                      textEditingController: quantizationEdContr,
+                                      label: "Price",
+                                      textEditingController: priceEdContr,
                                       onEditingComplete: () {
-                                        var value = double.tryParse(quantizationEdContr.text);
-                                        if (value == null || value < 0) {
-                                          quantizationEdContr.text =
-                                              model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
-                                          return;
-                                        }
-
-                                        var dot = quantizationEdContr.text.lastIndexOf(RegExp(",|\\."));
-
-                                        bloc.updateItem(
-                                          id,
-                                          model.copyWith(
-                                              quantization: value,
-                                              quantizationDecimalNumbersAmount: dot == -1 ? 0 : quantizationEdContr.text.length - 1 - dot,
-                                              amount: (model.amount / value).round() * value),
-                                        );
-                                      }),
-                                  SizedBox(
-                                    width: 15,
-                                  ),
-                                  ListItemProperty(
+                                        bloc.updateItem(id, model.copyWith(price: double.parse(priceEdContr.text)));
+                                      },
+                                    ), // TODO: Make it constrain number of numbers in decimal fraction part to 2
+                                    SizedBox(width: 15),
+                                    ListItemProperty(
                                       width: 75,
-                                      label: "Unit",
-                                      textEditingController: unitEdContr,
-                                      onEditingComplete: () => bloc.updateItem(id, model.copyWith(unit: unitEdContr.text))),
-                                ],
-                              ),
-                            ),
-                          if (isPrototypeless)
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                ListItemProperty(
-                                  keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
-                                  label: "Price",
-                                  textEditingController: priceEdContr,
-                                  onEditingComplete: () {
-                                    bloc.updateItem(id, model.copyWith(price: double.parse(priceEdContr.text)));
-                                  },
-                                ), // TODO: Make it constrain number of numbers in decimal fraction part to 2
-                                SizedBox(width: 15),
-                                ListItemProperty(
-                                  width: 75,
-                                  label: "Currency",
-                                  textEditingController: currencyEdContr,
-                                  onEditingComplete: () => bloc.updateItem(id, model.copyWith(currency: currencyEdContr.text)),
+                                      label: "Currency",
+                                      textEditingController: currencyEdContr,
+                                      onEditingComplete: () => bloc.updateItem(id, model.copyWith(currency: currencyEdContr.text)),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          SizedBox(height: 30),
-                          if (!isPrototypeless)
-                            Text(
-                              "Bound to prototype",
-                              style: Theme.of(context).textTheme.caption.copyWith(color: Colors.white70),
-                            ),
-                          SizedBox(height: 12),
-                          if (!isPrototypeless)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Hero(
-                                  tag: "title${model.id}",
-                                  child: Text(
-                                    model.title,
-                                    style: Theme.of(context).textTheme.headline6,
-                                  ),
-                                ),
+                              SizedBox(height: 30),
+                              if (!isPrototypeless)
                                 Text(
-                                  "${model.boundPrototype.quantization} ${model.boundPrototype.unit}   ${model.boundPrototype.price} ${model.boundPrototype.currency}",
-                                  style: Theme.of(context).textTheme.headline6,
+                                  "Bound to prototype",
+                                  style: Theme.of(context).textTheme.caption.copyWith(color: Colors.white70),
                                 ),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
+                              SizedBox(height: 12),
+                              if (!isPrototypeless)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Hero(
+                                      tag: "title${model.id}",
+                                      child: Text(
+                                        model.title,
+                                        style: Theme.of(context).textTheme.headline6,
+                                      ),
+                                    ),
+                                    Text(
+                                      "${model.boundPrototype.quantization} ${model.boundPrototype.unit}   ${model.boundPrototype.price} ${model.boundPrototype.currency}",
+                                      style: Theme.of(context).textTheme.headline6,
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          );
+                        }),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -323,7 +333,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                 var p = m.createPrototype();
 
                                 bloc.addPrototype(p);
-                                bloc.updateItem(id, m.copyWith(boundPrototype: p, rebindPrototype: true));
+                                bloc.updateItem(id, m.copyWith(boundPrototype: p, updatePrototype: true));
                               },
                               color: const Color(0xFFBF42C1),
                               icon: Icons.save_rounded,
@@ -333,7 +343,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                           if (isPrototypeless)
                             ActionButton(
                               onPressed: () {
-                                bloc.updatePrototype(bloc.getItemOfId(id).createPrototype(id: "TODO!")); // TODO
+                                bloc.updatePrototype(bloc.getItemOfId(id).createPrototype()); // TODO
                               },
                               color: const Color(0xFF3ABD85),
                               icon: Icons.merge_type_rounded,
@@ -354,7 +364,11 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                               onPressed: () {
                                 var m = bloc.getItemOfId(id);
 
-                                bloc.updateItem(id, m.boundPrototype.createGroceryItem().copyWith(id: id, amount: m.amount, boundPrototype: null, rebindPrototype: true));
+                                bloc.updateItem(
+                                    id,
+                                    m.boundPrototype
+                                        .createGroceryItem()
+                                        .copyWith(id: id, amount: m.amount, boundPrototype: null, updatePrototype: true));
                               },
                               color: const Color(0xFF3ABD85),
                               icon: Icons.merge_type_rounded,
@@ -396,131 +410,3 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
   @override
   bool get maintainState => true;
 }
-
-// class ItemListEditMenu extends StatefulWidget {
-//   final int index;
-//   final GroceryListBloc bloc;
-//   final AnimationController controller;
-
-//   const ItemListEditMenu({Key key, this.index, this.bloc, this.controller}) : super(key: key);
-
-//   @override
-//   _ItemListEditMenuState createState() => _ItemListEditMenuState();
-// }
-
-// class _ItemListEditMenuState extends State<ItemListEditMenu> with TickerProviderStateMixin {
-//   ScrollController _scrollController;
-
-//   @override
-//   void initState() {
-//     _scrollController = ScrollController()..addListener(_handleScroll);
-//     controller.addListener(() {
-//       print(controller);
-//     });
-//     super.initState();
-//   }
-
-//   @override
-//   void dispose() {
-//     _scrollController.removeListener(_handleScroll);
-//     _scrollController.dispose();
-//     super.dispose();
-//   }
-
-//   void _handleScroll() {
-//     if (_scrollController.offset < -60) {
-//       controller
-//           ?.animateBack((40 + _scrollController.offset.clamp(-40, 0)) / 40, duration: const Duration(milliseconds: 0))
-//           .then((value) => Navigator.pop(context));
-//       Navigator.of(context).pop();
-//       _scrollController.removeListener(_handleScroll);
-//     } else {
-//       controller?.animateBack((40 + _scrollController.offset.clamp(-40, 0)) / 40, duration: const Duration(milliseconds: 0));
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     var titleEdContr = TextEditingController(text: bloc.items[index].title);
-
-//     return BlocProvider<GroceryListBloc>(
-//       create: (context) => bloc,
-//       child: SafeArea(
-//         child: BlocBuilder<GroceryListBloc, GroceryListState>(
-//           cubit: bloc,
-//           buildWhen: (previous, current) => current is GroceryListState,
-//           builder: (context, state) {
-//             var model = bloc.items[index];
-
-//             return ListView(
-//               controller: _scrollController,
-//               physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-//               children: [
-//                 SizedBox(
-//                   height: MediaQuery.of(context).size.height * (1 - gr.invphi),
-//                 ),
-//                 SizedBox(
-//                   width: 300,
-//                   height: 30,
-//                   child: Align(
-//                     alignment: Alignment.topCenter,
-//                     child: Hero(
-//                       tag: "title${index}",
-//                       child: Material(
-//                         color: Colors.transparent,
-//                         child: TextField(
-//                           textAlign: TextAlign.center,
-//                           scrollPadding: EdgeInsets.zero,
-//                           decoration:
-//                               InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.all(4.5), hintText: "Item title"),
-//                           cursorWidth: 2,
-//                           cursorRadius: Radius.circular(2),
-//                           controller: titleEdContr,
-//                           onEditingComplete: () => bloc.updateItem(index, model.copyWith(title: titleEdContr.text)),
-//                           onSubmitted: (value) => FocusScope.of(context).unfocus(),
-//                           style: Theme.of(context).textTheme.caption.copyWith(fontSize: 28),
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//                 Row(
-//                   mainAxisSize: MainAxisSize.min,
-//                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                   children: [
-//                     Hero(
-//                       tag: "check${index}",
-//                       child: HeavyTouchButton(
-//                         onPressed: () => bloc.updateItem(index, model.copyWith(checked: !model.checked)),
-//                         child: ColoredBox(
-//                           color: Colors.transparent,
-//                           child: Padding(
-//                             padding: const EdgeInsets.all(8),
-//                             child: ListItemCheckBox(checked: model.checked),
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                     Hero(
-//                       tag: "num${index}",
-//                       child: NumberInput(
-//                         fractionDigits: model.integerQuantization ? 0 : 3,
-//                         quantize: 0.6,
-//                         value: model.amount,
-//                         unit: model.unit,
-//                         onChanged: (value) => bloc.updateItem(index, model.copyWith(amount: value)),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//                 SizedBox(
-//                   height: 500,
-//                 ),
-//               ],
-//             );
-//           },
-//         ),
-//       ),
-//     );
-//   }
-// }

@@ -266,7 +266,7 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
                       onPressed: () {
                         if (_textEdContr.text == null || _textEdContr.text.isEmpty) return;
 
-                        var newItem = GroceryItem(title: _textEdContr.text, amount: 1);
+                        var newItem = ProductlessGroceryItem(title: _textEdContr.text, amount: 1);
 
                         bloc.createItem(newItem);
 

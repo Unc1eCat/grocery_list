@@ -37,7 +37,7 @@ class _TheAppState extends State<TheApp> {
   void initState() {
     groceryListBloc = GroceryListBloc(<GroceryItem>[]);
 
-    TheApp.fetchAppDocDirectory().then((value) => groceryListBloc.fetchItems());
+    TheApp.fetchAppDocDirectory().then((value) => null);//groceryListBloc.fetchItems());
 
     super.initState();
   }

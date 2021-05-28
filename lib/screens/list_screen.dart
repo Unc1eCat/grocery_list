@@ -28,7 +28,7 @@ class ListScreen extends StatelessWidget {
               cubit: groceryListBloc,
               builder: (context, state) => Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: ImplicitlyAnimatedReorderableList(
+                child: ImplicitlyAnimatedReorderableList<GroceryItem>(
                   onReorderFinished: (item, from, to, newItems) => groceryListBloc.moveItem(from, to),
                   areItemsTheSame: (a, b) => a.id == b.id,
                   footer: BlocBuilder<GroceryListBloc, GroceryListState>(
@@ -81,23 +81,26 @@ class ListScreen extends StatelessWidget {
                           : SizedBox.shrink(),
                     ),
                   ),
-                  // removeItemBuilder: ,
                   itemBuilder: (context, animation, item, i) {
                     return Reorderable(
                       key: ValueKey(item.id),
-                      child: ScaleTransition(
-                        scale: animation,
-                        child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                          buildWhen: (previous, current) {
-                            return current is ItemChangedState && current.id == item.id;
-                          },
-                          cubit: groceryListBloc,
-                          builder: (context, state) {
-                            return GroceryListItem(
-                              model: groceryListBloc.getItemOfId(item.id) ?? item,
-                              key: ValueKey(item.id),
-                            );
-                          },
+                      child: FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: animation,
+                          child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                            buildWhen: (previous, current) {
+                              return current is ItemChangedState && current.id == item.id;
+                            },
+                            cubit: groceryListBloc,
+                            builder: (context, state) {
+                              print(groceryListBloc.getItemOfId(item.id).boundPrototype);
+                              return GroceryListItem(
+                                model: groceryListBloc.getItemOfId(item.id) ?? item,
+                                key: ValueKey(item.id),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     );
