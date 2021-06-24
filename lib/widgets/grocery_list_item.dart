@@ -11,14 +11,15 @@ import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorder
 import 'package:my_utilities/color_utils.dart';
 
 class GroceryListItem extends StatelessWidget {
-  final GroceryItem model;
+  final String id;
+  final String listId;
 
-  const GroceryListItem({Key key, this.model}) : super(key: key);
+  const GroceryListItem({Key key, this.id, this.listId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var bloc = BlocProvider.of<GroceryListBloc>(context);
-    var model = bloc.getItemOfId(this.model.id);
+    var model = bloc.getItemOfId(id, listId);
 
     return Material(
       color: Colors.transparent,
@@ -33,7 +34,7 @@ class GroceryListItem extends StatelessWidget {
             Hero(
               tag: "check${model.id}",
               child: HeavyTouchButton(
-                onPressed: () => bloc.updateItem(model.id, model.copyWith(checked: !model.checked)),
+                onPressed: () => bloc.updateItem(id, model = model.copyWith(checked: !model.checked), listId),
                 child: ColoredBox(
                   color: Colors.transparent,
                   child: Padding(

@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:grocery_list/models/grocery_item.dart';
+import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/models/item_tag.dart';
 import 'package:grocery_list/widgets/rounded_rolling_switch.dart';
@@ -11,32 +12,17 @@ import '../main.dart';
 
 // TODO: Make separate update state for every property of the grocery item
 class GroceryListBloc extends Cubit<GroceryListState> {
-  List<GroceryItem> _items = <GroceryItem>[];
-  List<GroceryPrototype> _prototypes = <GroceryPrototype>[]; // TODO: Make it into a map
+  List<GroceryPrototype> _prototypes = <GroceryPrototype>[];
+  List<GroceryList> _lists = <GroceryList>[];
 
-  List<GroceryItem> get items => List<GroceryItem>.unmodifiable(_items);
+  List<GroceryItem> get lists => List<GroceryItem>.unmodifiable(_lists);
   List<GroceryPrototype> get prototypes => List<GroceryPrototype>.unmodifiable(_prototypes);
 
-  GroceryItem getItemOfId(String id) => _items.firstWhere((e) => e.id == id, orElse: () {
-    print("DO I WANNA KNOW");
-    return null;
-  });
-  int getIndexOfId(String id) => _items.indexWhere((e) => e.id == id);
+  GroceryListBloc() : super(GroceryListState());
+  GroceryListBloc.initFromFiles() : super(GroceryListState()) {}
 
-  GroceryListBloc(this._items) : super(GroceryListState());
-  GroceryListBloc.initFromFiles() : super(GroceryListState()) {
-    fetchItems();
-  }
-
-  Map<String, Object> toJsonItems() {
-    var ret = <Map<String, Object>>[];
-
-    for (var i in _items) {
-      ret.add(i.toJson());
-    }
-
-    return {"grocery_item": ret};
-  }
+  GroceryList getListOfId(String listId) => _lists.firstWhere((e) => e.id == listId);
+  GroceryItem getItemOfId(String id, String listId) => getListOfId(listId).items.firstWhere((e) => e.id == id, orElse: () => null);
 
   @override
   onChange(Change change) {
@@ -44,66 +30,9 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     super.onChange(change);
   }
 
-  Map<String, Object> toJsonPrototypes() {
-    var ret = <Map<String, Object>>[];
+  void saveItems() {}
 
-    for (var i in _prototypes) {
-      ret.add(i.toJson());
-    }
-
-    return {"grocery_prototypes": ret};
-  }
-
-  void initItemsFromJson(Map<String, dynamic> json) {
-    for (Map<String, dynamic> i in json["grocery_item"]) {
-      GroceryItem item = GroceryItem.fromJson(i);
-      _items.add(item);
-    }
-  }
-
-  void initPrototypesFromJson(Map<String, dynamic> json) {
-    for (Map<String, dynamic> i in json["grocery_prototypes"]) {
-      GroceryPrototype prototype = GroceryPrototype.fromJson(i);
-
-      if (!containsPrototype(prototype)) {
-        _prototypes.add(prototype);
-      }
-    }
-  }
-
-  void saveItems() {
-    TheApp.groceryItemsFile.writeAsStringSync(conv.jsonEncode(toJsonItems()));
-  }
-
-  void savePrototypes() {
-    TheApp.groceryPrototypesFile.writeAsStringSync(conv.jsonEncode(toJsonPrototypes()));
-  }
-
-  void fetchItems() {
-    try {
-      initItemsFromJson(conv.jsonDecode(TheApp.groceryItemsFile.readAsStringSync()));
-    } catch (exc) {
-      print("Failed to fetch items from the file or the file is not initialized. Returning empty list");
-      print(exc);
-
-      _items = <GroceryItem>[];
-    }
-
-    emit(ItemsFetchedState(items));
-  }
-
-  void fetchPrototypes() {
-    try {
-      initPrototypesFromJson(conv.jsonDecode(TheApp.groceryPrototypesFile.readAsStringSync()));
-    } catch (exc) {
-      print("Failed to fetch prototypes from the file or the file is not initialized. Returning empty list");
-      print(exc);
-
-      _prototypes = <GroceryPrototype>[];
-    }
-
-    emit(PrototypesFetchedState(prototypes));
-  }
+  void savePrototypes() {}
 
   void tryAddPrototype(GroceryPrototype prototype) {
     if (!containsPrototype(prototype)) {
@@ -125,18 +54,21 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
   void deletePrototype(String id) {
     var index = _prototypes.indexWhere((e) => e.id == id);
-
-    for (int i = 0; i < _items.length; i++)
-    {
-      if (_items[i].boundPrototype.id == id)
-      {
-        _items[i] = _items[i].copyWith(boundPrototype: null, updatePrototype: true);
+    var changedIds = <String>{};
+    
+    for (var list in _lists) {
+      for (var i = 0; i < list.items.length; i++) {
+        if (list.items[i].boundPrototype.id == id) {
+          list.items[i] = list.items[i].copyWith(boundPrototype: null, updatePrototype: true);
+          changedIds.add(list.items[i].id);
+        }
       }
     }
 
     if (index == -1) return;
 
     emit(PrototypeRemovedState(prototypes, _prototypes.removeAt(index)));
+    emit(ItemsChangedState(changedIds, true));
 
     savePrototypes();
   }
@@ -146,23 +78,23 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     _prototypes[index] = newPrototype;
 
-    for (int i = 0; i < _items.length; i++)
-    {
-      if (_items[i].boundPrototype.id == newPrototype.id)
-      {
-        _items[i] = _items[i].copyWith(boundPrototype: newPrototype, updatePrototype: true);
+    for (var list in _lists)
+    {for (var i = 0; i < list.items.length; i++) {
+      if (list.items[i].boundPrototype.id == newPrototype.id) {
+        list.items[i] = list.items[i].copyWith(boundPrototype: newPrototype, updatePrototype: true);
       }
-    }
-    
+    }}
+
     emit(PrototypeChangedState(newPrototype));
 
     savePrototypes();
   }
 
-  void moveItem(int fromIndex, int toIndex) {
-    _items.insert(toIndex, _items.removeAt(fromIndex));
+  void moveItem(int fromIndex, int toIndex, String listId) {
+    var list = getListOfId(listId);
+    list.items.insert(toIndex, list.items.removeAt(fromIndex));
 
-    emit(ItemMovedState(items));
+    emit(ItemMovedState(list.items, listId));
 
     saveItems();
   }
@@ -200,38 +132,33 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     return _prototypes.any((e) => e.id == prototype.id);
   }
 
-  void createItem(GroceryItem newItem) {
-    _items.add(newItem);
+  void createItem(GroceryItem newItem, String listId) {
+    var list = getListOfId(listId);
+    list.items.add(newItem);
 
-    emit(ItemCreatedState(newItem.id, items));
-
-    saveItems();
-  }
-
-  void deleteItem(String id) {
-    var index = _items.indexWhere((e) => e.id == id);
-
-    emit(ItemDeletedState(_items.removeAt(index), index));
+    emit(ItemCreatedState(newItem.id, list.items, listId));
 
     saveItems();
   }
 
-  void deleteCheckedItems() {
-    _items.removeWhere((e) => e.checked);
+  void deleteItem(String id, String listId) {
+    var list = getListOfId(listId);
+    var index = list.items.indexWhere((e) => e.id == id);
 
-    emit(ItemDeletedState(null, -1));
+    emit(ItemDeletedState(list.items.removeAt(index), index, listId));
 
     saveItems();
   }
 
-  void updateItem(String id, GroceryItem newItem) {
-    var updatedChecked = newItem.checked != getItemOfId(id).checked;
-    var updatedProtBinding = newItem.boundPrototype?.id != getItemOfId(id).boundPrototype?.id;
-    _items[getIndexOfId(id)] = newItem;
+  void updateItem(String id, GroceryItem newItem, String listId) {
+    var list = getListOfId(listId);
+    var index = list.items.indexWhere((e) => e.id == id);
+    var oldItem = list.items[index];
+    var updatedChecked = newItem.checked != oldItem.checked;
+    var updatedProtBinding = newItem.boundPrototype?.id != oldItem.boundPrototype?.id;
+    list.items[index] = newItem;
 
-    // tryAddPrototype(newItem.createPrototype());
-
-    emit(ItemChangedState(items, id, newItem, updatedProtBinding));
+    emit(ItemsChangedState({id, oldItem.id}, updatedProtBinding));
     if (updatedChecked) {
       emit(CheckedChangedState(newItem.checked, newItem));
     }
@@ -247,18 +174,26 @@ class GroceryListState extends Equatable {
   List<Object> get props => [];
 }
 
-// class InitialState extends GroceryListState {}
+class WithinListState extends GroceryListState
+{
+  final String listId;
 
-class ItemChangedState extends GroceryListState {
-  final List<GroceryItem> items;
-  final String id;
-  final GroceryItem item;
-  final bool reboundPrototype;
-
-  ItemChangedState(this.items, this.id, this.item, this.reboundPrototype);
+  WithinListState(this.listId);
 
   @override
-  List<Object> get props => super.props..add(items)..add(id)..add(item)..add(reboundPrototype);
+  List<Object> get props => super.props..add(listId);
+}
+
+class ItemsChangedState extends GroceryListState {
+  final Set<String> changedIds;
+  final bool reboundPrototype;
+
+  ItemsChangedState(this.changedIds, this.reboundPrototype);
+
+  @override
+  List<Object> get props => super.props..add(changedIds)..add(reboundPrototype);
+
+  bool contains(String id) => changedIds.contains(id);
 }
 
 class CheckedChangedState extends GroceryListState {
@@ -271,21 +206,21 @@ class CheckedChangedState extends GroceryListState {
   List<Object> get props => super.props..add(checked)..add(item);
 }
 
-class ItemDeletedState extends GroceryListState {
+class ItemDeletedState extends WithinListState {
   final GroceryItem removedItem;
   final int index;
 
-  ItemDeletedState(this.removedItem, this.index);
+  ItemDeletedState(this.removedItem, this.index, String listId) : super(listId);
 
   @override
   List<Object> get props => super.props..add(removedItem);
 }
 
-class ItemCreatedState extends GroceryListState {
+class ItemCreatedState extends WithinListState {
   final String id;
   final List<GroceryItem> items;
 
-  ItemCreatedState(this.id, this.items);
+  ItemCreatedState(this.id, this.items, String listId) : super(listId);
 
   @override
   List<Object> get props => super.props..add(id)..add(items);
@@ -339,11 +274,12 @@ class PrototypeChangedState extends GroceryListState {
   List<Object> get props => super.props..add(updatedPrototypes);
 }
 
-class ItemMovedState extends GroceryListState {
+class ItemMovedState extends WithinListState {
   final List<GroceryItem> items;
 
-  ItemMovedState(this.items);
+  ItemMovedState(this.items, String listId) : super(listId);
 
   @override
   List<Object> get props => super.props..add(items);
 }
+

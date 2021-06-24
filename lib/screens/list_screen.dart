@@ -9,13 +9,19 @@ import 'package:grocery_list/widgets/grocery_list_item.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:my_utilities/color_utils.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
+import 'package:rive/rive.dart';
+
+import '../bloc/grocery_list_bloc.dart';
+import '../bloc/grocery_list_bloc.dart';
 
 class ListScreen extends StatelessWidget {
+  final String listId;
+
+  const ListScreen({Key key, this.listId}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     var groceryListBloc = BlocProvider.of<GroceryListBloc>(context);
-    print("REVUILD");
-    GlobalKey<AnimatedListState> animatedList = GlobalKey<AnimatedListState>();
 
     return Scaffold(
       body: Stack(
@@ -23,64 +29,15 @@ class ListScreen extends StatelessWidget {
           SafeArea(
             child: BlocBuilder<GroceryListBloc, GroceryListState>(
               buildWhen: (prev, state) {
-                return state is ItemDeletedState || state is ItemCreatedState || state is ItemsFetchedState;
+                return ((state is ItemDeletedState || state is ItemCreatedState) && (state as WithinListState).listId == listId) ||
+                    state is ItemsFetchedState;
               },
               cubit: groceryListBloc,
               builder: (context, state) => Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: ImplicitlyAnimatedReorderableList<GroceryItem>(
-                  onReorderFinished: (item, from, to, newItems) => groceryListBloc.moveItem(from, to),
+                  onReorderFinished: (item, from, to, newItems) => groceryListBloc.moveItem(from, to, listId),
                   areItemsTheSame: (a, b) => a.id == b.id,
-                  footer: BlocBuilder<GroceryListBloc, GroceryListState>(
-                    buildWhen: (previous, current) => current is CheckedChangedState || current is ItemDeletedState,
-                    cubit: groceryListBloc,
-                    builder: (context, state) => AnimatedSwitcher(
-                      duration: Duration(milliseconds: 300),
-                      transitionBuilder: (child, animation) => FadeTransition(
-                        opacity: animation,
-                        child: RotationTransition(
-                          alignment: Alignment(-1.2, -0.8),
-                          turns: Tween<double>(begin: 0.05, end: 0.0).animate(animation),
-                          // position: Tween<Offset>(begin: Offset(0, 1), end: Offset(0, 0)).animate(animation),
-                          child: child,
-                        ),
-                      ),
-                      child: groceryListBloc.items.any((e) => e.checked)
-                          ? Padding(
-                              padding: const EdgeInsets.only(top: 10, right: 12, left: 12, bottom: 100),
-                              child: HeavyTouchButton(
-                                pressedScale: 0.9,
-                                onPressed: () {
-                                  groceryListBloc.deleteCheckedItems();
-                                },
-                                child: Material(
-                                  borderRadius: BorderRadius.circular(8),
-                                  color: Color(0xFF0E1C21),
-                                  elevation: 3,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.check_box_rounded,
-                                          // color: Colors.white70,
-                                        ),
-                                        SizedBox(width: 12),
-                                        Text(
-                                          "Remove checked items",
-                                          style: Theme.of(context).textTheme.button,
-                                          // .copyWith(color: Colors.white70),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                          : SizedBox.shrink(),
-                    ),
-                  ),
                   itemBuilder: (context, animation, item, i) {
                     return Reorderable(
                       key: ValueKey(item.id),
@@ -89,26 +46,19 @@ class ListScreen extends StatelessWidget {
                         child: ScaleTransition(
                           scale: animation,
                           child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                            buildWhen: (previous, current) {
-                              return current is ItemChangedState && current.id == item.id;
-                            },
+                            buildWhen: (previous, current) => current is ItemsChangedState && current.contains(item.id),
                             cubit: groceryListBloc,
-                            builder: (context, state) {
-                              print(groceryListBloc.getItemOfId(item.id).boundPrototype);
-                              return GroceryListItem(
-                                model: groceryListBloc.getItemOfId(item.id) ?? item,
-                                key: ValueKey(item.id),
-                              );
-                            },
+                            builder: (context, state) => GroceryListItem(
+                              id: item.id,
+                              key: ValueKey(item.id),
+                            ),
                           ),
                         ),
                       ),
                     );
                   },
-                  key: animatedList,
-                  items: groceryListBloc.items,
+                  items: groceryListBloc.getListOfId(listId).items,
                   physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                  // children: groceryListBloc.items.values.map((e) => GroceryListItem(id: e.id, key: ValueKey(e.id))).toList(),
                 ),
               ),
             ),
