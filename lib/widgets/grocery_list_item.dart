@@ -87,6 +87,11 @@ class GroceryListItem extends StatelessWidget {
                 style: Theme.of(context).textTheme.caption,
               ),
             ),
+            SizedBox(width: 20),
+            Handle(
+              child: Icon(Icons.drag_handle_rounded),
+              vibrate: true,
+            ),
             SizedBox(width: 10),
           ],
         ),
