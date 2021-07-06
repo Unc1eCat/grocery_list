@@ -234,7 +234,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ActionButton(
-                  onPressed: () => bloc.createItem(bloc.getItemOfId(id).copyWith(id: DateTime.now().toString())),
+                  onPressed: () => bloc.addPrototype(bloc.getPrototypeOfId(id).copyWith(id: DateTime.now().toString())),
                   color: const Color(0xFFEDB048),
                   icon: Icons.copy_outlined,
                   title: "Duplicate",
