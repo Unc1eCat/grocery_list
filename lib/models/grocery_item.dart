@@ -3,45 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/models/item_tag.dart';
 
-abstract class GroceryItem {
-  String get id;
-  String get title;
-  bool get checked;
-  List<ItemTag> get tags;
-  String get unit;
-  double get quantization;
-  int get quantizationDecimalNumbersAmount;
-  String get currency;
-  double get price;
-  double get amount;
-  GroceryPrototype get boundPrototype;
-
-  GroceryItem copyWith({
-    String id,
-    String title,
-    bool checked,
-    List<ItemTag> tags,
-    String unit,
-    double quantization,
-    int quantizationDecimalNumbersAmount,
-    String currency,
-    double price,
-    double amount,
-    GroceryPrototype boundPrototype,
-    bool updatePrototype = false,
-  });
-
-  factory GroceryItem.fromJson(Map<String, Object> from) {
-    // TODO: Implement
-  }
-
-  GroceryPrototype createPrototype();
-
-  Map<String, Object> toJson();
-}
-
 @immutable
-class ProductlessGroceryItem implements GroceryItem {
+class GroceryItem {
   final String id;
   final String title;
   final bool checked;
@@ -54,7 +17,7 @@ class ProductlessGroceryItem implements GroceryItem {
   final double amount;
   final GroceryPrototype boundPrototype;
 
-  ProductlessGroceryItem({
+  GroceryItem({
     String id,
     this.unit = "it.",
     this.quantization = 1.0,
@@ -72,53 +35,52 @@ class ProductlessGroceryItem implements GroceryItem {
     ],
   }) : id = id ?? DateTime.now().toString();
 
-  // Map<String, Object> toJson() {
-  //   return boundPrototypeId == null
-  //       ? {
-  //           "id": id,
-  //           "title": title,
-  //           "checked": checked,
-  //           "tags": "", // TODO: TAGS
-  //           "unit": unit,
-  //           "quantization": quantization,
-  //           "currency": currency,
-  //           "price": price,
-  //           "amount": amount,
-  //           "fractionDigits": quantizationDecimalNumbersAmount,
-  //         }
-  //       : {
-  //           "id": id,
-  //           "checked": checked,
-  //           "amount": amount,
-  //           "boundPrototypeId": boundPrototype.id,
-  //         };
-  // }
+  Map<String, Object> toJson() {
+    return boundPrototype == null
+        ? {
+            "id": id,
+            "title": title,
+            "checked": checked,
+            "tags": "", // TODO: TAGS
+            "unit": unit,
+            "quantization": quantization,
+            "currency": currency,
+            "price": price,
+            "amount": amount,
+            "fractionDigits": quantizationDecimalNumbersAmount,
+          }
+        : {
+            "id": id,
+            "checked": checked,
+            "amount": amount,
+            "boundPrototypeId": boundPrototype.id,
+          };
+  }
 
-  // static GroceryItem fromJson(Map<String, dynamic> json) {
-  //   if (json.containsKey("boundPrototypeId")) {
-  //     return GroceryItem(
-  //       id: json["id"],
-  //       amount: json["amount"],
-  //       checked: json["checked"],
-  //       boundPrototype: json["boundPrototypeId"],
-  //     );
-  //   } else {
-  //     return GroceryItem(
-  //       id: json["id"],
-  //       amount: json["amount"],
-  //       checked: json["checked"],
-  //       currency: json["currency"],
-  //       price: json["price"],
-  //       quantization: json["quantization"],
-  //       quantizationDecimalNumbersAmount: json["fractionDigits"],
-  //       tags: <ItemTag>[], // TODO: TAGS
-  //       title: json["title"],
-  //       unit: json["unit"],
-  //     );
-  //   }
-  // }
+  static GroceryItem fromJson(Map<String, dynamic> json) {
+    if (json.containsKey("boundPrototypeId")) {
+      return GroceryItem(
+        id: json["id"],
+        amount: json["amount"],
+        checked: json["checked"],
+        boundPrototype: json["boundPrototypeId"],
+      );
+    } else {
+      return GroceryItem(
+        id: json["id"],
+        amount: json["amount"],
+        checked: json["checked"],
+        currency: json["currency"],
+        price: json["price"],
+        quantization: json["quantization"],
+        quantizationDecimalNumbersAmount: json["fractionDigits"],
+        tags: <ItemTag>[], // TODO: TAGS
+        title: json["title"],
+        unit: json["unit"],
+      );
+    }
+  }
 
-  @override
   GroceryItem copyWith({
     String id,
     String title,
@@ -131,6 +93,7 @@ class ProductlessGroceryItem implements GroceryItem {
     double price,
     double amount,
     GroceryPrototype boundPrototype,
+<<<<<<< HEAD
     bool updatePrototype = false,
   }) {
     bool wontHavePrototype = updatePrototype ? boundPrototype == null : this.boundPrototype == null;
@@ -154,6 +117,23 @@ class ProductlessGroceryItem implements GroceryItem {
             id: id ?? this.id,
             boundPrototype: updatePrototype ? boundPrototype : this.boundPrototype,
           );
+=======
+    bool rebindPrototype = false,
+  }) {
+    return GroceryItem(
+      id: id ?? this.id,
+      amount: amount ?? this.amount,
+      checked: checked ?? this.checked,
+      currency: currency ?? this.currency,
+      quantizationDecimalNumbersAmount: quantizationDecimalNumbersAmount ?? this.quantizationDecimalNumbersAmount,
+      price: price ?? this.price,
+      quantization: quantization ?? this.quantization,
+      tags: tags ?? this.tags,
+      title: title ?? this.title,
+      unit: unit ?? this.unit,
+      boundPrototype: rebindPrototype ? boundPrototype : this.boundPrototype,
+    );
+>>>>>>> parent of 3650df3 (it was a bad idea i think)
   }
 
   @override
@@ -176,6 +156,7 @@ class ProductlessGroceryItem implements GroceryItem {
     throw UnimplementedError();
   }
 }
+<<<<<<< HEAD
 
 class ProductfulGroceryItem implements GroceryItem {
   @override
@@ -265,3 +246,5 @@ class ProductfulGroceryItem implements GroceryItem {
     return boundPrototype;
   }
 }
+=======
+>>>>>>> parent of 3650df3 (it was a bad idea i think)

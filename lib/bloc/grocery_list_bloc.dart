@@ -12,7 +12,7 @@ import '../main.dart';
 import '../models/grocery_prototype.dart';
 
 // TODO: Make separate update state for every property of the grocery item
-class GroceryListBloc extends Cubit<GroceryListState> {
+class GroceryListBloc extends Cubit<GroceryListState> { //
   List<GroceryPrototype> _prototypes = <GroceryPrototype>[];
   List<GroceryList> _lists = <GroceryList>[];
 
