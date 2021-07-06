@@ -75,7 +75,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
 
     return Stack(
       children: [
-        AnimatedBuilder(
+        AnimatedBuilder( // TODO: You can change the bbuilder to blistener where you can update just the text editing controller values
           animation: _animationController,
           builder: (context, child) => BackdropFilter(
             filter: ImageFilter.blur(
@@ -318,10 +318,11 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                 BlocBuilder<GroceryListBloc, GroceryListState>(
                     cubit: bloc,
                     buildWhen: (previous, current) =>
-                        current is ItemChangedState, // TODO: Separate bound prototype change in a separeate state
+                        current is ItemChangedState && current.reboundPrototype,
                     builder: (context, state) {
                       var model = bloc.getItemOfId(id) ?? (state as ItemDeletedState).removedItem;
-                      var isPrototypeless = model.boundPrototype == null;
+                      var prototype = bloc.getPrototypeOfId(model.boundPrototypeId);
+                      var isPrototypeless = model.boundPrototypeId == null;
 
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -352,7 +353,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                           if (!isPrototypeless)
                             ActionButton(
                               onPressed: () {
-                                Navigator.push(context, ProductItemEditRoute(id: bloc.getItemOfId(id).boundPrototype.id));
+                                Navigator.push(context, ProductItemEditRoute(id: bloc.getItemOfId(id).boundPrototypeId));
                               },
                               color: const Color(0xFFBF42C1),
                               icon: Icons.edit_outlined,

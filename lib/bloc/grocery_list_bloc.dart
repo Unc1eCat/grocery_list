@@ -36,6 +36,11 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
   void savePrototypes() {}
 
+  GroceryPrototype getPrototypeOfId(String id)
+  {
+    return _prototypes.firstWhere((e) => e.id == id);
+  }
+
   void tryAddPrototype(GroceryPrototype prototype) {
     if (!containsPrototype(prototype)) {
       _prototypes.add(prototype);
@@ -158,9 +163,10 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     var oldItem = list.items[index];
     var updatedChecked = newItem.checked != oldItem.checked;
     var updatedProtBinding = newItem.boundPrototype?.id != oldItem.boundPrototype?.id;
+    
     list.items[index] = newItem;
-
     emit(ItemsChangedState({id, oldItem.id}, updatedProtBinding));
+    
     if (updatedChecked) {
       emit(CheckedChangedState(newItem.checked, newItem));
     }
