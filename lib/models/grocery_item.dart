@@ -52,7 +52,7 @@ class ProductlessGroceryItem implements GroceryItem {
   final String currency;
   final double price;
   final double amount;
-  final String boundPrototypeId;
+  final GroceryPrototype boundPrototype;
 
   ProductlessGroceryItem({
     String id,
@@ -64,7 +64,7 @@ class ProductlessGroceryItem implements GroceryItem {
     this.amount = 0.0,
     this.title = "New item",
     this.checked = false,
-    this.boundPrototypeId,
+    this.boundPrototype,
     this.tags = const [
       // ItemTag(color: Colors.red, title: "Test red tag"),
       // ItemTag(color: Colors.blue, title: "Test blue tag"),

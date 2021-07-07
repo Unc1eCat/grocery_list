@@ -9,6 +9,7 @@ import 'dart:convert' as conv;
 import 'dart:io';
 
 import '../main.dart';
+import '../models/grocery_prototype.dart';
 
 // TODO: Make separate update state for every property of the grocery item
 class GroceryListBloc extends Cubit<GroceryListState> {
@@ -23,6 +24,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
   GroceryList getListOfId(String listId) => _lists.firstWhere((e) => e.id == listId);
   GroceryItem getItemOfId(String id, String listId) => getListOfId(listId).items.firstWhere((e) => e.id == id, orElse: () => null);
+  GroceryPrototype getPrototypeOfId(String id) => _prototypes.firstWhere((e) => e.id == id, orElse: () => null);
 
   @override
   onChange(Change change) {
@@ -33,11 +35,6 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   void saveItems() {}
 
   void savePrototypes() {}
-
-  GroceryPrototype getPrototypeOfId(String id)
-  {
-    return _prototypes.firstWhere((e) => e.id == id);
-  }
 
   void tryAddPrototype(GroceryPrototype prototype) {
     if (!containsPrototype(prototype)) {
@@ -161,10 +158,9 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     var oldItem = list.items[index];
     var updatedChecked = newItem.checked != oldItem.checked;
     var updatedProtBinding = newItem.boundPrototype?.id != oldItem.boundPrototype?.id;
-    
     list.items[index] = newItem;
+
     emit(ItemsChangedState({id, oldItem.id}, updatedProtBinding));
-    
     if (updatedChecked) {
       emit(CheckedChangedState(newItem.checked, newItem));
     }
