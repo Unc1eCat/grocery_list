@@ -10,11 +10,11 @@ class GroceryList {
   final Set<GroceryItem> removedItems;
 
   GroceryList({
-    this.removedItems,
-    this.id,
-    this.items,
-    this.tags,
+    Set<GroceryItem> removedItems,
+    String id,
+    List<GroceryItem> items,
+    List<ItemTag> tags,
     this.title,
     this.defaut_currency,
-  });
+  }) : this.id = id ?? DateTime.now().toString(), removedItems = removedItems ?? {}, items = items ?? [], tags = tags ?? [];
 }

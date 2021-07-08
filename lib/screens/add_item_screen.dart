@@ -11,6 +11,10 @@ import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:my_utilities/color_utils.dart';
 
 class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
+  final String listId;
+
+  AddItemScreen(this.listId);
+
   @override
   Color get barrierColor => Colors.transparent;
 
@@ -123,7 +127,7 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
 
               await completed;
 
-              bloc.createItem(prototype.createGroceryItem());
+              // bloc.createItem(prototype.createGroceryItem());
             },
             child: Material(
               borderRadius: BorderRadius.circular(10),
@@ -252,7 +256,7 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
                         await this.completed;
 
                         bloc.tryAddPrototype(prototype);
-                        bloc.createItem(newItem);
+                        bloc.addItem(newItem, listId);
                       },
                     ),
                   ),
@@ -268,7 +272,7 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
 
                         var newItem = ProductlessGroceryItem(title: _textEdContr.text, amount: 1);
 
-                        bloc.createItem(newItem);
+                        bloc.addItem(newItem, listId);
 
                         _textField.unfocus();
                         Navigator.pop(context);

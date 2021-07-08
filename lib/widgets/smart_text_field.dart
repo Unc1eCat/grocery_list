@@ -6,36 +6,33 @@ import 'dart:ui' as ui;
 
 class SmartTextField extends StatefulWidget {
   const SmartTextField({
-    GlobalKey key,
-    this.decoration,
-    this.keyboardType,
+    @required
+        GlobalKey key,
+    this.decoration = const InputDecoration(),
     this.textInputAction,
-    this.textCapitalization,
+    this.textCapitalization = TextCapitalization.none,
     this.style,
     this.strutStyle,
-    this.textAlign,
+    this.textAlign = TextAlign.start,
     this.textAlignVertical,
     this.textDirection,
-    this.readOnly,
-    this.toolbarOptions,
+    this.readOnly = false,
     this.showCursor,
-    this.autofocus,
-    this.obscuringCharacter,
-    this.obscureText,
-    this.autocorrect,
-    this.smartDashesType,
-    this.smartQuotesType,
-    this.enableSuggestions,
-    this.maxLines,
+    this.autofocus = false,
+    this.obscuringCharacter = '•',
+    this.obscureText = false,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
+    this.maxLines = 1,
     this.minLines,
-    this.expands,
+    this.expands = false,
     this.maxLength,
     @Deprecated(
       'Use maxLengthEnforcement parameter which provides more specific '
       'behavior related to the maxLength limit. '
       'This feature was deprecated after v1.25.0-5.0.pre.',
     )
-        this.maxLengthEnforced,
+        this.maxLengthEnforced = true,
     this.maxLengthEnforcement,
     this.onChanged,
     this.onEditingComplete,
@@ -43,16 +40,16 @@ class SmartTextField extends StatefulWidget {
     this.onAppPrivateCommand,
     this.inputFormatters,
     this.enabled,
-    this.cursorWidth,
+    this.cursorWidth = 2.0,
     this.cursorHeight,
     this.cursorRadius,
     this.cursorColor,
-    this.selectionHeightStyle,
-    this.selectionWidthStyle,
+    this.selectionHeightStyle = ui.BoxHeightStyle.tight,
+    this.selectionWidthStyle = ui.BoxWidthStyle.tight,
     this.keyboardAppearance,
-    this.scrollPadding,
-    this.dragStartBehavior,
-    this.enableInteractiveSelection,
+    this.scrollPadding = const EdgeInsets.all(20.0),
+    this.dragStartBehavior = DragStartBehavior.start,
+    this.enableInteractiveSelection = true,
     this.selectionControls,
     this.onTap,
     this.mouseCursor,
@@ -61,6 +58,10 @@ class SmartTextField extends StatefulWidget {
     this.scrollPhysics,
     this.autofillHints,
     this.restorationId,
+    this.keyboardType,
+    this.smartDashesType,
+    this.smartQuotesType,
+    this.toolbarOptions,
   }) : super(key: key);
 
   final InputDecoration decoration;
@@ -122,6 +123,7 @@ class SmartTextField extends StatefulWidget {
 
   final ValueChanged<String> onChanged;
 
+  /// Is also called when unfocused
   final VoidCallback onEditingComplete;
 
   final ValueChanged<String> onSubmitted;
@@ -350,13 +352,15 @@ class FullSmartTextFieldState extends State<SmartTextField> {
     super.initState();
 
     _controller = TextEditingController();
-    _focusNode = FocusNode();
+    _focusNode = FocusNode()..addListener(widget.onEditingComplete);
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _focusNode.dispose();
+    _focusNode
+      ..removeListener(widget.onEditingComplete)
+      ..dispose();
 
     super.dispose();
   }

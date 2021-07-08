@@ -21,7 +21,7 @@ class ListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var groceryListBloc = BlocProvider.of<GroceryListBloc>(context);
+    var bloc = BlocProvider.of<GroceryListBloc>(context);
 
     return Scaffold(
       body: Stack(
@@ -32,11 +32,11 @@ class ListScreen extends StatelessWidget {
                 return ((state is ItemDeletedState || state is ItemCreatedState) && (state as WithinListState).listId == listId) ||
                     state is ItemsFetchedState;
               },
-              cubit: groceryListBloc,
+              cubit: bloc,
               builder: (context, state) => Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: ImplicitlyAnimatedReorderableList<GroceryItem>(
-                  onReorderFinished: (item, from, to, newItems) => groceryListBloc.moveItem(from, to, listId),
+                  onReorderFinished: (item, from, to, newItems) => bloc.moveItem(from, to, listId),
                   areItemsTheSame: (a, b) => a.id == b.id,
                   itemBuilder: (context, animation, item, i) {
                     return Reorderable(
@@ -47,17 +47,18 @@ class ListScreen extends StatelessWidget {
                           scale: animation,
                           child: BlocBuilder<GroceryListBloc, GroceryListState>(
                             buildWhen: (previous, current) => current is ItemsChangedState && current.contains(item.id),
-                            cubit: groceryListBloc,
+                            cubit: bloc,
                             builder: (context, state) => GroceryListItem(
                               id: item.id,
                               key: ValueKey(item.id),
+                              listId: listId,
                             ),
                           ),
                         ),
                       ),
                     );
                   },
-                  items: groceryListBloc.getListOfId(listId).items,
+                  items: bloc.getListOfId(listId).items,
                   physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                 ),
               ),
@@ -78,7 +79,7 @@ class ListScreen extends StatelessWidget {
                       onPressed: () {
                         if (ModalRoute.of(context).isCurrent) {
                           print("Tap");
-                          Navigator.push(context, AddItemScreen());
+                          Navigator.push(context, AddItemScreen(listId));
                         }
                       },
                       pressedScale: 0.9,

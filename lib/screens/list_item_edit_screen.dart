@@ -13,6 +13,7 @@ import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
 import 'package:grocery_list/widgets/list_item_property.dart';
 import 'package:grocery_list/widgets/number_input.dart';
+import 'package:grocery_list/widgets/smart_text_field.dart';
 import 'package:my_utilities/color_utils.dart';
 import 'package:path/path.dart';
 import '../utils/golden_ration_utils.dart' as gr;
@@ -26,6 +27,11 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
 
   ScrollController _scrollController;
   AnimationController _animationController;
+  GlobalKey<FullSmartTextFieldState> titleKey = GlobalKey<FullSmartTextFieldState>();
+  GlobalKey<FullSmartTextFieldState> quantizationKey = GlobalKey<FullSmartTextFieldState>();
+  GlobalKey<FullSmartTextFieldState> unitKey = GlobalKey<FullSmartTextFieldState>();
+  GlobalKey<FullSmartTextFieldState> priceKey = GlobalKey<FullSmartTextFieldState>();
+  GlobalKey<FullSmartTextFieldState> currencyKey = GlobalKey<FullSmartTextFieldState>();
 
   @override
   bool get opaque => false;
@@ -68,11 +74,6 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     var model = bloc.getItemOfId(id, listId);
-    var titleEdContr = TextEditingController(text: model.title);
-    var quantizationEdContr = TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount));
-    var unitEdContr = TextEditingController(text: model.unit);
-    var priceEdContr = TextEditingController(text: model.price.toStringAsFixed(2));
-    var currencyEdContr = TextEditingController(text: model.currency);
 
     return Stack(
       children: [
@@ -97,11 +98,12 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
               cubit: bloc,
               listener: (context, state) {
                 if (state is ItemsChangedState && state.contains(id)) {
-                  titleEdContr.text = state.item.title;
-                  quantizationEdContr.text = state.item.quantization.toStringAsFixed(state.item.quantizationDecimalNumbersAmount);
-                  unitEdContr.text = state.item.unit;
-                  priceEdContr.text = state.item.price.toStringAsFixed(2);
-                  currencyEdContr.text = state.item.currency;
+                  model = bloc.getItemOfId(id, listId);
+                  titleKey.currentState.controller.text = model.title;
+                  quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
+                  unitKey.currentState.controller.text = model.unit;
+                  priceKey.currentState.controller.text = model.price.toStringAsFixed(2);
+                  currencyKey.currentState.controller.text = model.currency;
                 }
               },
               child: ListView(
@@ -126,16 +128,15 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                 tag: "title$id",
                                 child: Material(
                                   color: Colors.transparent,
-                                  child: TextField(
+                                  child: SmartTextField(
                                     textCapitalization: TextCapitalization.sentences,
                                     textAlign: TextAlign.center,
                                     scrollPadding: EdgeInsets.zero,
-                                    decoration: InputDecoration(
-                                        border: InputBorder.none, contentPadding: EdgeInsets.all(6), hintText: "Item title"),
+                                    decoration: InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.all(6), hintText: "Item title"),
                                     cursorWidth: 2,
                                     cursorRadius: Radius.circular(2),
-                                    controller: titleEdContr,
-                                    onEditingComplete: () => bloc.updateItem(id, model.copyWith(title: titleEdContr.text)),
+                                    key: titleKey,
+                                    onEditingComplete: () => bloc.updateItem(id, model.copyWith(title: titleKey.currentState.controller.text), listId),
                                     onSubmitted: (value) => FocusScope.of(context).unfocus(),
                                     style: Theme.of(context).textTheme.caption.copyWith(fontSize: 30),
                                   ),
@@ -157,12 +158,12 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                             padding: const EdgeInsets.all(8),
                             child: BlocBuilder<GroceryListBloc, GroceryListState>(
                               cubit: bloc,
-                              buildWhen: (previous, current) => current is CheckedChangedState && current.contains(id),
+                              buildWhen: (previous, current) => current is CheckedChangedState && current.item.id == id,
                               builder: (context, state) {
                                 var model = bloc.getItemOfId(id, listId);
 
                                 return HeavyTouchButton(
-                                  onPressed: () => bloc.updateItem(id, model.copyWith(checked: !model.checked)),
+                                  onPressed: () => bloc.updateItem(id, model.copyWith(checked: !model.checked), listId),
                                   child: ListItemCheckBox(checked: model?.checked ?? model.checked),
                                 );
                               },
@@ -178,7 +179,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                           quantize: model.quantization,
                           value: model.amount,
                           unit: model.unit,
-                          onChanged: (value) => bloc.updateItem(id, model.copyWith(amount: value)),
+                          onChanged: (value) => bloc.updateItem(id, model.copyWith(amount: value), listId),
                         ),
                       ),
                     ],
@@ -186,8 +187,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                   AnimatedBuilder(
                     animation: animation,
                     builder: (context, child) => Transform.translate(
-                      offset:
-                          Offset(0.0, Curves.easeInCubic.transform(1 - animation.value) * MediaQuery.of(context).size.height * gr.invphi),
+                      offset: Offset(0.0, Curves.easeInCubic.transform(1 - animation.value) * MediaQuery.of(context).size.height * gr.invphi),
                       child: child,
                     ),
                     child: BlocBuilder<GroceryListBloc, GroceryListState>(
@@ -211,24 +211,23 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                       ListItemProperty(
                                           keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
                                           label: "Quantization",
-                                          textEditingController: quantizationEdContr,
+                                          textFieldKey: quantizationKey,
                                           onEditingComplete: () {
-                                            var value = double.tryParse(quantizationEdContr.text);
+                                            var value = double.tryParse(quantizationKey.currentState.controller.text);
                                             if (value == null || value < 0) {
-                                              quantizationEdContr.text =
-                                                  model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
+                                              quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
                                               return;
                                             }
 
-                                            var dot = quantizationEdContr.text.lastIndexOf(RegExp(",|\\."));
+                                            var dot = quantizationKey.currentState.controller.text.lastIndexOf(RegExp(",|\\."));
 
                                             bloc.updateItem(
                                               id,
                                               model.copyWith(
                                                   quantization: value,
-                                                  quantizationDecimalNumbersAmount:
-                                                      dot == -1 ? 0 : quantizationEdContr.text.length - 1 - dot,
+                                                  quantizationDecimalNumbersAmount: dot == -1 ? 0 : quantizationKey.currentState.controller.text.length - 1 - dot,
                                                   amount: (model.amount / value).round() * value),
+                                              listId,
                                             );
                                           }),
                                       SizedBox(
@@ -237,8 +236,8 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                       ListItemProperty(
                                           width: 75,
                                           label: "Unit",
-                                          textEditingController: unitEdContr,
-                                          onEditingComplete: () => bloc.updateItem(id, model.copyWith(unit: unitEdContr.text))),
+                                          textFieldKey: unitKey,
+                                          onEditingComplete: () => bloc.updateItem(id, model.copyWith(unit: unitKey.currentState.controller.text), listId)),
                                     ],
                                   ),
                                 ),
@@ -250,17 +249,17 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                     ListItemProperty(
                                       keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
                                       label: "Price",
-                                      textEditingController: priceEdContr,
+                                      textFieldKey: priceKey,
                                       onEditingComplete: () {
-                                        bloc.updateItem(id, model.copyWith(price: double.parse(priceEdContr.text)));
+                                        bloc.updateItem(id, model.copyWith(price: double.parse(priceKey.currentState.controller.text)), listId);
                                       },
                                     ), // TODO: Make it constrain number of numbers in decimal fraction part to 2
                                     SizedBox(width: 15),
                                     ListItemProperty(
                                       width: 75,
                                       label: "Currency",
-                                      textEditingController: currencyEdContr,
-                                      onEditingComplete: () => bloc.updateItem(id, model.copyWith(currency: currencyEdContr.text)),
+                                      textFieldKey: currencyKey,
+                                      onEditingComplete: () => bloc.updateItem(id, model.copyWith(currency: currencyKey.currentState.controller.text), listId),
                                     ),
                                   ],
                                 ),
@@ -309,8 +308,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
               children: [
                 BlocBuilder<GroceryListBloc, GroceryListState>(
                     cubit: bloc,
-                    buildWhen: (previous, current) =>
-                        current is ItemsChangedState, // TODO: Separate bound prototype change in a separeate state
+                    buildWhen: (previous, current) => current is ItemsChangedState, // TODO: Separate bound prototype change in a separeate state
                     builder: (context, state) {
                       var model = bloc.getItemOfId(id, listId) ?? (state as ItemDeletedState).removedItem;
                       var isPrototypeless = model.boundPrototype == null;
@@ -325,7 +323,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                 var p = m.createPrototype();
 
                                 bloc.addPrototype(p);
-                                bloc.updateItem(id, m.copyWith(boundPrototype: p, updatePrototype: true));
+                                bloc.updateItem(id, m.copyWith(boundPrototype: p, updatePrototype: true), listId);
                               },
                               color: const Color(0xFFBF42C1),
                               icon: Icons.save_rounded,
@@ -356,11 +354,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                               onPressed: () {
                                 var m = bloc.getItemOfId(id, listId);
 
-                                bloc.updateItem(
-                                    id,
-                                    m.boundPrototype
-                                        .createGroceryItem()
-                                        .copyWith(id: id, amount: m.amount, boundPrototype: null, updatePrototype: true));
+                                bloc.updateItem(id, m.boundPrototype.createGroceryItem().copyWith(id: id, amount: m.amount, boundPrototype: null, updatePrototype: true), listId);
                               },
                               color: const Color(0xFF3ABD85),
                               icon: Icons.merge_type_rounded,
@@ -374,7 +368,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ActionButton(
-                      onPressed: () => bloc.createItem(bloc.getItemOfId(id, listId).copyWith(id: DateTime.now().toString())),
+                      onPressed: () => bloc.addItem(bloc.getItemOfId(id, listId).copyWith(id: DateTime.now().toString()), listId),
                       color: const Color(0xFFEDB048),
                       icon: Icons.copy_outlined,
                       title: "Duplicate",
@@ -382,7 +376,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                     // Spacer(),
                     ActionButton(
                       onPressed: () {
-                        this.completed.then((value) => bloc.deleteItem(id));
+                        this.completed.then((value) => bloc.removeItem(id, listId));
                         Navigator.pop(context);
                       },
                       color: const Color(0xFFF4715D),

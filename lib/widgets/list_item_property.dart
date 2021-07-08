@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_list/widgets/smart_text_field.dart';
 
 class ListItemProperty extends StatelessWidget {
   final String label;
-  final TextEditingController textEditingController;
   final double width;
   final TextInputType keyboardType;
   final VoidCallback onEditingComplete;
+  final GlobalKey textFieldKey;
 
   ListItemProperty({
-    Key key,
+    this.textFieldKey,
     this.width = 110,
     this.label,
-    this.textEditingController,
     this.keyboardType,
     this.onEditingComplete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,8 @@ class ListItemProperty extends StatelessWidget {
             bottom: 8,
             child: Material(
               color: Colors.transparent,
-              child: TextField(
+              child: SmartTextField(
+                key: textFieldKey,
                 style: TextStyle(fontSize: 20),
                 decoration: InputDecoration(
                   labelStyle: const TextStyle(
@@ -54,7 +55,6 @@ class ListItemProperty extends StatelessWidget {
                   alignLabelWithHint: true,
                   labelText: label,
                 ),
-                controller: textEditingController,
                 textAlign: TextAlign.center,
                 keyboardType: keyboardType,
                 onEditingComplete: onEditingComplete,

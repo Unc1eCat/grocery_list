@@ -1,5 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/models/grocery_item.dart';
 import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
@@ -13,10 +15,12 @@ import '../models/grocery_prototype.dart';
 
 // TODO: Make separate update state for every property of the grocery item
 class GroceryListBloc extends Cubit<GroceryListState> {
+  static GroceryListBloc of(BuildContext context) => BlocProvider.of<GroceryListBloc>(context);
+
   List<GroceryPrototype> _prototypes = <GroceryPrototype>[];
   List<GroceryList> _lists = <GroceryList>[];
 
-  List<GroceryItem> get lists => List<GroceryItem>.unmodifiable(_lists);
+  List<GroceryList> get lists => List<GroceryList>.unmodifiable(_lists);
   List<GroceryPrototype> get prototypes => List<GroceryPrototype>.unmodifiable(_prototypes);
 
   GroceryListBloc() : super(GroceryListState());
@@ -134,7 +138,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     return _prototypes.any((e) => e.id == prototype.id);
   }
 
-  void createItem(GroceryItem newItem, String listId) {
+  void addItem(GroceryItem newItem, String listId) {
     var list = getListOfId(listId);
     list.items.add(newItem);
 
@@ -143,7 +147,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     saveItems();
   }
 
-  void deleteItem(String id, String listId) {
+  void removeItem(String id, String listId) {
     var list = getListOfId(listId);
     var index = list.items.indexWhere((e) => e.id == id);
 
@@ -166,6 +170,20 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     }
 
     saveItems();
+  }
+
+  void addList(GroceryList list)
+  {
+    _lists.add(list);
+
+    emit(ListsListModifiedState());
+  }
+
+  void removeList(String listId)
+  {
+    _lists.removeWhere((e) => e.id == listId);
+
+    emit(ListsListModifiedState());
   }
 }
 
@@ -285,3 +303,9 @@ class ItemMovedState extends WithinListState {
   List<Object> get props => super.props..add(items);
 }
 
+class ListsListModifiedState extends GroceryListState
+{
+  ListsListModifiedState();
+
+  bool operator ==(Object other) => false;
+}

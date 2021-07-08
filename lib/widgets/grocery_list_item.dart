@@ -28,7 +28,7 @@ class GroceryListItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         splashColor: Colors.transparent,
         highlightColor: Theme.of(context).colorScheme.onBackground.blendedWith(Theme.of(context).primaryColor, 0.3).withOpacity(0.06),
-        onLongPress: () => Navigator.of(context).push(ListItemEditRoute(bloc: bloc, id: model.id)),
+        onLongPress: () => Navigator.of(context).push(ListItemEditRoute(bloc: bloc, id: model.id, listId: listId)),
         child: Row(
           children: [
             Hero(

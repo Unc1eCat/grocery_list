@@ -379,6 +379,7 @@ class TabsCornerDrawer extends StatefulWidget {
   final WidgetWrapper tabBarWrapper;
   final Duration screenChangeDuration;
   final Duration pointerMovementDuration;
+  final AnimatedTransitionBuilder extendedChildTransitionBuilder;
 
   /// Size of the button in the closed position
   final Size buttonSize;
@@ -421,6 +422,7 @@ class TabsCornerDrawer extends StatefulWidget {
     this.tabBarWrapper,
     this.screenChangeDuration = const Duration(milliseconds: 150),
     this.pointerMovementDuration = const Duration(milliseconds: 230),
+    this.extendedChildTransitionBuilder,
   });
 
   @override
@@ -481,7 +483,7 @@ class TabsCornerDrawerState extends State<TabsCornerDrawer> with TickerProviderS
       extendedChildAnimationDuration: widget.extendedChildAnimationDuration,
       overlap: widget.overlap,
       screenBuilder: (_, __, child) => child,
-      extendedChildTransitionBuilder: (context, animation, child) => child,
+      extendedChildTransitionBuilder: widget.extendedChildTransitionBuilder,
       expandedChild: SafeArea(
         child: widget.tabBarWrapper?.call(context, tb) ??
             Center(
