@@ -29,7 +29,7 @@ class _TheAppState extends State<TheApp> {
 
   @override
   void initState() {
-    groceryListBloc = GroceryListBloc(<GroceryItem>[]);
+    groceryListBloc = GroceryListBloc();
 
     super.initState();
   }

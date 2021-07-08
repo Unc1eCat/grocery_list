@@ -20,8 +20,9 @@ import '../utils/golden_ration_utils.dart' as gr;
 class ListItemEditRoute extends PageRoute with TickerProviderMixin {
   final GroceryListBloc bloc;
   final String id;
+  final String listId;
 
-  ListItemEditRoute({this.bloc, this.id});
+  ListItemEditRoute({this.listId, this.bloc, this.id});
 
   ScrollController _scrollController;
   AnimationController _animationController;
@@ -66,7 +67,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-    var model = bloc.getItemOfId(id);
+    var model = bloc.getItemOfId(id, listId);
     var titleEdContr = TextEditingController(text: model.title);
     var quantizationEdContr = TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount));
     var unitEdContr = TextEditingController(text: model.unit);
@@ -95,21 +96,12 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
             child: BlocListener<GroceryListBloc, GroceryListState>(
               cubit: bloc,
               listener: (context, state) {
-                if (state is ItemChangedState && state.id == id) {
+                if (state is ItemsChangedState && state.contains(id)) {
                   titleEdContr.text = state.item.title;
                   quantizationEdContr.text = state.item.quantization.toStringAsFixed(state.item.quantizationDecimalNumbersAmount);
                   unitEdContr.text = state.item.unit;
                   priceEdContr.text = state.item.price.toStringAsFixed(2);
                   currencyEdContr.text = state.item.currency;
-                } else if (state is ItemDeletedState) {
-                  return state.removedItem.id == id;
-                } else if (state is PrototypeChangedState && state.updatedPrototypes.id == model.boundPrototype.id) {
-                  titleEdContr.text = state.updatedPrototypes.title;
-                  quantizationEdContr.text =
-                      state.updatedPrototypes.quantization.toStringAsFixed(state.updatedPrototypes.quantizationDecimalNumbersAmount);
-                  unitEdContr.text = state.updatedPrototypes.unit;
-                  priceEdContr.text = state.updatedPrototypes.price.toStringAsFixed(2);
-                  currencyEdContr.text = state.updatedPrototypes.currency;
                 }
               },
               child: ListView(
@@ -122,9 +114,9 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                   BlocBuilder<GroceryListBloc, GroceryListState>(
                     cubit: bloc,
                     buildWhen: (previous, current) =>
-                        (current is ItemChangedState && current.reboundPrototype == true && current.item.id == id) ||
-                        (current is PrototypeRemovedState && current.prototype.id == bloc.getItemOfId(id).boundPrototype.id),
-                    builder: (context, state) => bloc.getItemOfId(id).boundPrototype == null
+                        (current is ItemsChangedState && current.reboundPrototype == true && current.contains(id)) ||
+                        (current is PrototypeRemovedState && current.prototype.id == bloc.getItemOfId(id, listId).boundPrototype.id),
+                    builder: (context, state) => bloc.getItemOfId(id, listId).boundPrototype == null
                         ? SizedBox(
                             width: 300,
                             height: 30,
@@ -165,9 +157,9 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                             padding: const EdgeInsets.all(8),
                             child: BlocBuilder<GroceryListBloc, GroceryListState>(
                               cubit: bloc,
-                              buildWhen: (previous, current) => current is CheckedChangedState && current.item.id == id,
+                              buildWhen: (previous, current) => current is CheckedChangedState && current.contains(id),
                               builder: (context, state) {
-                                var model = bloc.getItemOfId(id);
+                                var model = bloc.getItemOfId(id, listId);
 
                                 return HeavyTouchButton(
                                   onPressed: () => bloc.updateItem(id, model.copyWith(checked: !model.checked)),
@@ -201,10 +193,10 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                     child: BlocBuilder<GroceryListBloc, GroceryListState>(
                         cubit: bloc,
                         buildWhen: (previous, current) =>
-                            (current is ItemChangedState && current.reboundPrototype == true && current.item.id == id) ||
-                            (current is PrototypeRemovedState && current.prototype.id == bloc.getItemOfId(id).boundPrototype.id),
+                            (current is ItemsChangedState && current.reboundPrototype == true && current.contains(id)) ||
+                            (current is PrototypeRemovedState && current.prototype.id == bloc.getItemOfId(id, listId).boundPrototype.id),
                         builder: (context, state) {
-                          var isPrototypeless = bloc.getItemOfId(id).boundPrototype == null;
+                          var isPrototypeless = bloc.getItemOfId(id, listId).boundPrototype == null;
 
                           return Column(
                             mainAxisSize: MainAxisSize.min,
@@ -318,9 +310,9 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                 BlocBuilder<GroceryListBloc, GroceryListState>(
                     cubit: bloc,
                     buildWhen: (previous, current) =>
-                        current is ItemChangedState, // TODO: Separate bound prototype change in a separeate state
+                        current is ItemsChangedState, // TODO: Separate bound prototype change in a separeate state
                     builder: (context, state) {
-                      var model = bloc.getItemOfId(id) ?? (state as ItemDeletedState).removedItem;
+                      var model = bloc.getItemOfId(id, listId) ?? (state as ItemDeletedState).removedItem;
                       var isPrototypeless = model.boundPrototype == null;
 
                       return Row(
@@ -329,7 +321,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                           if (isPrototypeless)
                             ActionButton(
                               onPressed: () {
-                                var m = bloc.getItemOfId(id);
+                                var m = bloc.getItemOfId(id, listId);
                                 var p = m.createPrototype();
 
                                 bloc.addPrototype(p);
@@ -343,7 +335,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                           if (isPrototypeless)
                             ActionButton(
                               onPressed: () {
-                                bloc.updatePrototype(bloc.getItemOfId(id).createPrototype()); // TODO
+                                bloc.updatePrototype(bloc.getItemOfId(id, listId).createPrototype()); // TODO
                               },
                               color: const Color(0xFF3ABD85),
                               icon: Icons.merge_type_rounded,
@@ -352,7 +344,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                           if (!isPrototypeless)
                             ActionButton(
                               onPressed: () {
-                                Navigator.push(context, ProductItemEditRoute(id: bloc.getItemOfId(id).boundPrototype.id));
+                                Navigator.push(context, ProductItemEditRoute(id: bloc.getItemOfId(id, listId).boundPrototype.id));
                               },
                               color: const Color(0xFFBF42C1),
                               icon: Icons.edit_outlined,
@@ -362,7 +354,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                           if (!isPrototypeless)
                             ActionButton(
                               onPressed: () {
-                                var m = bloc.getItemOfId(id);
+                                var m = bloc.getItemOfId(id, listId);
 
                                 bloc.updateItem(
                                     id,
@@ -382,7 +374,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ActionButton(
-                      onPressed: () => bloc.createItem(bloc.getItemOfId(id).copyWith(id: DateTime.now().toString())),
+                      onPressed: () => bloc.createItem(bloc.getItemOfId(id, listId).copyWith(id: DateTime.now().toString())),
                       color: const Color(0xFFEDB048),
                       icon: Icons.copy_outlined,
                       title: "Duplicate",
