@@ -81,6 +81,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
   void updatePrototype(GroceryPrototype newPrototype) {
     var index = _prototypes.indexWhere((e) => e.id == newPrototype.id);
+    var changedItemsIds = <String>{};
 
     _prototypes[index] = newPrototype;
 
@@ -88,10 +89,12 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     {for (var i = 0; i < list.items.length; i++) {
       if (list.items[i].boundPrototype.id == newPrototype.id) {
         list.items[i] = list.items[i].copyWith(boundPrototype: newPrototype, updatePrototype: true);
+        changedItemsIds.add(list.items[i].id);
       }
     }}
 
     emit(PrototypeChangedState(newPrototype));
+    emit(ItemsChangedState(changedItemsIds, false));
 
     savePrototypes();
   }

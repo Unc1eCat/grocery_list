@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/src/scheduler/ticker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
+import 'package:grocery_list/models/grocery_item.dart';
 import 'package:grocery_list/screens/product_edit_screen.dart';
 import 'package:grocery_list/utils/ticker_provider_mixin.dart';
 import 'package:grocery_list/widgets/action_button.dart';
@@ -71,9 +72,18 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
     super.dispose();
   }
 
+  void _setFields(GroceryItem model) {
+    titleKey.currentState.controller.text = model.title;
+    quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
+    unitKey.currentState.controller.text = model.unit;
+    priceKey.currentState.controller.text = model.price.toStringAsFixed(2);
+    currencyKey.currentState.controller.text = model.currency;
+  }
+
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     var model = bloc.getItemOfId(id, listId);
+    _setFields(model);
 
     return Stack(
       children: [
@@ -99,11 +109,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
               listener: (context, state) {
                 if (state is ItemsChangedState && state.contains(id)) {
                   model = bloc.getItemOfId(id, listId);
-                  titleKey.currentState.controller.text = model.title;
-                  quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
-                  unitKey.currentState.controller.text = model.unit;
-                  priceKey.currentState.controller.text = model.price.toStringAsFixed(2);
-                  currencyKey.currentState.controller.text = model.currency;
+                  _setFields(model);
                 }
               },
               child: ListView(
