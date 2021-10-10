@@ -84,6 +84,48 @@ class SearchResultIncreaseExisting extends StatelessWidget {
   }
 }
 
+class SearchResultWithProduct extends StatelessWidget {
+  final String name;
+  final String listId;
+
+  const SearchResultWithProduct({Key key, this.name, this.listId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var th = Theme.of(context);
+    var bloc = GroceryListBloc.of(context);
+
+    return HeavyTouchButton(
+      onPressed: () {
+        var p =  GroceryPrototype(title: name);
+        bloc.addPrototype(p);
+        bloc.addItem(ProductfulGroceryItem(boundPrototype: p, amount: p.quantization), listId);
+      },
+      child: Material(
+        type: MaterialType.button,
+        elevation: 0,
+        color: th.colorScheme.onBackground.inverted.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Text.rich(
+            TextSpan(children: [
+              TextSpan(
+                text: "Create from new product ",
+                style: th.textTheme.button.copyWith(color: th.textTheme.button.color.blendedWithInversion(0.2)),
+              ),
+              TextSpan(
+                text: name,
+                style: th.textTheme.button,
+              ),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class SearchResultFromProduct extends StatelessWidget {
   final String productId;
   final String listId;

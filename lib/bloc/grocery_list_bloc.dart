@@ -7,6 +7,8 @@ import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/models/item_tag.dart';
 import 'package:grocery_list/widgets/rounded_rolling_switch.dart';
+import 'package:grocery_list/widgets/searchg_result.dart';
+import 'package:string_similarity/string_similarity.dart';
 import 'dart:convert' as conv;
 import 'dart:io';
 
@@ -61,7 +63,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   void deletePrototype(String id) {
     var index = _prototypes.indexWhere((e) => e.id == id);
     var changedIds = <String>{};
-    
+
     for (var list in _lists) {
       for (var i = 0; i < list.items.length; i++) {
         if (list.items[i].boundPrototype.id == id) {
@@ -85,13 +87,14 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     _prototypes[index] = newPrototype;
 
-    for (var list in _lists)
-    {for (var i = 0; i < list.items.length; i++) {
-      if (list.items[i].boundPrototype.id == newPrototype.id) {
-        list.items[i] = list.items[i].copyWith(boundPrototype: newPrototype, updatePrototype: true);
-        changedItemsIds.add(list.items[i].id);
+    for (var list in _lists) {
+      for (var i = 0; i < list.items.length; i++) {
+        if (list.items[i].boundPrototype.id == newPrototype.id) {
+          list.items[i] = list.items[i].copyWith(boundPrototype: newPrototype, updatePrototype: true);
+          changedItemsIds.add(list.items[i].id);
+        }
       }
-    }}
+    }
 
     emit(PrototypeChangedState(newPrototype));
     emit(ItemsChangedState(changedItemsIds, false));
@@ -108,33 +111,20 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     saveItems();
   }
 
-  List<GroceryPrototype> getRelevantPrototypes(int limit, String enteredTitle) {
-    if (_prototypes.length == 0) return <GroceryPrototype>[];
+  List<Widget> getSearchResults(String enteredText, String listId) {
+    var list = getListOfId(listId);
+    var increase = list.items.sublist(0);
+    var fromProds = prototypes.sublist(0);
 
-    var ret = _prototypes.sublist(0);
+    increase.sort((a, b) => a.title.similarityTo(enteredText).compareTo(b.title.similarityTo(enteredText)));
+    fromProds.sort((a, b) => a.title.similarityTo(enteredText).compareTo(b.title.similarityTo(enteredText)));
 
-    print(ret);
-
-    ret.removeWhere((e) => !e.title.contains(enteredTitle));
-    ret.sort((a, b) => a.title.compareTo(b.title)); // Alphabetic
-    ret.sort((a, b) => a.title.indexOf(enteredTitle).compareTo(b.title.indexOf(enteredTitle))); // Relevance
-
-    return ret;
-
-    // while (true)
-    // {
-    //   for (int i = 0; i < _prototypes.length; i++)
-    //   {
-    //     var v = _prototypes[i];
-    //     var iRel = v.title.indexOf(enteredTitle);
-
-    //     while (iRel > _prototypes[i + 1].title.indexOf(enteredTitle))
-    //     {
-    //       highestRel = iRel;
-
-    //     }
-    //   }
-    // }
+    return [
+      SearchResultCreateProductless(name: enteredText, listId: listId),
+      ...increase.take(3).map((e) => SearchResultIncreaseExisting(id: e.id, listId: listId)),
+      SearchResultWithProduct(name: enteredText, listId: listId),
+      ...fromProds.map((e) => SearchResultFromProduct(productId: e.id, listId: listId)).toList(),
+    ];
   }
 
   bool containsPrototype(GroceryPrototype prototype) {
@@ -175,15 +165,13 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     saveItems();
   }
 
-  void addList(GroceryList list)
-  {
+  void addList(GroceryList list) {
     _lists.add(list);
 
     emit(ListsListModifiedState());
   }
 
-  void removeList(String listId)
-  {
+  void removeList(String listId) {
     _lists.removeWhere((e) => e.id == listId);
 
     emit(ListsListModifiedState());
@@ -197,8 +185,7 @@ class GroceryListState extends Equatable {
   List<Object> get props => [];
 }
 
-class WithinListState extends GroceryListState
-{
+class WithinListState extends GroceryListState {
   final String listId;
 
   WithinListState(this.listId);
@@ -306,8 +293,7 @@ class ItemMovedState extends WithinListState {
   List<Object> get props => super.props..add(items);
 }
 
-class ListsListModifiedState extends GroceryListState
-{
+class ListsListModifiedState extends GroceryListState {
   ListsListModifiedState();
 
   bool operator ==(Object other) => false;
