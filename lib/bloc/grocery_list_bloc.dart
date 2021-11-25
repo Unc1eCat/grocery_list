@@ -102,6 +102,17 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     savePrototypes();
   }
 
+  void moveList(int fromIndex, int toIndex)
+  {
+    _lists.insert(toIndex, _lists.removeAt(toIndex));
+
+    emit(ListsListModifiedState());
+
+    // emit(TestState(1));
+    // Future.delayed(Duration(milliseconds: 150), () => emit(TestState(2)));
+    // Future.delayed(Duration(milliseconds: 300), () => emit(TestState(3)));
+  }
+
   void moveItem(int fromIndex, int toIndex, String listId) {
     var list = getListOfId(listId);
     list.items.insert(toIndex, list.items.removeAt(fromIndex));
@@ -298,3 +309,12 @@ class ListsListModifiedState extends GroceryListState {
 
   bool operator ==(Object other) => false;
 }
+
+// class TestState extends GroceryListState
+// {
+//   final int val;
+
+//   TestState(this.val);
+
+//   operator == (dynamic other) => false;
+// }

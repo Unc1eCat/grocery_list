@@ -45,6 +45,7 @@ class _TheAppState extends State<TheApp> {
           primaryColor: Colors.purple,
           bottomAppBarColor: Color(0xFF081524),
           scaffoldBackgroundColor: Color(0xFF11181F),
+          cardColor: Color(0xFF121921),
           // canvasColor: Colors.red,
           backgroundColor: Color(0xFF1E1E1E),
           textTheme: TextTheme(
