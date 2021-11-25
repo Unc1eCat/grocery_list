@@ -79,7 +79,7 @@ class ListScreen extends StatelessWidget {
                       onPressed: () {
                         if (ModalRoute.of(context).isCurrent) {
                           print("Tap");
-                          Navigator.push(context, AddItemScreen(listId));
+                          Navigator.push(context, AddItemScreen(listId, bloc));
                         }
                       },
                       pressedScale: 0.9,

@@ -124,27 +124,6 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
               ),
             );
           }),
-      // CornerDrawer(
-      //   drawerWidth: 240,
-      //   closedButton: Icon(Icons.menu_outlined, size: 36),
-      //   // overlap: 0.2,
-      //   expandedChild: Padding(
-      //     padding: const EdgeInsets.only(top: 100.0),
-      //     child: Text("Something", style: Theme.of(context).textTheme.headline6),
-      //   ),
-      //   opennedButton: FittedBox(
-      //     fit: BoxFit.scaleDown,
-      //     child: Row(
-      //       mainAxisAlignment: MainAxisAlignment.center,
-      //       children: [
-      //         Text("Close", style: Theme.of(context).textTheme.headline6),
-      //         SizedBox(width: 20),
-      //         Icon(Icons.close, size: 36),
-      //       ],
-      //     ),
-      //   ),
-      //   screen: ListScreen(),
-      // ),
     );
   }
 }
