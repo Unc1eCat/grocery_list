@@ -32,66 +32,73 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     var bloc = GroceryListBloc.of(context);
 
-    return Scaffold(
-      body: BlocBuilder<GroceryListBloc, GroceryListState>(
-        cubit: bloc,
-        buildWhen: (_, current) => current is ListsListModifiedState,
-        builder: (context, state) {
-          var listButtons = <Widget>[];
+    return Material(
+      color: Theme.of(context).canvasColor,
+      child: Column(
+        children: [
+          Expanded(
+            child: BlocBuilder<GroceryListBloc, GroceryListState>(
+              cubit: bloc,
+              buildWhen: (_, current) => current is ListsListModifiedState,
+              builder: (context, state) {
+                var listButtons = <Widget>[];
 
-          for (var i = 0; i < bloc.lists.length; i++) {
-            listButtons.add(
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: Builder(
-                  builder: (context) => HeavyTouchButton(
-                    pressedScale: 0.9,
-                    onPressed: () => context.findAncestorStateOfType<TabsCornerDrawerState>().currentIndex = 2 + i,
-                    child: Text(bloc.lists[i].title, style: Theme.of(context).textTheme.headline6),
+                for (var i = 0; i < bloc.lists.length; i++) {
+                  listButtons.add(
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Builder(
+                        builder: (context) => HeavyTouchButton(
+                          pressedScale: 0.9,
+                          onPressed: () => context.findAncestorStateOfType<TabsCornerDrawerState>().currentIndex = 2 + i,
+                          child: Text(bloc.lists[i].title, style: Theme.of(context).textTheme.headline6),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return TabBarView(
+                  physics: NeverScrollableScrollPhysics(),
+                  controller: _controller,
+                  children: [
+                    ListsScreen(),
+                    SettingsScreen(),
+                  ],
+                );
+              },
+            ),
+          ),
+          ColoredBox(
+            color: Colors.black,
+            child: TabBar(
+              controller: _controller,
+              indicatorColor: Colors.transparent,
+              tabs: [
+                ColoredTab(
+                  controller: _controller,
+                  index: 0,
+                  icon: Icon(
+                    Icons.format_list_bulleted_rounded,
                   ),
+                  // text: "Lists",
+                  selectedColor: Colors.green[600],
+                  unselectedColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.65),
                 ),
-              ),
-            );
-          }
-
-          return TabBarView(
-            physics: NeverScrollableScrollPhysics(),
-            controller: _controller,
-            children: [
-              ListsScreen(),
-              SettingsScreen(),
-            ],
-          );
-        },
-      ),
-      bottomNavigationBar: ColoredBox(
-        color: Colors.black,
-        child: TabBar(
-          controller: _controller,
-          indicatorColor: Colors.transparent,
-          tabs: [
-            ColoredTab(
-              controller: _controller,
-              index: 0,
-              icon: Icon(
-                Icons.format_list_bulleted_rounded,
-              ),
-              text: "Lists",
-              selectedColor: Colors.green[600],
-              unselectedColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.65),
+                ColoredTab(
+                  controller: _controller,
+                  index: 1,
+                  icon: Icon(
+                    Icons.person_rounded,
+                  ),
+                  // text: "Profile",
+                  selectedColor: Colors.blueAccent,
+                  unselectedColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.65),
+                ),
+              ],
             ),
-            ColoredTab(
-              controller: _controller,
-              index: 1,
-              icon: Icon(
-                Icons.person_rounded,
-              ),
-              text: "Profile",
-              selectedColor: Colors.blueAccent,
-              unselectedColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.65),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

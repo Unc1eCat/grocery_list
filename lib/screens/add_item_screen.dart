@@ -39,14 +39,28 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
   Timer _reloadSearchResultsTimer;
   GroceryListBloc bloc;
 
+  void _startSearchReloadTimer() {
+    _reloadSearchResultsTimer?.cancel();
+    _reloadSearchResultsTimer = Timer(
+        Duration(milliseconds: 700),
+        () => _reloadSearchResultsStreamController.add(bloc
+            .getSearchResults(_textEdContr.text, listId)
+            .map((e) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: e,
+                ))
+            .toList()));
+  }
+
   @override
   void install() {
     _animationController = AnimationController(vsync: this)..animateTo(1.0, duration: const Duration(milliseconds: 600));
     _scrollController = ScrollController()..addListener(_handleScroll);
     _textField = FocusNode();
     _textEdContr = TextEditingController();
-    _reloadSearchResultsTimer = Timer(Duration(milliseconds: 700), () => _reloadSearchResultsStreamController.add(bloc.getSearchResults(_textEdContr.text, listId)));
     _reloadSearchResultsStreamController = StreamController(sync: false);
+    _textEdContr.addListener(() => _startSearchReloadTimer());
+    _startSearchReloadTimer();
     popped.then((_) => _animationController.animateBack(0.0, duration: const Duration(milliseconds: 600)));
     super.install();
   }
@@ -88,9 +102,9 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     var bloc = BlocProvider.of<GroceryListBloc>(context);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
+    return Material(
+      type: MaterialType.transparency,
+      child: Stack(
         children: [
           AnimatedBuilder(
             animation: _animationController,
@@ -135,70 +149,25 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
                   ),
                 ),
               ),
-              StreamBuilder<List<Widget>>(
-                stream: _reloadSearchResultsStreamController.stream,
-                builder: (context, snap) => FadeTransition(
-                  opacity: _animationController,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: snap.data,
-                  ),
+              FadeTransition(
+                opacity: _animationController,
+                child: StreamBuilder<List<Widget>>(
+                  stream: _reloadSearchResultsStreamController.stream,
+                  initialData: [],
+                  builder: (context, snap) {
+                    return AnimatedSwitcher(
+                      duration: Duration(milliseconds: 200),
+                      transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+                      child: Column(
+                        key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: snap.data,
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
-          ),
-          Positioned(
-            bottom: 10,
-            right: 20,
-            left: 20,
-            child: SlideTransition(
-              position: Tween<Offset>(begin: Offset(0, 2.0), end: Offset(0, 0)).animate(animation),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ActionButton(
-                      color: const Color(0xFF17D368),
-                      icon: Icons.save_rounded,
-                      title: "Create product",
-                      onPressed: () async {
-                        if (_textEdContr.text == null || _textEdContr.text.isEmpty) return;
-
-                        var prototype = GroceryPrototype(title: _textEdContr.text);
-                        var newItem = prototype.createGroceryItem();
-
-                        _textField.unfocus();
-                        Navigator.pop(context);
-
-                        await this.completed;
-
-                        bloc.tryAddPrototype(prototype);
-                        bloc.addItem(newItem, listId);
-                      },
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ActionButton(
-                      color: const Color(0xFF92C95B),
-                      icon: Icons.add_rounded,
-                      title: "Create without product",
-                      onPressed: () {
-                        if (_textEdContr.text == null || _textEdContr.text.isEmpty) return;
-
-                        var newItem = ProductlessGroceryItem(title: _textEdContr.text, amount: 1);
-
-                        bloc.addItem(newItem, listId);
-
-                        _textField.unfocus();
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),

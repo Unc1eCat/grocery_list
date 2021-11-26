@@ -104,13 +104,9 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
   void moveList(int fromIndex, int toIndex)
   {
-    _lists.insert(toIndex, _lists.removeAt(toIndex));
+    _lists.insert(toIndex, _lists.removeAt(fromIndex));
 
     emit(ListsListModifiedState());
-
-    // emit(TestState(1));
-    // Future.delayed(Duration(milliseconds: 150), () => emit(TestState(2)));
-    // Future.delayed(Duration(milliseconds: 300), () => emit(TestState(3)));
   }
 
   void moveItem(int fromIndex, int toIndex, String listId) {
@@ -123,6 +119,8 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   }
 
   List<Widget> getSearchResults(String enteredText, String listId) {
+    if (enteredText == "") return [];
+
     var list = getListOfId(listId);
     var increase = list.items.sublist(0);
     var fromProds = prototypes.sublist(0);
@@ -309,12 +307,3 @@ class ListsListModifiedState extends GroceryListState {
 
   bool operator ==(Object other) => false;
 }
-
-// class TestState extends GroceryListState
-// {
-//   final int val;
-
-//   TestState(this.val);
-
-//   operator == (dynamic other) => false;
-// }

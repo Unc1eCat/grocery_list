@@ -72,13 +72,15 @@ class _ColoredTabState extends State<ColoredTab> {
             top: 10,
             bottom: 5,
           ),
-          child: Column(
-            children: [
-              widget.icon,
-              SizedBox(height: 4),
-              Text(widget.text),
-            ],
-          ),
+          child: widget.text == null
+              ? widget.icon
+              : Column(
+                  children: [
+                    widget.icon,
+                    SizedBox(height: 4),
+                    Text(widget.text),
+                  ],
+                ),
         ),
       ),
     );

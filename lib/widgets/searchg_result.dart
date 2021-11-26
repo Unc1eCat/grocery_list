@@ -14,10 +14,12 @@ class SearchResultCreateProductless extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var th = Theme.of(context);
+    var fadedTextStyle = th.textTheme.caption.copyWith(color: th.textTheme.caption.color?.blendedWithInversion(0.2) ?? th.colorScheme.onBackground.blendedWithInversion(0.2));
 
     return HeavyTouchButton(
       onPressed: () {
         GroceryListBloc.of(context).addItem(ProductlessGroceryItem(title: name, amount: 1.0), listId);
+        Navigator.of(context).pop();
       },
       child: Material(
         type: MaterialType.button,
@@ -25,17 +27,16 @@ class SearchResultCreateProductless extends StatelessWidget {
         color: th.colorScheme.onBackground.inverted.withOpacity(0.8),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(12),
           child: Text.rich(
             TextSpan(children: [
-              TextSpan(text: "Create "),
+              TextSpan(text: "Create ", style: fadedTextStyle),
               TextSpan(
                 text: name,
-                style: th.textTheme.button,
+                style: th.textTheme.caption,
               ),
-              TextSpan(text: "without product"),
+              TextSpan(text: " without product", style: fadedTextStyle),
             ]),
-            style: th.textTheme.button.copyWith(color: th.textTheme.button.color.blendedWithInversion(0.2)),
           ),
         ),
       ),
@@ -65,16 +66,16 @@ class SearchResultIncreaseExisting extends StatelessWidget {
         color: Theme.of(context).colorScheme.onBackground.inverted.withOpacity(0.8),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(12),
           child: Text.rich(
             TextSpan(children: [
               TextSpan(
                 text: "Increase ",
-                style: th.textTheme.button.copyWith(color: th.textTheme.button.color.blendedWithInversion(0.2)),
+                style: th.textTheme.caption.copyWith(color: th.textTheme.caption.color?.blendedWithInversion(0.2) ?? th.colorScheme.onBackground.blendedWithInversion(0.2)),
               ),
               TextSpan(
                 text: model.title,
-                style: th.textTheme.button,
+                style: th.textTheme.caption,
               ),
             ]),
           ),
@@ -97,7 +98,7 @@ class SearchResultWithProduct extends StatelessWidget {
 
     return HeavyTouchButton(
       onPressed: () {
-        var p =  GroceryPrototype(title: name);
+        var p = GroceryPrototype(title: name);
         bloc.addPrototype(p);
         bloc.addItem(ProductfulGroceryItem(boundPrototype: p, amount: p.quantization), listId);
       },
@@ -107,16 +108,16 @@ class SearchResultWithProduct extends StatelessWidget {
         color: th.colorScheme.onBackground.inverted.withOpacity(0.8),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(12),
           child: Text.rich(
             TextSpan(children: [
               TextSpan(
                 text: "Create from new product ",
-                style: th.textTheme.button.copyWith(color: th.textTheme.button.color.blendedWithInversion(0.2)),
+                style: th.textTheme.caption.copyWith(color: th.textTheme.caption.color?.blendedWithInversion(0.2) ?? th.colorScheme.onBackground.blendedWithInversion(0.2)),
               ),
               TextSpan(
                 text: name,
-                style: th.textTheme.button,
+                style: th.textTheme.caption,
               ),
             ]),
           ),
@@ -151,7 +152,7 @@ class SearchResultFromProduct extends StatelessWidget {
           padding: const EdgeInsets.all(5),
           child: Text(
             prod.title,
-            style: th.textTheme.button,
+            style: th.textTheme.caption,
           ),
         ),
       ),
