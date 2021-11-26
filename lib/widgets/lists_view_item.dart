@@ -21,8 +21,9 @@ class ListsViewItem extends StatelessWidget {
       ),
       child: Card(
         elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(18.0),
           child: Row(
             children: [
               Text(

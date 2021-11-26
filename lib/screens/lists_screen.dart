@@ -47,7 +47,6 @@ class _ListsScreenState extends State<ListsScreen> with AutomaticKeepAliveClient
                         cubit: bloc,
                         buildWhen: (prev, cur) => cur is ListsListModifiedState,
                         builder: (context, state) {
-                          print(state);
                           return ImplicitlyAnimatedReorderableList<GroceryList>(
                             padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 10.0, left: 10.0, right: 10.0),
                             physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
@@ -55,7 +54,7 @@ class _ListsScreenState extends State<ListsScreen> with AutomaticKeepAliveClient
                             itemBuilder: (context, anim, item, i) => Reorderable(
                               key: ValueKey(item.id),
                               child: Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
+                                padding: const EdgeInsets.only(bottom: 6.0),
                                 child: Handle(
                                   delay: Duration(milliseconds: 300),
                                   child: ListsViewItem(
