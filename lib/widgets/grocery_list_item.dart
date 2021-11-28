@@ -29,9 +29,9 @@ class GroceryListItem extends StatelessWidget {
       builder: (context, child) => AnimatedContainer(
         padding: EdgeInsets.symmetric(horizontal: 10),
         color: expansionController.expandedGroceryListItemDetails == id ? Theme.of(context).colorScheme.onBackground.withOpacity(0.02) : Colors.transparent,
-        duration: Duration(milliseconds: 200),
+        duration: Duration(milliseconds: 300),
         child: AnimatedSize(
-          duration: Duration(milliseconds: 200),
+          duration: Duration(milliseconds: 300),
           alignment: Alignment.topCenter,
           child: BlocBuilder<GroceryListBloc, GroceryListState>(
             buildWhen: (previous, current) => current is ItemsChangedState && current.contains(id),
@@ -118,7 +118,7 @@ class GroceryListItem extends StatelessWidget {
                           ),
                         ),
                   AnimatedSwitcher(
-                    duration: Duration(milliseconds: 200),
+                    duration: Duration(milliseconds: 300),
                     transitionBuilder: (child, animation) => FadeTransition(
                       opacity: animation,
                       child: SlideTransition(
