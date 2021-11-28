@@ -109,7 +109,7 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
           AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) => BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: _animationController.value * 1.8, sigmaY: _animationController.value * 1.8),
+              filter: ImageFilter.blur(sigmaX: _animationController.value * 3, sigmaY: _animationController.value * 3),
               child: ColoredBox(
                 color: Colors.black.withOpacity(_animationController.value * 0.5),
                 child: child,

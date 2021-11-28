@@ -65,8 +65,8 @@ class _HeavyTouchButtonState extends State<HeavyTouchButton> with TickerProvider
     return GestureDetector(
       onTapDown: (_) => _anim.animateBack(widget.pressedScale),
       onTapCancel: () => _anim.animateTo(1.0),
-      onLongPressStart: (_) => widget.onLongPress?.call(),
-      onLongPressEnd: (_) => widget.onUp?.call(),
+      onLongPressStart: widget.onLongPress == null ? null : (_) => widget.onLongPress.call(),
+      onLongPressEnd: widget.onUp == null ? null : (_) => widget.onUp.call(),
       onTapUp: (_) {
         widget.onUp?.call();
         if (widget.fullAnimation) {

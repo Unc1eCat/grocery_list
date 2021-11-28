@@ -22,7 +22,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   List<GroceryPrototype> _prototypes = <GroceryPrototype>[];
   List<GroceryList> _lists = <GroceryList>[];
 
-  List<GroceryList> get lists => List<GroceryList>.unmodifiable(_lists);
+  List<GroceryList> get lists => _lists;//List<GroceryList>.unmodifiable(_lists);
   List<GroceryPrototype> get prototypes => List<GroceryPrototype>.unmodifiable(_prototypes);
 
   GroceryListBloc() : super(GroceryListState());

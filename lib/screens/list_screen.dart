@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/models/grocery_item.dart';
 import 'package:grocery_list/screens/add_item_screen.dart';
+import 'package:grocery_list/screens/list_settings_screen.dart';
 import 'package:grocery_list/utils/ticker_provider_mixin.dart';
 import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/corner_drawer.dart';
@@ -36,6 +37,29 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
   @override
   String get barrierLabel => "";
 
+  Widget _buildBottomBarButton(BuildContext context, IconData icon, Color color, String tooltip, VoidCallback onPressed) => Tooltip(
+        message: tooltip,
+        child: HeavyTouchButton(
+          onPressed: onPressed,
+          child: PhysicalModel(
+            color: color,
+            elevation: 3,
+            borderRadius: BorderRadius.circular(60),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: Theme.of(context).colorScheme.onSurface.withAlpha(3), width: 1),
+                borderRadius: BorderRadius.circular(60),
+              ),
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: Icon(icon),
+              ),
+            ),
+          ),
+        ),
+      );
+
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     var bloc = BlocProvider.of<GroceryListBloc>(context);
@@ -47,113 +71,156 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
         opacity: animation,
         child: SlideTransition(
           position: Tween(begin: Offset(1, 0), end: Offset(0, 0)).animate(animation),
-          child: PhysicalModel(
+          child: Material(
             elevation: 4,
-            color: Colors.transparent,
-            child: Material(
-              type: MaterialType.canvas,
-              color: Theme.of(context).scaffoldBackgroundColor,
-              child: Stack(
-                children: [
-                  BlocBuilder<GroceryListBloc, GroceryListState>(
-                    buildWhen: (prev, state) {
-                      return ((state is ItemDeletedState || state is ItemCreatedState) && (state as WithinListState).listId == listId) || state is ItemsFetchedState;
-                    },
-                    cubit: bloc,
-                    builder: (context, state) => Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: ImplicitlyAnimatedReorderableList<GroceryItem>(
-                        padding: EdgeInsets.only(top: 100),
-                        onReorderFinished: (item, from, to, newItems) => bloc.moveItem(from, to, listId),
-                        areItemsTheSame: (a, b) => a.id == b.id,
-                        itemBuilder: (context, animation, item, i) {
-                          return Reorderable(
-                            key: ValueKey(item.id),
-                            child: FadeTransition(
-                              opacity: animation,
-                              child: ScaleTransition(
-                                scale: animation,
-                                child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                                  buildWhen: (previous, current) => current is ItemsChangedState && current.contains(item.id),
-                                  cubit: bloc,
-                                  builder: (context, state) => GroceryListItem(
-                                    id: item.id,
-                                    key: ValueKey(item.id),
-                                    listId: listId,
-                                  ),
+            type: MaterialType.canvas,
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: Stack(
+              children: [
+                BlocBuilder<GroceryListBloc, GroceryListState>(
+                  // The list
+                  buildWhen: (prev, state) {
+                    return ((state is ItemDeletedState || state is ItemCreatedState) && (state as WithinListState).listId == listId) || state is ItemsFetchedState;
+                  },
+                  cubit: bloc,
+                  builder: (context, state) => Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: ImplicitlyAnimatedReorderableList<GroceryItem>(
+                      padding: EdgeInsets.only(top: 100),
+                      onReorderFinished: (item, from, to, newItems) => bloc.moveItem(from, to, listId),
+                      areItemsTheSame: (a, b) => a.id == b.id,
+                      itemBuilder: (context, animation, item, i) {
+                        return Reorderable(
+                          key: ValueKey(item.id),
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: ScaleTransition(
+                              scale: animation,
+                              child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                                buildWhen: (previous, current) => current is ItemsChangedState && current.contains(item.id),
+                                cubit: bloc,
+                                builder: (context, state) => GroceryListItem(
+                                  id: item.id,
+                                  key: ValueKey(item.id),
+                                  listId: listId,
                                 ),
                               ),
                             ),
-                          );
-                        },
-                        items: bloc.getListOfId(listId).items,
-                        physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                          ),
+                        );
+                      },
+                      items: bloc.getListOfId(listId).items,
+                      physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  // Back button
+                  left: 30,
+                  top: MediaQuery.of(context).padding.top + 20,
+                  child: HeavyTouchButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Icon(
+                      Icons.arrow_back_rounded,
+                      size: 28,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  // Bottom buttons
+                  bottom: 20,
+                  left: 30,
+                  right: 30,
+                  child: Row(
+                    // crossAxisAlignment: CrossAxisAlignment.stretch,
+                    // mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        // Searchbar
+                        child: Hero(
+                          tag: "addItem",
+                          child: HeavyTouchButton(
+                            onPressed: () {
+                              if (ModalRoute.of(context).isCurrent) {
+                                print("Tap");
+                                Navigator.push(context, AddItemScreen(listId, bloc));
+                              }
+                            },
+                            pressedScale: 0.9,
+                            child: Material(
+                              color: const Color.fromARGB(255, 250, 250, 250),
+                              elevation: 6,
+                              borderRadius: BorderRadius.circular(8),
+                              type: MaterialType.button,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                child: Text(
+                                  "+  Create item",
+                                  style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black54),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 16,
-                    left: 16,
-                    right: 86,
-                    child: Row(
-                      // crossAxisAlignment: CrossAxisAlignment.stretch,
-                      // mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Hero(
-                            tag: "addItem",
-                            child: HeavyTouchButton(
-                              onPressed: () {
-                                if (ModalRoute.of(context).isCurrent) {
-                                  print("Tap");
-                                  Navigator.push(context, AddItemScreen(listId, bloc));
-                                }
-                              },
-                              pressedScale: 0.9,
-                              child: Material(
-                                color: const Color.fromARGB(255, 250, 250, 250),
-                                elevation: 6,
-                                borderRadius: BorderRadius.circular(8),
-                                type: MaterialType.button,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                  child: Text(
-                                    "+  Create item",
-                                    style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black54),
-                                  ),
+                      SizedBox(width: 10),
+                      _buildBottomBarButton(
+                        // Editing mode button
+                        context,
+                        Icons.edit_rounded,
+                        Theme.of(context).cardColor,
+                        "Editing Mode",
+                        () {},
+                      ),
+                      SizedBox(width: 10),
+                      Tooltip(
+                        // List settings button
+                        message: "List settings",
+                        child: HeavyTouchButton(
+                          onPressed: () => Navigator.of(context).push(ListSettingsScreen()),
+                          child: PhysicalModel(
+                            color: Theme.of(context).cardColor,
+                            elevation: 3,
+                            borderRadius: BorderRadius.circular(60),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Theme.of(context).colorScheme.onSurface.withAlpha(3), width: 1),
+                                borderRadius: BorderRadius.circular(60),
+                              ),
+                              child: SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: Hero(
+                                  tag: "list_settings_screen_back_button",
+                                  // flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => Stack(
+                                  //   children: [
+                                  //     RotationTransition(
+                                  //       turns: Tween(begin: 0.0, end: 0.5).animate(animation),
+                                  //       child: FadeTransition(
+                                  //         opacity: animation,
+                                  //         child: Icon(Icons.settings_rounded),
+                                  //       ),
+                                  //     ),
+                                  //     RotationTransition(
+                                  //       turns: Tween(begin: -0.5, end: 0.0).animate(animation),
+                                  //       child: FadeTransition(
+                                  //         opacity: animation,
+                                  //         child: Icon(Icons.arrow_back_rounded),
+                                  //       ),
+                                  //     ),
+                                  //   ],
+                                  // ),
+                                  child: Icon(Icons.settings_rounded),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(width: 10),
-                        HeavyTouchButton(
-                          onPressed: () {},
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Theme.of(context).colorScheme.onSurface.withAlpha(3), width: 1),
-                              borderRadius: BorderRadius.circular(60),
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 8,
-                                  color: Theme.of(context).shadowColor.withOpacity(0.2),
-                                  spreadRadius: 1.5,
-                                ),
-                              ],
-                              color: Theme.of(context).cardColor,
-                            ),
-                            child: SizedBox(
-                              width: 60,
-                              height: 60,
-                              child: Icon(Icons.edit_rounded),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

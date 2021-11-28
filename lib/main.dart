@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/screens/list_item_edit_screen.dart';
 import 'package:grocery_list/screens/tabs_screen.dart';
+import 'package:grocery_list/utils/scroll_behavior.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:path/path.dart' as path;
 
@@ -21,7 +22,6 @@ class TheApp extends StatefulWidget {
   static Directory appDocDirectory;
   static File groceryItemsFile;
   static File groceryPrototypesFile;
-
 }
 
 class _TheAppState extends State<TheApp> {

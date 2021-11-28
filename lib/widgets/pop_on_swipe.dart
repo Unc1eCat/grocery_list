@@ -79,7 +79,8 @@ mixin PopOnSwipeRightRouteMixin on TransitionRoute {
   }
 }
 
-@Deprecated("Its midnight so im tired enough not to look up on google how to refer to a method implementation in the class the mixin is applied directly on") // TODO: PopOnSwipeRightWrapperRouteMixin
+@Deprecated(
+    "Its midnight so im tired enough not to look up on google how to refer to a method implementation in the class the mixin is applied directly on") // TODO: PopOnSwipeRightWrapperRouteMixin
 mixin PopOnSwipeRightWrapperRouteMixin on ModalRoute {
   @override
   Duration get reverseTransitionDuration => popOnSwipeRightState.currentState.hasPoppedOnSwipe ? Duration.zero : transitionDuration;

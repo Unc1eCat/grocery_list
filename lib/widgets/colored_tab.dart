@@ -41,6 +41,22 @@ class _ColoredTabState extends State<ColoredTab> {
   }
 
   Widget build(BuildContext context) {
+    Widget child;
+
+    if (widget.text != null && widget.icon != null) {
+      child = Column(
+        children: [
+          widget.icon,
+          SizedBox(height: 4),
+          Text(widget.text),
+        ],
+      );
+    } else if (widget.text != null) {
+      child = Text(widget.text);
+    } else if (widget.icon != null) {
+      child = widget.icon;
+    }
+
     return AnimatedBuilder(
       animation: widget.controller.animation,
       builder: (ctx, ch) {
@@ -66,23 +82,7 @@ class _ColoredTabState extends State<ColoredTab> {
           ),
         );
       },
-      child: FittedBox(
-        child: Container(
-          padding: const EdgeInsets.only(
-            top: 10,
-            bottom: 5,
-          ),
-          child: widget.text == null
-              ? widget.icon
-              : Column(
-                  children: [
-                    widget.icon,
-                    SizedBox(height: 4),
-                    Text(widget.text),
-                  ],
-                ),
-        ),
-      ),
+      child: child,
     );
   }
 }
