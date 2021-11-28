@@ -5,6 +5,21 @@ import 'package:flutter/widgets.dart';
 import 'dart:ui' as ui;
 
 class SmartTextField extends StatefulWidget {
+  /// Depending on the type parameter of the provided global key the widget will behave as follows:
+  /// 
+  /// - [FocusNodeSmartTextFieldState] - will only automatically create focus node for the text field if the [focusNode] parameter of this constructor is null, else it will set
+  /// the provided focus node for the text field. The focus node can be accessed through the state of the text field that can be accessed through the global key.
+  /// 
+  /// - [ControllerSmartTextFieldState] - will only automatically create text editing controller for the text field if the [controller] parameter of this constructor is null, else it will set
+  /// the provided text editing controller for the text field. The text editing controller can be accessed through the state of the text field that can be accessed through the global key.
+  /// 
+  /// - [FullSmartTextFieldState] - will automatically create both text editing controller and focus node for the text field. If any of them is not null then it will set it for the text 
+  /// field instead of creating a new one. They can be accessed through the state of the text field that can be accessed through the global key.
+  ///
+  /// The benefit of the text field is that it automatically stores, creates and disposes its focus node and text editing controller. If you choose the variation where the focus node is present, 
+  /// [onEditingComplete] callback will also be called when the user just unfocuses the text field but not only when the user clicks the "done" button. 
+  /// 
+  /// If you provide focus node or text editing controller if the variation of the text field doesn't support one then it will just not be used.  
   const SmartTextField({
     @required
         GlobalKey key,
@@ -62,7 +77,13 @@ class SmartTextField extends StatefulWidget {
     this.smartDashesType,
     this.smartQuotesType,
     this.toolbarOptions,
+    this.controller,
+    this.focusNode,
   }) : super(key: key);
+
+  final TextEditingController controller;
+
+  final FocusNode focusNode;
 
   final InputDecoration decoration;
 
@@ -196,7 +217,7 @@ class ControllerSmartTextFieldState extends State<SmartTextField> {
   void initState() {
     super.initState();
 
-    _controller = TextEditingController();
+    _controller = widget.controller ?? TextEditingController();
   }
 
   @override
@@ -271,7 +292,7 @@ class FocusNodeSmartTextFieldState extends State<SmartTextField> {
   void initState() {
     super.initState();
 
-    _focusNode = FocusNode();
+    _focusNode = (widget.focusNode ?? FocusNode())..addListener(widget.onEditingComplete);
   }
 
   @override
@@ -351,8 +372,8 @@ class FullSmartTextFieldState extends State<SmartTextField> {
   void initState() {
     super.initState();
 
-    _controller = TextEditingController();
-    _focusNode = FocusNode()..addListener(widget.onEditingComplete);
+    _controller = widget.controller ?? TextEditingController();
+    _focusNode = (widget.focusNode ?? FocusNode())..addListener(widget.onEditingComplete);
   }
 
   @override

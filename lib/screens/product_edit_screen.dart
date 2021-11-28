@@ -11,7 +11,7 @@ import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/grocery_list_item.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
-import 'package:grocery_list/widgets/list_item_property.dart';
+import 'package:grocery_list/widgets/beautiful_text_field.dart';
 import 'package:grocery_list/widgets/number_input.dart';
 import 'package:grocery_list/widgets/smart_text_field.dart';
 import 'package:my_utilities/color_utils.dart';
@@ -153,7 +153,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              ListItemProperty(
+                              BeautifulTextField(
                                   keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
                                   label: "Quantization",
                                   textFieldKey: quantizationKey,
@@ -176,7 +176,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                               SizedBox(
                                 width: 15,
                               ),
-                              ListItemProperty(
+                              BeautifulTextField(
                                   width: 75,
                                   label: "Unit",
                                   textFieldKey: unitKey,
@@ -190,7 +190,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            ListItemProperty(
+                            BeautifulTextField(
                               keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
                               label: "Price",
                               textFieldKey: priceKey,
@@ -199,7 +199,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                               },
                             ), // TODO: Make it constrain number of numbers in decimal fraction part to 2
                             SizedBox(width: 15),
-                            ListItemProperty(
+                            BeautifulTextField(
                               width: 75,
                               label: "Currency",
                               textFieldKey: currencyKey,

@@ -45,7 +45,7 @@ class PopOnSwipeRightState extends State<PopOnSwipeRight> with SingleTickerProvi
         _poppingSwipeController.value = max(_poppingSwipeController.value + details.delta.dx, 0.0);
       },
       onHorizontalDragEnd: (details) {
-        if (_poppingSwipeController.value * (details.velocity.pixelsPerSecond.dx + 1) / screenWidth / screenWidth > gr.invphi * gr.invphi) {
+        if (_poppingSwipeController.value / screenWidth > gr.invphi * gr.invphi || details.velocity.pixelsPerSecond.dx / screenWidth > gr.invphi) {
           if (widget.animateTransitionOut) {
             _poppingSwipeController
                 .animateTo(screenWidth * 1.1, duration: Duration(milliseconds: ((screenWidth - _poppingSwipeController.value) / widget.speed).toInt()))

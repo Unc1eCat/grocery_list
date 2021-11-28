@@ -12,13 +12,17 @@ import 'package:grocery_list/widgets/pop_on_swipe.dart';
 import 'package:path/path.dart';
 
 class ListSettingsScreen extends PageRoute with TickerProviderMixin {
+  final String listId;
+
   AnimationController _animationController;
   ScrollController _scrollController;
   TabController _tabController;
 
+  ListSettingsScreen({@required this.listId});
+
   @override
   void install() {
-    _animationController = AnimationController(vsync: this)..animateTo(1.0, duration: const Duration(milliseconds: 400));
+    _animationController = AnimationController(vsync: this)..animateTo(1.0, duration: const Duration(milliseconds: 500));
     _scrollController = ScrollController();
     _tabController = TabController(vsync: this, length: 4);
     _scrollController = ScrollController()..addListener(_handleScroll);
@@ -57,100 +61,6 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
         ),
       );
 
-  // @override
-  // Iterable<OverlayEntry> createOverlayEntries() sync* {
-  //   yield OverlayEntry(
-  //     builder: (context) => AnimatedBuilder(
-  //       animation: _animationController,
-  //       builder: (context, child) => BackdropFilter(
-  //         filter: ImageFilter.blur(sigmaX: _animationController.value * 3, sigmaY: _animationController.value * 3),
-  //         child: ColoredBox(
-  //           color: Colors.black.withOpacity(_animationController.value * 0.5),
-  //           child: child,
-  //         ),
-  //       ),
-  //       child: SizedBox.expand(),
-  //     ),
-  //   );
-  //   yield OverlayEntry(
-  //     builder: (context) => ScrollConfiguration(
-  //       behavior: ScrollBehavior().copyWith(overscroll: false),
-  //       child: Column(
-  //         // Topmost column
-  //         children: [
-  //           Expanded(
-  //             child: FadeTransition(
-  //               opacity: _animationController,
-  //               child: TabBarView(
-  //                 controller: _tabController,
-  //                 children: [
-  //                   GeneralListSettingsTab(
-  //                     scrollController: _scrollController,
-  //                   ),
-  //                   GeneralListSettingsTab(
-  //                     scrollController: _scrollController,
-  //                   ),
-  //                   GeneralListSettingsTab(
-  //                     scrollController: _scrollController,
-  //                   ),
-  //                   GeneralListSettingsTab(
-  //                     scrollController: _scrollController,
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //           ),
-  //           Padding(
-  //             // Bottom buttons and tabs
-  //             padding: const EdgeInsets.symmetric(horizontal: 30.0),
-  //             child: SizedBox(
-  //               height: 80,
-  //               child: Row(
-  //                 children: [
-  //                   HeavyTouchButton(
-  //                     // Back button
-  //                     onPressed: () => _animationController.animateBack(0.0, duration: Duration(milliseconds: 200)).then((_) => Navigator.of(context).pop()),
-  //                     child: Hero(
-  //                       tag: "list_settings_screen_back_button",
-  //                       child: Icon(
-  //                         Icons.arrow_back_rounded,
-  //                         size: 28,
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   SizedBox(width: 10),
-  //                   Expanded(
-  //                     child: FadeTransition(
-  //                       opacity: _animationController,
-  //                       child: FadedBordersBox(
-  //                         left: 0.1,
-  //                         right: 0.1,
-  //                         child: TabBar(
-  //                           controller: _tabController,
-  //                           indicatorColor: Colors.transparent,
-  //                           isScrollable: true,
-  //                           physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-  //                           padding: EdgeInsets.symmetric(horizontal: 20.0),
-  //                           tabs: [
-  //                             _buildTabBarButton("General", 0),
-  //                             _buildTabBarButton("Tags", 1),
-  //                             _buildTabBarButton("Members", 2),
-  //                             _buildTabBarButton("Roles", 3),
-  //                           ],
-  //                         ),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     return Stack(
@@ -166,79 +76,74 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
           ),
           child: SizedBox.expand(),
         ),
-        ScrollConfiguration(
-          behavior: ScrollBehavior().copyWith(overscroll: false),
-          child: Column(
-            // Topmost column
-            children: [
-              Expanded(
+        Column(
+          // Topmost column
+          children: [
+            Expanded(
+              child: FadeTransition(
+                opacity: _animationController,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    GeneralListSettingsTab(
+                      scrollController: _scrollController,
+                      listId: listId,
+                    ),
+                    GeneralListSettingsTab(
+                      scrollController: _scrollController,
+                    ),
+                    GeneralListSettingsTab(
+                      scrollController: _scrollController,
+                    ),
+                    GeneralListSettingsTab(
+                      scrollController: _scrollController,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              // Bottom buttons and tabs
+              padding: const EdgeInsets.symmetric(horizontal: 30.0),
+              child: SizedBox(
+                height: 80,
                 child: FadeTransition(
                   opacity: _animationController,
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      GeneralListSettingsTab(
-                        scrollController: _scrollController,
-                      ),
-                      GeneralListSettingsTab(
-                        scrollController: _scrollController,
-                      ),
-                      GeneralListSettingsTab(
-                        scrollController: _scrollController,
-                      ),
-                      GeneralListSettingsTab(
-                        scrollController: _scrollController,
-                      ),
-                    ],
+                  child: FadedBordersBox(
+                    left: 0.1,
+                    right: 0.1,
+                    child: TabBar(
+                      controller: _tabController,
+                      indicatorColor: Colors.transparent,
+                      isScrollable: true,
+                      physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                      padding: EdgeInsets.symmetric(horizontal: 15.0),
+                      tabs: [
+                        _buildTabBarButton("General", 0),
+                        _buildTabBarButton("Tags", 1),
+                        _buildTabBarButton("Members", 2),
+                        _buildTabBarButton("Roles", 3),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              Padding(
-                // Bottom buttons and tabs
-                padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                child: SizedBox(
-                  height: 80,
-                  child: Row(
-                    children: [
-                      HeavyTouchButton(
-                        // Back button
-                        onPressed: () => _animationController.animateBack(0.0, duration: Duration(milliseconds: 200)).then((_) => Navigator.of(context).pop()),
-                        child: Hero(
-                          tag: "list_settings_screen_back_button",
-                          child: Icon(
-                            Icons.arrow_back_rounded,
-                            size: 28,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: FadeTransition(
-                          opacity: _animationController,
-                          child: FadedBordersBox(
-                            left: 0.1,
-                            right: 0.1,
-                            child: TabBar(
-                              controller: _tabController,
-                              indicatorColor: Colors.transparent,
-                              isScrollable: true,
-                              physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                              padding: EdgeInsets.symmetric(horizontal: 20.0),
-                              tabs: [
-                                _buildTabBarButton("General", 0),
-                                _buildTabBarButton("Tags", 1),
-                                _buildTabBarButton("Members", 2),
-                                _buildTabBarButton("Roles", 3),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            ),
+          ],
+        ),
+        Positioned(
+          left: 30,
+          top: MediaQuery.of(context).padding.top + 20,
+          child: HeavyTouchButton(
+            // Back button
+            onPressed: () => _animationController.animateBack(0.0, duration: Duration(milliseconds: 200)).then((_) => Navigator.of(context).pop()),
+            child: Hero(
+              tag: "list_settings_screen_back_button",
+              child: Icon(
+                Icons.arrow_back_rounded,
+                size: 28,
               ),
-            ],
+            ),
           ),
         ),
       ],
@@ -261,93 +166,5 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
   bool get opaque => false;
 
   @override
-  Duration get transitionDuration => Duration(milliseconds: 200);
-
-  // @override
-  // bool get opaque => false;
-
-  // @override
-  // Duration get transitionDuration => Duration(milliseconds: 200);
+  Duration get transitionDuration => Duration(milliseconds: 400);
 }
-
-// class ListSettingsScreen extends ModalRoute with PopOnSwipeRightRouteMixin, TickerProviderMixin {
-//   @override
-//   bool get opaque => false;
-
-//   @override
-//   Duration get transitionDuration => Duration(milliseconds: 200);
-
-//   @override
-//   Color get barrierColor => Colors.transparent;
-
-//   @override
-//   bool get barrierDismissible => false;
-
-//   @override
-//   String get barrierLabel => "";
-
-//   TabController _tabController;
-
-//   @override
-//   void install() {
-//     _tabController = TabController(vsync: this, length: 2);
-
-//     super.install();
-//   }
-
-//   @override
-//   void dispose() {
-//     disposeTickers();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-//     return PopOnSwipeRight(
-//       key: popOnSwipeRight,
-//       child: FadeTransition(
-//         opacity: animation,
-//         child: SlideTransition(
-//           position: Tween(begin: Offset(1, 0), end: Offset(0, 0)).animate(animation),
-//           child: Material(
-//             elevation: 4,
-//             color: Theme.of(context).scaffoldBackgroundColor,
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.stretch,
-//               children: [
-//                 Align(
-//                   alignment: Alignment.centerLeft,
-//                   child: Padding(
-//                     padding: EdgeInsets.only(
-//                       left: 30,
-//                       top: MediaQuery.of(context).padding.top + 20,
-//                       bottom: 20,
-//                     ),
-//                     child: HeavyTouchButton(
-//                       onPressed: () => Navigator.of(context).pop(),
-//                       child: Icon(
-//                         Icons.arrow_back_rounded,
-//                         size: 28,
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//                 TabBarView(
-//                   controller: _tabController,
-//                   children: [
-//                     ListView(
-//                       physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   @override
-//   bool get maintainState => false;
-// }

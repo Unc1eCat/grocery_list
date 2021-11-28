@@ -74,6 +74,7 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
             child: TabBar(
               controller: _controller,
               indicatorColor: Colors.transparent,
+              padding: EdgeInsets.symmetric(vertical: 10),
               tabs: [
                 ColoredTab(
                   controller: _controller,

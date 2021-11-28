@@ -1,15 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_list/bloc/grocery_list_bloc.dart';
+import 'package:grocery_list/widgets/beautiful_text_field.dart';
+import 'package:grocery_list/widgets/smart_text_field.dart';
+import 'package:grocery_list/widgets/unfocus_on_tap.dart';
 
-class GeneralListSettingsTab extends StatelessWidget {
+class GeneralListSettingsTab extends StatefulWidget {
   final ScrollController scrollController;
+  final String listId;
 
-  const GeneralListSettingsTab({Key key, this.scrollController}) : super(key: key);
+  const GeneralListSettingsTab({Key key, this.scrollController, this.listId}) : super(key: key);
+
+  @override
+  State<GeneralListSettingsTab> createState() => _GeneralListSettingsTabState();
+}
+
+class _GeneralListSettingsTabState extends State<GeneralListSettingsTab> {
+  GlobalKey<FullSmartTextFieldState> _defaultCurrency;
+
+  @override
+  void initState() {
+    var bloc = GroceryListBloc.of(context);
+
+    _defaultCurrency = GlobalKey<FullSmartTextFieldState>();
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      controller: scrollController,
-      children: [],
+    var bloc = GroceryListBloc.of(context);
+
+    return UnfocusOnTap(
+      child: ListView(
+        controller: widget.scrollController,
+        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 64, left: 20, right: 20),
+        physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        children: [
+          Row(
+            children: [
+              Text(
+                "Default currency",
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              SizedBox(width: 20),
+              Expanded(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Color.fromRGBO(30, 30, 30, 0.6),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: SmartTextField(
+                      controller: TextEditingController(text: bloc.getListOfId(widget.listId).default_currency),
+                      onEditingComplete: () {
+                        bloc.updateList(widget.listId, bloc.getListOfId(widget.listId).copyWith(default_currency: _defaultCurrency.currentState.controller.text));
+                      },
+                      onSubmitted: (_) {
+                        FocusScope.of(context).unfocus();
+                      },
+                      decoration: InputDecoration(border: InputBorder.none),
+                      key: _defaultCurrency,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

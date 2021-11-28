@@ -22,7 +22,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   List<GroceryPrototype> _prototypes = <GroceryPrototype>[];
   List<GroceryList> _lists = <GroceryList>[];
 
-  List<GroceryList> get lists => _lists;//List<GroceryList>.unmodifiable(_lists);
+  List<GroceryList> get lists => _lists; //List<GroceryList>.unmodifiable(_lists);
   List<GroceryPrototype> get prototypes => List<GroceryPrototype>.unmodifiable(_prototypes);
 
   GroceryListBloc() : super(GroceryListState());
@@ -102,8 +102,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     savePrototypes();
   }
 
-  void moveList(int fromIndex, int toIndex)
-  {
+  void moveList(int fromIndex, int toIndex) {
     _lists.insert(toIndex, _lists.removeAt(fromIndex));
 
     emit(ListsListModifiedState());
@@ -185,6 +184,13 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     emit(ListsListModifiedState());
   }
+
+  void updateList(String id, GroceryList newList) {
+    var index = _lists.indexWhere((e) => e.id == id);
+    _lists[index] = newList;
+
+    emit(ListSettingsModifiedState(id));
+  }
 }
 
 // STATEs
@@ -210,7 +216,9 @@ class ItemsChangedState extends GroceryListState {
   ItemsChangedState(this.changedIds, this.reboundPrototype);
 
   @override
-  List<Object> get props => super.props..add(changedIds)..add(reboundPrototype);
+  List<Object> get props => super.props
+    ..add(changedIds)
+    ..add(reboundPrototype);
 
   bool contains(String id) => changedIds.contains(id);
 }
@@ -222,7 +230,9 @@ class CheckedChangedState extends GroceryListState {
   CheckedChangedState(this.checked, this.item);
 
   @override
-  List<Object> get props => super.props..add(checked)..add(item);
+  List<Object> get props => super.props
+    ..add(checked)
+    ..add(item);
 }
 
 class ItemDeletedState extends WithinListState {
@@ -242,7 +252,9 @@ class ItemCreatedState extends WithinListState {
   ItemCreatedState(this.id, this.items, String listId) : super(listId);
 
   @override
-  List<Object> get props => super.props..add(id)..add(items);
+  List<Object> get props => super.props
+    ..add(id)
+    ..add(items);
 }
 
 class ItemsFetchedState extends GroceryListState {
@@ -261,7 +273,9 @@ class PrototypeAddedState extends GroceryListState {
   PrototypeAddedState(this.prototypes, this.prototype);
 
   @override
-  List<Object> get props => super.props..add(prototypes)..add(prototype);
+  List<Object> get props => super.props
+    ..add(prototypes)
+    ..add(prototype);
 }
 
 class PrototypeRemovedState extends GroceryListState {
@@ -271,7 +285,9 @@ class PrototypeRemovedState extends GroceryListState {
   PrototypeRemovedState(this.prototypes, this.prototype);
 
   @override
-  List<Object> get props => super.props..add(prototypes)..add(prototype);
+  List<Object> get props => super.props
+    ..add(prototypes)
+    ..add(prototype);
 }
 
 class PrototypesFetchedState extends GroceryListState {
@@ -306,4 +322,8 @@ class ListsListModifiedState extends GroceryListState {
   ListsListModifiedState();
 
   bool operator ==(Object other) => false;
+}
+
+class ListSettingsModifiedState extends WithinListState {
+  ListSettingsModifiedState(String listId) : super(listId);
 }

@@ -12,6 +12,7 @@ import 'package:grocery_list/widgets/corner_drawer.dart';
 import 'package:grocery_list/widgets/grocery_list_item.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/pop_on_swipe.dart';
+import 'package:grocery_list/widgets/unfocus_on_tap.dart';
 import 'package:my_utilities/color_utils.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 import 'package:rive/rive.dart';
@@ -83,35 +84,32 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
                     return ((state is ItemDeletedState || state is ItemCreatedState) && (state as WithinListState).listId == listId) || state is ItemsFetchedState;
                   },
                   cubit: bloc,
-                  builder: (context, state) => Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: ImplicitlyAnimatedReorderableList<GroceryItem>(
-                      padding: EdgeInsets.only(top: 100),
-                      onReorderFinished: (item, from, to, newItems) => bloc.moveItem(from, to, listId),
-                      areItemsTheSame: (a, b) => a.id == b.id,
-                      itemBuilder: (context, animation, item, i) {
-                        return Reorderable(
-                          key: ValueKey(item.id),
-                          child: FadeTransition(
-                            opacity: animation,
-                            child: ScaleTransition(
-                              scale: animation,
-                              child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                                buildWhen: (previous, current) => current is ItemsChangedState && current.contains(item.id),
-                                cubit: bloc,
-                                builder: (context, state) => GroceryListItem(
-                                  id: item.id,
-                                  key: ValueKey(item.id),
-                                  listId: listId,
-                                ),
+                  builder: (context, state) => ImplicitlyAnimatedReorderableList<GroceryItem>(
+                    padding: EdgeInsets.only(top: 100, left: 10, right: 10),
+                    onReorderFinished: (item, from, to, newItems) => bloc.moveItem(from, to, listId),
+                    areItemsTheSame: (a, b) => a.id == b.id,
+                    itemBuilder: (context, animation, item, i) {
+                      return Reorderable(
+                        key: ValueKey(item.id),
+                        child: FadeTransition(
+                          opacity: animation,
+                          child: ScaleTransition(
+                            scale: animation,
+                            child: BlocBuilder<GroceryListBloc, GroceryListState>(
+                              buildWhen: (previous, current) => current is ItemsChangedState && current.contains(item.id),
+                              cubit: bloc,
+                              builder: (context, state) => GroceryListItem(
+                                id: item.id,
+                                key: ValueKey(item.id),
+                                listId: listId,
                               ),
                             ),
                           ),
-                        );
-                      },
-                      items: bloc.getListOfId(listId).items,
-                      physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    ),
+                        ),
+                      );
+                    },
+                    items: bloc.getListOfId(listId).items,
+                    physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                   ),
                 ),
                 Positioned(
@@ -177,7 +175,7 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
                         // List settings button
                         message: "List settings",
                         child: HeavyTouchButton(
-                          onPressed: () => Navigator.of(context).push(ListSettingsScreen()),
+                          onPressed: () => Navigator.of(context).push(ListSettingsScreen(listId: listId)),
                           child: PhysicalModel(
                             color: Theme.of(context).cardColor,
                             elevation: 3,
@@ -192,24 +190,25 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
                                 height: 60,
                                 child: Hero(
                                   tag: "list_settings_screen_back_button",
-                                  // flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => Stack(
-                                  //   children: [
-                                  //     RotationTransition(
-                                  //       turns: Tween(begin: 0.0, end: 0.5).animate(animation),
-                                  //       child: FadeTransition(
-                                  //         opacity: animation,
-                                  //         child: Icon(Icons.settings_rounded),
-                                  //       ),
-                                  //     ),
-                                  //     RotationTransition(
-                                  //       turns: Tween(begin: -0.5, end: 0.0).animate(animation),
-                                  //       child: FadeTransition(
-                                  //         opacity: animation,
-                                  //         child: Icon(Icons.arrow_back_rounded),
-                                  //       ),
-                                  //     ),
-                                  //   ],
-                                  // ),
+                                  flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      RotationTransition(
+                                        turns: Tween(begin: 0.0, end: 0.7).animate(animation),
+                                        child: FadeTransition(
+                                          opacity: ReverseAnimation(animation),
+                                          child: Icon(Icons.settings_rounded),
+                                        ),
+                                      ),
+                                      RotationTransition(
+                                        turns: Tween(begin: -0.7, end: 0.0).animate(animation),
+                                        child: FadeTransition(
+                                          opacity: animation,
+                                          child: Icon(Icons.arrow_back_rounded),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   child: Icon(Icons.settings_rounded),
                                 ),
                               ),

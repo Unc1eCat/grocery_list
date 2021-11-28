@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:grocery_list/widgets/smart_text_field.dart';
 
-class ListItemProperty extends StatelessWidget {
+class BeautifulTextField extends StatelessWidget {
   final String label;
   final double width;
   final TextInputType keyboardType;
   final VoidCallback onEditingComplete;
   final GlobalKey textFieldKey;
 
-  ListItemProperty({
+  BeautifulTextField({
     this.textFieldKey,
-    this.width = 110,
+    this.width = double.infinity,
     this.label,
     this.keyboardType,
     this.onEditingComplete,
@@ -24,25 +24,24 @@ class ListItemProperty extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
-            top: 8,
-            bottom: 0,
+            top: 6,
             left: 0,
+            bottom: 0,
             right: 0,
             child: Material(
               borderRadius: BorderRadius.circular(8),
               color: Color.fromRGBO(30, 30, 30, 0.6),
-              child: SizedBox.expand(),
             ),
           ),
           Positioned(
             left: 8,
-            top: 0,
             right: 8,
-            bottom: 8,
-            child: Material(
-              color: Colors.transparent,
+            top: 0,
+            child: Align(
+              alignment: Alignment.center,
               child: SmartTextField(
                 key: textFieldKey,
+                scrollPadding: EdgeInsets.all(0),
                 style: TextStyle(fontSize: 20),
                 decoration: InputDecoration(
                   labelStyle: const TextStyle(
