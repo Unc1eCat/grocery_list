@@ -5,7 +5,9 @@ class BeautifulTextField extends StatelessWidget {
   final String label;
   final double width;
   final TextInputType keyboardType;
-  final VoidCallback onEditingComplete;
+  final OnEditingCompleteCallback onEditingComplete;
+  final TextEditingController controller;
+  final FocusNode focusNode;
   final GlobalKey textFieldKey;
 
   BeautifulTextField({
@@ -14,6 +16,8 @@ class BeautifulTextField extends StatelessWidget {
     this.label,
     this.keyboardType,
     this.onEditingComplete,
+    this.controller,
+    this.focusNode,
   });
 
   @override
@@ -54,6 +58,8 @@ class BeautifulTextField extends StatelessWidget {
                   alignLabelWithHint: true,
                   labelText: label,
                 ),
+                controller: controller,
+                focusNode: focusNode,
                 textAlign: TextAlign.center,
                 keyboardType: keyboardType,
                 onEditingComplete: onEditingComplete,

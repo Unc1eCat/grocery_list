@@ -142,7 +142,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                     cursorWidth: 2,
                                     cursorRadius: Radius.circular(2),
                                     key: titleKey,
-                                    onEditingComplete: () => bloc.updateItem(id, model.copyWith(title: titleKey.currentState.controller.text), listId),
+                                    onEditingComplete: (_) => bloc.updateItem(id, model.copyWith(title: titleKey.currentState.controller.text), listId),
                                     onSubmitted: (value) => FocusScope.of(context).unfocus(),
                                     style: Theme.of(context).textTheme.caption.copyWith(fontSize: 30),
                                   ),
@@ -218,7 +218,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                           keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
                                           label: "Quantization",
                                           textFieldKey: quantizationKey,
-                                          onEditingComplete: () {
+                                          onEditingComplete: (_) {
                                             var value = double.tryParse(quantizationKey.currentState.controller.text);
                                             if (value == null || value < 0) {
                                               quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
@@ -243,7 +243,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                           width: 75,
                                           label: "Unit",
                                           textFieldKey: unitKey,
-                                          onEditingComplete: () => bloc.updateItem(id, model.copyWith(unit: unitKey.currentState.controller.text), listId)),
+                                          onEditingComplete: (_) => bloc.updateItem(id, model.copyWith(unit: unitKey.currentState.controller.text), listId)),
                                     ],
                                   ),
                                 ),
@@ -256,7 +256,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                       keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
                                       label: "Price",
                                       textFieldKey: priceKey,
-                                      onEditingComplete: () {
+                                      onEditingComplete: (_) {
                                         bloc.updateItem(id, model.copyWith(price: double.parse(priceKey.currentState.controller.text)), listId);
                                       },
                                     ), // TODO: Make it constrain number of numbers in decimal fraction part to 2
@@ -265,7 +265,7 @@ class ListItemEditRoute extends PageRoute with TickerProviderMixin {
                                       width: 75,
                                       label: "Currency",
                                       textFieldKey: currencyKey,
-                                      onEditingComplete: () => bloc.updateItem(id, model.copyWith(currency: currencyKey.currentState.controller.text), listId),
+                                      onEditingComplete: (_) => bloc.updateItem(id, model.copyWith(currency: currencyKey.currentState.controller.text), listId),
                                     ),
                                   ],
                                 ),

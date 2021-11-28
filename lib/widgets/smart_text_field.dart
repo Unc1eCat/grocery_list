@@ -4,25 +4,28 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:ui' as ui;
 
+typedef OnEditingCompleteCallback<T extends SmartTextFieldState> = void Function(T textField);
+
+abstract class SmartTextFieldState extends State<SmartTextField> {
+  TextEditingController get controller => throw StateError("This smart text field does not support text editing controller");
+  FocusNode get focusNode => throw StateError("This smart text field does not support focus node");
+}
+
 class SmartTextField extends StatefulWidget {
-  /// Depending on the type parameter of the provided global key the widget will behave as follows:
-  /// 
-  /// - [FocusNodeSmartTextFieldState] - will only automatically create focus node for the text field if the [focusNode] parameter of this constructor is null, else it will set
-  /// the provided focus node for the text field. The focus node can be accessed through the state of the text field that can be accessed through the global key.
-  /// 
-  /// - [ControllerSmartTextFieldState] - will only automatically create text editing controller for the text field if the [controller] parameter of this constructor is null, else it will set
-  /// the provided text editing controller for the text field. The text editing controller can be accessed through the state of the text field that can be accessed through the global key.
-  /// 
-  /// - [FullSmartTextFieldState] - will automatically create both text editing controller and focus node for the text field. If any of them is not null then it will set it for the text 
-  /// field instead of creating a new one. They can be accessed through the state of the text field that can be accessed through the global key.
+  /// Depending on availability of [controller] an/or [focusNode] parameters widget will behave as described below:
+  /// is null or not:
   ///
-  /// The benefit of the text field is that it automatically stores, creates and disposes its focus node and text editing controller. If you choose the variation where the focus node is present, 
-  /// [onEditingComplete] callback will also be called when the user just unfocuses the text field but not only when the user clicks the "done" button. 
-  /// 
-  /// If you provide focus node or text editing controller if the variation of the text field doesn't support one then it will just not be used.  
+  /// - Only [focusNode] is not null - will set the provided focus node for the text field. The focus node can be accessed through the state of the text field that can be accessed through the global key.
+  ///
+  /// - Only [controller] is not null - will set the provided text editing controller for the text field. The text editing controller can be accessed through the state of the text field that can be accessed
+  /// through the global key.
+  ///
+  /// - Both [focusNode] and [controller] are not null - will set these for the text field. They can be accessed through the state of the text field that can be accessed through the global key.
+  ///
+  /// The benefit of the text field is that it automatically stores and disposes its focus node and text editing controller. So you don't need a stateful widget to do it.
+  /// [onEditingComplete] callback is called in conditions that the usual Flutter text field calls it in and when the text field is unfocused if a [focusNode] parameter is not null.
   const SmartTextField({
-    @required
-        GlobalKey key,
+    GlobalKey key,
     this.decoration = const InputDecoration(),
     this.textInputAction,
     this.textCapitalization = TextCapitalization.none,
@@ -145,7 +148,7 @@ class SmartTextField extends StatefulWidget {
   final ValueChanged<String> onChanged;
 
   /// Is also called when unfocused
-  final VoidCallback onEditingComplete;
+  final OnEditingCompleteCallback onEditingComplete;
 
   final ValueChanged<String> onSubmitted;
 
@@ -195,22 +198,20 @@ class SmartTextField extends StatefulWidget {
 
   @override
   State<SmartTextField> createState() {
-    if (key is GlobalKey<FullSmartTextFieldState>) {
+    if (controller != null && focusNode != null) {
       return FullSmartTextFieldState();
-    } else if (key is GlobalKey<ControllerSmartTextFieldState>) {
+    } else if (controller != null) {
       return ControllerSmartTextFieldState();
-    } else if (key is GlobalKey<FocusNodeSmartTextFieldState>) {
+    } else if (focusNode != null) {
       return FocusNodeSmartTextFieldState();
-    } else {
-      throw Exception(
-          "The \"key\" argument must be GlobalKey with type parameter either FullSmartTextFieldState, ControllerSmartTextFieldState or FocusNodeSmartTextFieldState. Else the SmartTextField's difference from normal TextField is useless");
     }
   }
 }
 
-class ControllerSmartTextFieldState extends State<SmartTextField> {
+class ControllerSmartTextFieldState extends SmartTextFieldState {
   TextEditingController _controller;
 
+  @override
   TextEditingController get controller => _controller;
 
   @override
@@ -256,7 +257,7 @@ class ControllerSmartTextFieldState extends State<SmartTextField> {
       maxLengthEnforced: widget.maxLengthEnforced,
       maxLengthEnforcement: widget.maxLengthEnforcement,
       onChanged: widget.onChanged,
-      onEditingComplete: widget.onEditingComplete,
+      onEditingComplete: () => widget.onEditingComplete?.call(this),
       onSubmitted: widget.onSubmitted,
       onAppPrivateCommand: widget.onAppPrivateCommand,
       inputFormatters: widget.inputFormatters,
@@ -283,16 +284,17 @@ class ControllerSmartTextFieldState extends State<SmartTextField> {
   }
 }
 
-class FocusNodeSmartTextFieldState extends State<SmartTextField> {
+class FocusNodeSmartTextFieldState extends SmartTextFieldState {
   FocusNode _focusNode;
 
+  @override
   FocusNode get focusNode => _focusNode;
 
   @override
   void initState() {
     super.initState();
 
-    _focusNode = (widget.focusNode ?? FocusNode())..addListener(widget.onEditingComplete);
+    _focusNode = (widget.focusNode ?? FocusNode())..addListener(_handleOnEditingComplete);
   }
 
   @override
@@ -302,6 +304,10 @@ class FocusNodeSmartTextFieldState extends State<SmartTextField> {
     super.dispose();
   }
 
+  void _handleOnEditingComplete() {
+    widget.onEditingComplete?.call(this);
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextField(
@@ -332,7 +338,7 @@ class FocusNodeSmartTextFieldState extends State<SmartTextField> {
       maxLengthEnforced: widget.maxLengthEnforced,
       maxLengthEnforcement: widget.maxLengthEnforcement,
       onChanged: widget.onChanged,
-      onEditingComplete: widget.onEditingComplete,
+      onEditingComplete: _handleOnEditingComplete,
       onSubmitted: widget.onSubmitted,
       onAppPrivateCommand: widget.onAppPrivateCommand,
       inputFormatters: widget.inputFormatters,
@@ -359,13 +365,15 @@ class FocusNodeSmartTextFieldState extends State<SmartTextField> {
   }
 }
 
-class FullSmartTextFieldState extends State<SmartTextField> {
+class FullSmartTextFieldState extends SmartTextFieldState {
   TextEditingController _controller;
 
   TextEditingController get controller => _controller;
 
+  @override
   FocusNode _focusNode;
 
+  @override
   FocusNode get focusNode => _focusNode;
 
   @override
@@ -373,17 +381,21 @@ class FullSmartTextFieldState extends State<SmartTextField> {
     super.initState();
 
     _controller = widget.controller ?? TextEditingController();
-    _focusNode = (widget.focusNode ?? FocusNode())..addListener(widget.onEditingComplete);
+    _focusNode = (widget.focusNode ?? FocusNode())..addListener(_handleOnEditingComplete);
   }
 
   @override
   void dispose() {
     _controller.dispose();
     _focusNode
-      ..removeListener(widget.onEditingComplete)
+      ..removeListener(_handleOnEditingComplete)
       ..dispose();
 
     super.dispose();
+  }
+
+  void _handleOnEditingComplete() {
+    widget.onEditingComplete?.call(this);
   }
 
   @override
@@ -417,7 +429,7 @@ class FullSmartTextFieldState extends State<SmartTextField> {
       maxLengthEnforced: widget.maxLengthEnforced,
       maxLengthEnforcement: widget.maxLengthEnforcement,
       onChanged: widget.onChanged,
-      onEditingComplete: widget.onEditingComplete,
+      onEditingComplete: _handleOnEditingComplete,
       onSubmitted: widget.onSubmitted,
       onAppPrivateCommand: widget.onAppPrivateCommand,
       inputFormatters: widget.inputFormatters,

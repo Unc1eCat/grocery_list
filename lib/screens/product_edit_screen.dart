@@ -130,7 +130,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                             cursorWidth: 2,
                             cursorRadius: Radius.circular(2),
                             key: titleKey,
-                            onEditingComplete: () => bloc.updatePrototype(model.copyWith(title: titleKey.currentState.controller.text)),
+                            onEditingComplete: (_) => bloc.updatePrototype(model.copyWith(title: titleKey.currentState.controller.text)),
                             onSubmitted: (value) => FocusScope.of(context).unfocus(),
                             style: Theme.of(context).textTheme.caption.copyWith(fontSize: 30),
                           ),
@@ -157,7 +157,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                                   keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
                                   label: "Quantization",
                                   textFieldKey: quantizationKey,
-                                  onEditingComplete: () {
+                                  onEditingComplete: (_) {
                                     var value = double.tryParse(quantizationKey.currentState.controller.text);
                                     if (value == null || value < 0) {
                                       quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
@@ -180,7 +180,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                                   width: 75,
                                   label: "Unit",
                                   textFieldKey: unitKey,
-                                  onEditingComplete: () {
+                                  onEditingComplete: (_) {
                                     bloc.updatePrototype(model.copyWith(unit: unitKey.currentState.controller.text));
                                   }),
                             ],
@@ -194,7 +194,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                               keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
                               label: "Price",
                               textFieldKey: priceKey,
-                              onEditingComplete: () {
+                              onEditingComplete: (_) {
                                 bloc.updatePrototype(model.copyWith(price: double.parse(priceKey.currentState.controller.text)));
                               },
                             ), // TODO: Make it constrain number of numbers in decimal fraction part to 2
@@ -203,7 +203,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                               width: 75,
                               label: "Currency",
                               textFieldKey: currencyKey,
-                              onEditingComplete: () => bloc.updatePrototype(model.copyWith(currency: currencyKey.currentState.controller.text)),
+                              onEditingComplete: (_) => bloc.updatePrototype(model.copyWith(currency: currencyKey.currentState.controller.text)),
                             ),
                           ],
                         ),

@@ -15,17 +15,6 @@ class GeneralListSettingsTab extends StatefulWidget {
 }
 
 class _GeneralListSettingsTabState extends State<GeneralListSettingsTab> {
-  GlobalKey<FullSmartTextFieldState> _defaultCurrency;
-
-  @override
-  void initState() {
-    var bloc = GroceryListBloc.of(context);
-
-    _defaultCurrency = GlobalKey<FullSmartTextFieldState>();
-
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     var bloc = GroceryListBloc.of(context);
@@ -53,14 +42,14 @@ class _GeneralListSettingsTabState extends State<GeneralListSettingsTab> {
                     padding: const EdgeInsets.symmetric(horizontal: 10.0),
                     child: SmartTextField(
                       controller: TextEditingController(text: bloc.getListOfId(widget.listId).default_currency),
-                      onEditingComplete: () {
-                        bloc.updateList(widget.listId, bloc.getListOfId(widget.listId).copyWith(default_currency: _defaultCurrency.currentState.controller.text));
+                      focusNode: FocusNode(),
+                      onEditingComplete: (state) {
+                        bloc.updateList(widget.listId, bloc.getListOfId(widget.listId).copyWith(default_currency: state.controller.text));
                       },
                       onSubmitted: (_) {
                         FocusScope.of(context).unfocus();
                       },
                       decoration: InputDecoration(border: InputBorder.none),
-                      key: _defaultCurrency,
                     ),
                   ),
                 ),
