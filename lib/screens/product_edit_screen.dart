@@ -12,7 +12,7 @@ import 'package:grocery_list/widgets/grocery_list_item.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
 import 'package:grocery_list/widgets/beautiful_text_field.dart';
-import 'package:grocery_list/widgets/number_input.dart';
+import 'package:grocery_list/widgets/grocery_item_amount.dart';
 import 'package:grocery_list/widgets/smart_text_field.dart';
 import 'package:my_utilities/color_utils.dart';
 import '../utils/golden_ration_utils.dart' as gr;

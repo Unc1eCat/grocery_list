@@ -10,7 +10,7 @@ abstract class GroceryItem {
   List<ItemTag> get tags;
   String get unit;
   double get quantization;
-  int get quantizationDecimalNumbersAmount;
+  int get quantizationFractionDigits;
   String get currency;
   double get price;
   double get amount;
@@ -48,7 +48,7 @@ class ProductlessGroceryItem implements GroceryItem {
   final List<ItemTag> tags;
   final String unit;
   final double quantization;
-  final int quantizationDecimalNumbersAmount;
+  final int quantizationFractionDigits;
   final String currency;
   final double price;
   final double amount;
@@ -58,7 +58,7 @@ class ProductlessGroceryItem implements GroceryItem {
     String id,
     this.unit = "it.",
     this.quantization = 1.0,
-    this.quantizationDecimalNumbersAmount = 0,
+    this.quantizationFractionDigits = 0,
     this.currency = "₽",
     this.price = 0.0,
     this.amount = 0.0,
@@ -140,7 +140,7 @@ class ProductlessGroceryItem implements GroceryItem {
             amount: amount ?? this.amount,
             checked: checked ?? this.checked,
             currency: currency ?? this.currency,
-            quantizationDecimalNumbersAmount: quantizationDecimalNumbersAmount ?? this.quantizationDecimalNumbersAmount,
+            quantizationFractionDigits: quantizationDecimalNumbersAmount ?? this.quantizationFractionDigits,
             price: price ?? this.price,
             quantization: quantization ?? this.quantization,
             tags: tags ?? this.tags,
@@ -163,7 +163,7 @@ class ProductlessGroceryItem implements GroceryItem {
       currency: currency,
       price: price,
       quantization: quantization,
-      quantizationDecimalNumbersAmount: quantizationDecimalNumbersAmount,
+      quantizationDecimalNumbersAmount: quantizationFractionDigits,
       tags: tags,
       title: title,
       unit: unit,
@@ -200,7 +200,7 @@ class ProductfulGroceryItem implements GroceryItem {
   double get quantization => boundPrototype.quantization;
 
   @override
-  int get quantizationDecimalNumbersAmount => boundPrototype.quantizationDecimalNumbersAmount;
+  int get quantizationFractionDigits => boundPrototype.quantizationDecimalNumbersAmount;
 
   @override
   List<ItemTag> get tags => throw UnimplementedError();
@@ -239,7 +239,7 @@ class ProductfulGroceryItem implements GroceryItem {
             amount: amount ?? this.amount,
             checked: checked ?? this.checked,
             currency: currency ?? this.currency,
-            quantizationDecimalNumbersAmount: quantizationDecimalNumbersAmount ?? this.quantizationDecimalNumbersAmount,
+            quantizationFractionDigits: quantizationDecimalNumbersAmount ?? this.quantizationFractionDigits,
             price: price ?? this.price,
             quantization: quantization ?? this.quantization,
             tags: tags ?? this.tags,

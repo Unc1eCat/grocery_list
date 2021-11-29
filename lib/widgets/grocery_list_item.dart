@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
@@ -9,7 +11,7 @@ import 'package:grocery_list/widgets/grocery_item_tag_setting.dart';
 import 'package:grocery_list/widgets/grocery_list_items_expansion_controller.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
-import 'package:grocery_list/widgets/number_input.dart';
+import 'package:grocery_list/widgets/grocery_item_amount.dart';
 import 'package:grocery_list/widgets/smart_text_field.dart';
 import 'package:grocery_list/widgets/tag_widget.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
@@ -31,9 +33,9 @@ class GroceryListItem extends StatelessWidget {
       builder: (context, child) => AnimatedContainer(
         padding: EdgeInsets.symmetric(horizontal: 10),
         color: expansionController.expandedGroceryListItemDetails == id ? Theme.of(context).colorScheme.onBackground.withOpacity(0.02) : Colors.transparent,
-        duration: Duration(milliseconds: 300),
+        duration: Duration(milliseconds: 400),
         child: AnimatedSize(
-          duration: Duration(milliseconds: 300),
+          duration: Duration(milliseconds: 400),
           alignment: Alignment.topCenter,
           child: BlocBuilder<GroceryListBloc, GroceryListState>(
             buildWhen: (previous, current) => current is ItemsChangedState && current.contains(id),
@@ -43,85 +45,64 @@ class GroceryListItem extends StatelessWidget {
 
               return Column(
                 children: [
-                  expansionController.expandedGroceryListItemDetails == id
-                      ? SizedBox(
-                          height: 50,
-                          child: Row(
-                            // Title, checkbox and amount
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              HeavyTouchButton(
-                                onPressed: () => bloc.updateItem(id, model = model.copyWith(checked: !model.checked), listId),
-                                child: ColoredBox(
-                                  color: Colors.transparent,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: ListItemCheckBox(checked: model.checked),
-                                  ),
-                                ),
+                  SizedBox(
+                    height: 50,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      splashColor: Colors.transparent,
+                      highlightColor: Theme.of(context).colorScheme.onBackground.blendedWith(Theme.of(context).primaryColor, 0.3).withOpacity(0.06),
+                      onTap: () => expansionController.expandedGroceryListItemDetails = id,
+                      child: Row(
+                        // Title, checkbox and amount
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          HeavyTouchButton(
+                            onPressed: () => bloc.updateItem(id, model = model.copyWith(checked: !model.checked), listId),
+                            child: ColoredBox(
+                              color: Colors.transparent,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: ListItemCheckBox(checked: model.checked),
                               ),
-                              SizedBox(width: 15),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  child: SmartTextField(
-                                    controller: TextEditingController(text: model.title),
-                                    decoration: InputDecoration(border: InputBorder.none),
-                                    focusNode: FocusNode(),
-                                    onEditingComplete: (textField) => bloc.updateItem(id, bloc.getItemOfId(id, listId).copyWith(title: textField.controller.text), listId),
-                                    textAlignVertical: TextAlignVertical.center,
-                                    style: Theme.of(context).textTheme.caption,
-                                    // scrollPadding: EdgeInsets.zero,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 20),
-                              Text(
-                                // TODO: Editable number
-                                model.amount.toStringAsFixed(model.quantizationDecimalNumbersAmount) + (model.unit == null ? "" : " " + model.unit),
-                                style: Theme.of(context).textTheme.caption,
-                              ),
-                            ],
-                          ),
-                        )
-                      : InkWell(
-                          borderRadius: BorderRadius.circular(8),
-                          splashColor: Colors.transparent,
-                          highlightColor: Theme.of(context).colorScheme.onBackground.blendedWith(Theme.of(context).primaryColor, 0.3).withOpacity(0.06),
-                          onTap: () => expansionController.expandedGroceryListItemDetails = id,
-                          child: SizedBox(
-                            height: 50,
-                            child: Row(
-                              // Collapsed
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                HeavyTouchButton(
-                                  onPressed: () => bloc.updateItem(id, model = model.copyWith(checked: !model.checked), listId),
-                                  child: ColoredBox(
-                                    color: Colors.transparent,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8),
-                                      child: ListItemCheckBox(checked: model.checked),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 15),
-                                Text(
-                                  model.title,
-                                  style: Theme.of(context).textTheme.caption,
-                                ),
-                                Spacer(),
-                                SizedBox(width: 20),
-                                Text(
-                                  model.amount.toStringAsFixed(model.quantizationDecimalNumbersAmount) + (model.unit == null ? "" : " " + model.unit),
-                                  style: Theme.of(context).textTheme.caption,
-                                ),
-                              ],
                             ),
                           ),
-                        ),
+                          SizedBox(width: 15),
+                          if (expansionController.expandedGroceryListItemDetails == id)
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: SmartTextField(
+                                  controller: TextEditingController(text: model.title),
+                                  decoration: InputDecoration(border: InputBorder.none),
+                                  focusNode: FocusNode(),
+                                  onEditingComplete: (textField) => bloc.updateItem(id, bloc.getItemOfId(id, listId).copyWith(title: textField.controller.text), listId),
+                                  textAlignVertical: TextAlignVertical.center,
+                                  style: Theme.of(context).textTheme.caption,
+                                  // scrollPadding: EdgeInsets.zero,
+                                ),
+                              ),
+                            ),
+                          if (expansionController.expandedGroceryListItemDetails != id)
+                            Text(
+                              model.title,
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                          Spacer(),
+                          SizedBox(width: 20),
+                          GroceryItemAmount(
+                            bloc: bloc,
+                            expanded: expansionController.expandedGroceryListItemDetails == id,
+                            fractionDigits: model.quantizationFractionDigits,
+                            quantize: model.quantization,
+                            unit: model.unit,
+                            value: model.amount,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   AnimatedSwitcher(
-                    duration: Duration(milliseconds: 300),
+                    duration: Duration(milliseconds: 400),
                     transitionBuilder: (child, animation) => FadeTransition(
                       opacity: animation,
                       child: SlideTransition(
@@ -141,16 +122,17 @@ class GroceryListItem extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Expanded(
+                                      flex: 2,
                                       child: BeautifulTextField(
                                         label: "Quantization",
-                                        controller: TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount)),
+                                        controller: TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationFractionDigits)),
                                         focusNode: FocusNode(),
                                         onEditingComplete: (state) {
                                           var value = double.tryParse(state.controller.text);
                                           var oldModel = bloc.getItemOfId(id, listId);
 
                                           if (value == null || value < 0) {
-                                            state.controller.text = oldModel.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
+                                            state.controller.text = oldModel.quantization.toStringAsFixed(model.quantizationFractionDigits);
                                             return;
                                           }
 
@@ -169,6 +151,7 @@ class GroceryListItem extends StatelessWidget {
                                     ),
                                     SizedBox(width: 20),
                                     Expanded(
+                                      flex: 1,
                                       child: BeautifulTextField(
                                         label: "Unit",
                                         controller: TextEditingController(text: model.unit),
@@ -186,6 +169,7 @@ class GroceryListItem extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Expanded(
+                                      flex: 2,
                                       child: BeautifulTextField(
                                         label: "Price",
                                         controller: TextEditingController(text: model.price.toStringAsFixed(2)),
@@ -198,6 +182,7 @@ class GroceryListItem extends StatelessWidget {
                                     ),
                                     SizedBox(width: 20),
                                     Expanded(
+                                      flex: 1,
                                       child: BeautifulTextField(
                                         label: "Currency",
                                         controller: TextEditingController(text: model.currency),

@@ -227,7 +227,7 @@ class ControllerSmartTextFieldState extends SmartTextFieldState {
     super.dispose();
   }
 
-  void _defaultOnSubmittedCallback(ValueChanged<String> val) {
+  void _defaultOnSubmittedCallback(String val) {
     FocusScope.of(context)?.unfocus();
   }
 
@@ -312,7 +312,7 @@ class FocusNodeSmartTextFieldState extends SmartTextFieldState {
     widget.onEditingComplete?.call(this);
   }
 
-  void _defaultOnSubmittedCallback(ValueChanged<String> val) {
+  void _defaultOnSubmittedCallback(String val) {
     FocusScope.of(context)?.unfocus();
   }
 
@@ -406,7 +406,7 @@ class FullSmartTextFieldState extends SmartTextFieldState {
     widget.onEditingComplete?.call(this);
   } // TODO: This and the below functions are copied in every class representing a variation of the smart text field. Make it only one declaration for on  function
 
-  void _defaultOnSubmittedCallback(ValueChanged<String> val) {
+  void _defaultOnSubmittedCallback(String val) {
     FocusScope.of(context)?.unfocus();
   }
 
