@@ -19,7 +19,7 @@ class HeavyTouchButton extends StatefulWidget {
     Key key,
     this.child,
     this.animationDuration,
-    this.pressedScale = 0.75,
+    this.pressedScale = 0.85,
     this.fullAnimation = true,
     this.scaleAlignment = Alignment.center,
     this.onLongPress,

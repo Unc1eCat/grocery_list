@@ -29,7 +29,6 @@ class GroceryItemAmount extends StatefulWidget {
 }
 
 class _GroceryItemAmount extends State<GroceryItemAmount> {
-  StreamSubscription<void> _longPress;
   double _value;
   double get value => _value;
   set value(double value) {
@@ -45,15 +44,8 @@ class _GroceryItemAmount extends State<GroceryItemAmount> {
 
   @override
   void initState() {
-    _longPress = Stream<void>.periodic(const Duration(milliseconds: 240)).listen((_) => increment());
-    _longPress.pause();
     _value = widget.value;
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override
@@ -91,40 +83,35 @@ class _GroceryItemAmount extends State<GroceryItemAmount> {
           child: widget.expanded
               ? HeavyTouchButton(
                   onPressed: decrement,
-                  onLongPress: () => _longPress = _longPress
-                    ..onData((_) => decrement())
-                    ..resume(),
-                  onUp: () => _longPress.pause(),
                   animationDuration: const Duration(milliseconds: 100),
                   child: Icon(
-                    Icons.remove,
-                    size: 30,
+                    Icons.remove_rounded,
                   ),
                 )
               : SizedBox.shrink(),
         ),
-        SizedBox(width: 5),
-        AnimatedSwitcher(
-          duration: Duration(milliseconds: 150),
-          transitionBuilder: (child, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                        begin: Offset(0, _up ? (_value == (child.key as ValueKey).value ? 0.7 : -0.7) : (_value == (child.key as ValueKey).value ? -0.7 : 0.7)), end: Offset(0, 0))
-                    .animate(animation),
-                child: child,
-              ),
-            );
-          },
-          child: SizedBox(
-            key: ValueKey(_value),
-            width: 45,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Center(
+        SizedBox(
+          width: 45,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Center(
+              child: AnimatedSwitcher(
+                duration: Duration(milliseconds: 150),
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                              begin: Offset(0, _up ? (_value == (child.key as ValueKey).value ? 0.7 : -0.7) : (_value == (child.key as ValueKey).value ? -0.7 : 0.7)),
+                              end: Offset(0, 0))
+                          .animate(animation),
+                      child: child,
+                    ),
+                  );
+                },
                 child: Text(
                   _value.toStringAsFixed(widget.fractionDigits) + (widget.unit == null ? "" : " " + widget.unit),
+                  key: ValueKey(_value),
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
@@ -138,15 +125,10 @@ class _GroceryItemAmount extends State<GroceryItemAmount> {
             duration: Duration(milliseconds: 400),
             child: widget.expanded
                 ? HeavyTouchButton(
-                    onLongPress: () => _longPress = _longPress
-                      ..onData((_) => increment())
-                      ..resume(),
-                    onUp: () => _longPress.pause(),
                     onPressed: increment,
                     animationDuration: const Duration(milliseconds: 100),
                     child: Icon(
-                      Icons.add,
-                      size: 30,
+                      Icons.add_rounded,
                     ),
                   )
                 : SizedBox.shrink(),

@@ -32,7 +32,7 @@ class GroceryListItem extends StatelessWidget {
       animation: expansionController,
       builder: (context, child) => AnimatedContainer(
         padding: EdgeInsets.symmetric(horizontal: 10),
-        color: expansionController.expandedGroceryListItemDetails == id ? Theme.of(context).colorScheme.onBackground.withOpacity(0.02) : Colors.transparent,
+        color: expansionController.expandedGroceryListItemDetails == id ? Theme.of(context).primaryColorLight.withOpacity(0.02) : Colors.transparent,
         duration: Duration(milliseconds: 400),
         child: AnimatedSize(
           duration: Duration(milliseconds: 400),
