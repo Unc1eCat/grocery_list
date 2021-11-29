@@ -102,6 +102,7 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
                     cubit: bloc,
                     builder: (context, state) => ImplicitlyAnimatedReorderableList<GroceryItem>(
                       padding: EdgeInsets.only(top: 100),
+                      onReorderStarted: (item, index) => _expansionController.expandedGroceryListItemDetails = null,
                       onReorderFinished: (item, from, to, newItems) => bloc.moveItem(from, to, listId),
                       areItemsTheSame: (a, b) => a.id == b.id,
                       itemBuilder: (context, animation, item, i) {

@@ -227,6 +227,10 @@ class ControllerSmartTextFieldState extends SmartTextFieldState {
     super.dispose();
   }
 
+  void _defaultOnSubmittedCallback(ValueChanged<String> val) {
+    FocusScope.of(context)?.unfocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextField(
@@ -258,7 +262,7 @@ class ControllerSmartTextFieldState extends SmartTextFieldState {
       maxLengthEnforcement: widget.maxLengthEnforcement,
       onChanged: widget.onChanged,
       onEditingComplete: () => widget.onEditingComplete?.call(this),
-      onSubmitted: widget.onSubmitted,
+      onSubmitted: widget.onSubmitted ?? _defaultOnSubmittedCallback,
       onAppPrivateCommand: widget.onAppPrivateCommand,
       inputFormatters: widget.inputFormatters,
       enabled: widget.enabled,
@@ -308,6 +312,10 @@ class FocusNodeSmartTextFieldState extends SmartTextFieldState {
     widget.onEditingComplete?.call(this);
   }
 
+  void _defaultOnSubmittedCallback(ValueChanged<String> val) {
+    FocusScope.of(context)?.unfocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextField(
@@ -339,7 +347,7 @@ class FocusNodeSmartTextFieldState extends SmartTextFieldState {
       maxLengthEnforcement: widget.maxLengthEnforcement,
       onChanged: widget.onChanged,
       onEditingComplete: _handleOnEditingComplete,
-      onSubmitted: widget.onSubmitted,
+      onSubmitted: widget.onSubmitted ?? _defaultOnSubmittedCallback,
       onAppPrivateCommand: widget.onAppPrivateCommand,
       inputFormatters: widget.inputFormatters,
       enabled: widget.enabled,
@@ -396,6 +404,10 @@ class FullSmartTextFieldState extends SmartTextFieldState {
 
   void _handleOnEditingComplete() {
     widget.onEditingComplete?.call(this);
+  } // TODO: This and the below functions are copied in every class representing a variation of the smart text field. Make it only one declaration for on  function
+
+  void _defaultOnSubmittedCallback(ValueChanged<String> val) {
+    FocusScope.of(context)?.unfocus();
   }
 
   @override
@@ -430,7 +442,7 @@ class FullSmartTextFieldState extends SmartTextFieldState {
       maxLengthEnforcement: widget.maxLengthEnforcement,
       onChanged: widget.onChanged,
       onEditingComplete: _handleOnEditingComplete,
-      onSubmitted: widget.onSubmitted,
+      onSubmitted: widget.onSubmitted ?? _defaultOnSubmittedCallback,
       onAppPrivateCommand: widget.onAppPrivateCommand,
       inputFormatters: widget.inputFormatters,
       enabled: widget.enabled,

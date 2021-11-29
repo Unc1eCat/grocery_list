@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/models/grocery_item.dart';
 import 'package:grocery_list/screens/list_item_edit_screen.dart';
+import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/beautiful_text_field.dart';
+import 'package:grocery_list/widgets/grocery_item_tag_setting.dart';
 import 'package:grocery_list/widgets/grocery_list_items_expansion_controller.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
@@ -66,6 +68,7 @@ class GroceryListItem extends StatelessWidget {
                                     controller: TextEditingController(text: model.title),
                                     decoration: InputDecoration(border: InputBorder.none),
                                     focusNode: FocusNode(),
+                                    onEditingComplete: (textField) => bloc.updateItem(id, bloc.getItemOfId(id, listId).copyWith(title: textField.controller.text), listId),
                                     textAlignVertical: TextAlignVertical.center,
                                     style: Theme.of(context).textTheme.caption,
                                     // scrollPadding: EdgeInsets.zero,
@@ -201,6 +204,54 @@ class GroceryListItem extends StatelessWidget {
                                         focusNode: FocusNode(),
                                         onEditingComplete: (state) => bloc.updateItem(id, model.copyWith(currency: state.controller.text), listId),
                                       ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
+                                child: Wrap(
+                                  runSpacing: 12,
+                                  alignment: WrapAlignment.spaceBetween,
+                                  spacing: 10,
+                                  children: [
+                                    GroceryItemTagSetting(
+                                      color: Colors.deepOrange,
+                                      style: Theme.of(context).textTheme.caption,
+                                      ticked: true,
+                                      title: "For Cat",
+                                    ),
+                                    GroceryItemTagSetting(
+                                      color: Colors.purple,
+                                      style: Theme.of(context).textTheme.caption,
+                                      title: "Expansive",
+                                    ),
+                                    GroceryItemTagSetting(
+                                      color: Colors.green,
+                                      style: Theme.of(context).textTheme.caption,
+                                      title: "For Fun",
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
+                                child: Wrap(
+                                  runSpacing: 10,
+                                  alignment: WrapAlignment.center,
+                                  spacing: 8,
+                                  children: [
+                                    ActionButton(
+                                      onPressed: () => bloc.removeItem(id, listId),
+                                      color: Colors.red[600],
+                                      icon: Icons.delete_rounded,
+                                      title: "Delete",
+                                    ),
+                                    ActionButton(
+                                      onPressed: () => bloc.addItem(model.copyWith(id: DateTime.now().toString()), listId),
+                                      color: Colors.amber[600],
+                                      icon: Icons.copy_rounded,
+                                      title: "Duplicate",
                                     ),
                                   ],
                                 ),
