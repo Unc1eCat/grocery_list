@@ -52,7 +52,7 @@ class GroceryListItem extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         splashColor: Colors.transparent,
                         highlightColor: Theme.of(context).colorScheme.onBackground.blendedWith(Theme.of(context).primaryColor, 0.3).withOpacity(0.06),
-                        onTap: () => expansionController.expandedCardItemId = this.fallbackModel.id,
+                        onTap: expansionController.expandedCardItemId == this.fallbackModel.id ? null : () => expansionController.expandedCardItemId = this.fallbackModel.id,
                         child: Row(
                           // Title, checkbox and amount
                           crossAxisAlignment: CrossAxisAlignment.center,

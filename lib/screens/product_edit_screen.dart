@@ -99,7 +99,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                 if (current is PrototypeChangedState && current.updatedPrototypes.id == id) {
                   model = current.updatedPrototypes;
                   titleKey.currentState.controller.text = model.title;
-                  quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
+                  quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationFractionDigits);
                   unitKey.currentState.controller.text = model.unit;
                   priceKey.currentState.controller.text = model.price.toStringAsFixed(2);
                   currencyKey.currentState.controller.text = model.currency;
@@ -160,7 +160,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                                   onEditingComplete: (_) {
                                     var value = double.tryParse(quantizationKey.currentState.controller.text);
                                     if (value == null || value < 0) {
-                                      quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationDecimalNumbersAmount);
+                                      quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationFractionDigits);
                                       return;
                                     }
 
@@ -236,7 +236,7 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
                 // Spacer(),
                 ActionButton(
                   onPressed: () {
-                    this.completed.then((value) => bloc.deletePrototype(id));
+                    this.completed.then((value) => bloc.removeProduct(id));
                     Navigator.pop(context);
                   },
                   color: const Color(0xFFF4715D),

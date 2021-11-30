@@ -23,7 +23,7 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    _controller = TabController(length: 2, vsync: this);
+    _controller = TabController(length: 3, vsync: this);
 
     super.initState();
   }
@@ -63,6 +63,7 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
                   controller: _controller,
                   children: [
                     ListsScreen(),
+                    ProductsScreen(),
                     SettingsScreen(),
                   ],
                 );
@@ -76,25 +77,41 @@ class _TabsScreenState extends State<TabsScreen> with TickerProviderStateMixin {
               indicatorColor: Colors.transparent,
               padding: EdgeInsets.symmetric(vertical: 10),
               tabs: [
-                ColoredTab(
-                  controller: _controller,
-                  index: 0,
-                  icon: Icon(
-                    Icons.format_list_bulleted_rounded,
+                Tooltip(
+                  message: "Grocery Lists",
+                  child: ColoredTab(
+                    controller: _controller,
+                    index: 0,
+                    icon: Icon(
+                      Icons.format_list_bulleted_rounded,
+                    ),
+                    selectedColor: Colors.limeAccent[700],
+                    unselectedColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.65),
                   ),
-                  // text: "Lists",
-                  selectedColor: Colors.green[600],
-                  unselectedColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.65),
                 ),
-                ColoredTab(
-                  controller: _controller,
-                  index: 1,
-                  icon: Icon(
-                    Icons.person_rounded,
+                Tooltip(
+                  message: "Products",
+                  child: ColoredTab(
+                    controller: _controller,
+                    index: 1,
+                    icon: Icon(
+                      Icons.category_rounded,
+                    ),
+                    selectedColor: Colors.lightBlueAccent,
+                    unselectedColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.65),
                   ),
-                  // text: "Profile",
-                  selectedColor: Colors.blueAccent,
-                  unselectedColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.65),
+                ),
+                Tooltip(
+                  message: "Profile",
+                  child: ColoredTab(
+                    controller: _controller,
+                    index: 2,
+                    icon: Icon(
+                      Icons.person_rounded,
+                    ),
+                    selectedColor: Colors.purpleAccent[400],
+                    unselectedColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.65),
+                  ),
                 ),
               ],
             ),

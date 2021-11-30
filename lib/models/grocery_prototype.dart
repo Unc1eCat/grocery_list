@@ -9,7 +9,7 @@ class GroceryPrototype {
   final List<ItemTag> tags;
   final String unit;
   final double quantization;
-  final int quantizationDecimalNumbersAmount;
+  final int quantizationFractionDigits;
   final String currency;
   final double price;
 
@@ -19,7 +19,7 @@ class GroceryPrototype {
     this.tags,
     this.unit = "it.",
     this.quantization = 1,
-    this.quantizationDecimalNumbersAmount = 0,
+    this.quantizationFractionDigits = 0,
     this.currency = "\$",
     this.price = 0,
   }) : this.id = id ?? DateTime.now().toString();
@@ -33,7 +33,7 @@ class GroceryPrototype {
       "quantization": quantization,
       "currency": currency,
       "price": price,
-      "fractionDigits": quantizationDecimalNumbersAmount,
+      "fractionDigits": quantizationFractionDigits,
     };
   }
 
@@ -43,7 +43,7 @@ class GroceryPrototype {
       currency: json["currency"],
       price: json["price"],
       quantization: json["quantization"],
-      quantizationDecimalNumbersAmount: json["fractionDigits"],
+      quantizationFractionDigits: json["fractionDigits"],
       tags: <ItemTag>[], // TODO: TAGS
       title: json["title"],
       unit: json["unit"],
@@ -63,7 +63,7 @@ class GroceryPrototype {
     return GroceryPrototype(
       id: id ?? this.id,
       currency: currency ?? this.currency,
-      quantizationDecimalNumbersAmount: quantizationDecimalNumbersAmount ?? this.quantizationDecimalNumbersAmount,
+      quantizationFractionDigits: quantizationDecimalNumbersAmount ?? this.quantizationFractionDigits,
       price: price ?? this.price,
       quantization: quantization ?? this.quantization,
       tags: tags ?? this.tags,

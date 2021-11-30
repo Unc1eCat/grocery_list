@@ -163,7 +163,7 @@ class ProductlessGroceryItem implements GroceryItem {
       currency: currency,
       price: price,
       quantization: quantization,
-      quantizationDecimalNumbersAmount: quantizationFractionDigits,
+      quantizationFractionDigits: quantizationFractionDigits,
       tags: tags,
       title: title,
       unit: unit,
@@ -200,7 +200,7 @@ class ProductfulGroceryItem implements GroceryItem {
   double get quantization => boundPrototype.quantization;
 
   @override
-  int get quantizationFractionDigits => boundPrototype.quantizationDecimalNumbersAmount;
+  int get quantizationFractionDigits => boundPrototype.quantizationFractionDigits;
 
   @override
   List<ItemTag> get tags => throw UnimplementedError();

@@ -5,6 +5,7 @@ import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/lists_view_item.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
+import 'package:my_utilities/color_utils.dart';
 
 class ListsScreen extends StatefulWidget {
   const ListsScreen({Key key}) : super(key: key);
@@ -78,18 +79,21 @@ class _ListsScreenState extends State<ListsScreen> with AutomaticKeepAliveClient
                   Positioned(
                     bottom: 20,
                     right: 30,
-                    child: HeavyTouchButton(
-                      onPressed: () => bloc.addList(GroceryList(title: "New List")),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Icon(
-                            Icons.add_rounded,
-                            size: 40,
+                    child: Tooltip(
+                      message: "Create new grocery list",
+                      child: HeavyTouchButton(
+                        onPressed: () => bloc.addList(GroceryList(title: "New List")),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.limeAccent[700].withRangedHsvValue(0.8),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Icon(
+                              Icons.add_rounded,
+                              size: 40,
+                            ),
                           ),
                         ),
                       ),

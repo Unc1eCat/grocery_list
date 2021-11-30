@@ -52,7 +52,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     return _prototypes.firstWhere((e) => e.title == title);
   }
 
-  void deletePrototype(String id) {
+  void removeProduct(String id) {
     var index = _prototypes.indexWhere((e) => e.id == id);
     var changedIds = <String>{};
 

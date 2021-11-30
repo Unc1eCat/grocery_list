@@ -4,11 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
+import 'package:grocery_list/utils/naming_utils.dart';
 import 'package:grocery_list/widgets/grocery_list_items_expansion_controller.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/lists_view_item.dart';
 import 'package:grocery_list/widgets/product_item.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
+import 'package:my_utilities/color_utils.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({Key key}) : super(key: key);
@@ -55,7 +57,7 @@ class _ProductsScreenState extends State<ProductsScreen> with AutomaticKeepAlive
                     buildWhen: (prev, cur) => cur is ProductsListModifiedState,
                     builder: (context, state) {
                       return ImplicitlyAnimatedReorderableList<GroceryPrototype>(
-                        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 10.0, left: 10.0, right: 10.0),
+                        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 10.0),
                         physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                         items: bloc.prototypes,
                         itemBuilder: (context, anim, model, i) {
@@ -84,18 +86,22 @@ class _ProductsScreenState extends State<ProductsScreen> with AutomaticKeepAlive
                   Positioned(
                     bottom: 20,
                     right: 30,
-                    child: HeavyTouchButton(
-                      onPressed: () => bloc.addPrototype(GroceryPrototype()),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Icon(
-                            Icons.add_rounded,
-                            size: 40,
+                    child: Tooltip(
+                      message: "Create new product",
+                      child: HeavyTouchButton(
+                        onPressed: () async => bloc.addPrototype(
+                            GroceryPrototype(title: "New Product " + findNextUnusedNumberForName("New Product", bloc.prototypes.map((e) => e.title.trim()).toList()).toString())),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.lightBlueAccent.withRangedHsvValue(0.8),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Icon(
+                              Icons.add_rounded,
+                              size: 40,
+                            ),
                           ),
                         ),
                       ),
