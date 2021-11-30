@@ -108,7 +108,7 @@ class SearchResultWithProduct extends StatelessWidget {
         color: th.colorScheme.onBackground.inverted.withOpacity(0.8),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Text.rich(
             TextSpan(children: [
               TextSpan(
@@ -149,7 +149,7 @@ class SearchResultFromProduct extends StatelessWidget {
         color: th.colorScheme.onBackground.inverted.withOpacity(0.8),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
             prod.title,
             style: th.textTheme.caption,

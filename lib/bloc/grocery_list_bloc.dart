@@ -28,9 +28,9 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   GroceryListBloc() : super(GroceryListState());
   GroceryListBloc.initFromFiles() : super(GroceryListState()) {}
 
-  GroceryList getListOfId(String listId) => _lists.firstWhere((e) => e.id == listId);
-  GroceryItem getItemOfId(String id, String listId) => getListOfId(listId).items.firstWhere((e) => e.id == id, orElse: () => null);
-  GroceryPrototype getPrototypeOfId(String id) => _prototypes.firstWhere((e) => e.id == id, orElse: () => null);
+  GroceryList getListOfId(String listId) => _lists?.firstWhere((e) => e.id == listId, orElse: () => null);
+  GroceryItem getItemOfId(String id, String listId) => getListOfId(listId)?.items?.firstWhere((e) => e.id == id, orElse: () => null);
+  GroceryPrototype getPrototypeOfId(String id) => _prototypes?.firstWhere((e) => e.id == id, orElse: () => null);
 
   @override
   onChange(Change change) {
@@ -42,18 +42,10 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
   void savePrototypes() {}
 
-  void tryAddPrototype(GroceryPrototype prototype) {
-    if (!containsPrototype(prototype)) {
-      _prototypes.add(prototype);
-
-      emit(PrototypeAddedState(prototypes, prototype));
-    }
-  }
-
   void addPrototype(GroceryPrototype prototype) {
     _prototypes.add(prototype);
 
-    emit(PrototypeAddedState(prototypes, prototype));
+    emit(ProductsListModifiedState());
   }
 
   GroceryPrototype getPrototypeOfTitle(String title) {
@@ -75,7 +67,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     if (index == -1) return;
 
-    emit(PrototypeRemovedState(prototypes, _prototypes.removeAt(index)));
+    emit(ProductsListModifiedState());
     emit(ItemsChangedState(changedIds, true));
 
     savePrototypes();
@@ -115,6 +107,12 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     emit(ItemMovedState(list.items, listId));
 
     saveItems();
+  }
+
+  void moveProduct(int fromIndex, int toIndex) {
+    _prototypes.insert(toIndex, _prototypes.removeAt(fromIndex));
+    
+    emit(ProductsListModifiedState());
   }
 
   List<Widget> getSearchResults(String enteredText, String listId) {
@@ -266,38 +264,10 @@ class ItemsFetchedState extends GroceryListState {
   List<Object> get props => super.props..add(items);
 }
 
-class PrototypeAddedState extends GroceryListState {
-  final List<GroceryPrototype> prototypes;
-  final GroceryPrototype prototype;
+class ProductsListModifiedState extends GroceryListState {
+  ProductsListModifiedState();
 
-  PrototypeAddedState(this.prototypes, this.prototype);
-
-  @override
-  List<Object> get props => super.props
-    ..add(prototypes)
-    ..add(prototype);
-}
-
-class PrototypeRemovedState extends GroceryListState {
-  final List<GroceryPrototype> prototypes;
-  final GroceryPrototype prototype;
-
-  PrototypeRemovedState(this.prototypes, this.prototype);
-
-  @override
-  List<Object> get props => super.props
-    ..add(prototypes)
-    ..add(prototype);
-}
-
-class PrototypesFetchedState extends GroceryListState {
-  // TODO: Combine prototype added, fetched and removed into a single state. Do the same thing for the grocery items
-  final List<GroceryPrototype> prototypes;
-
-  PrototypesFetchedState(this.prototypes);
-
-  @override
-  List<Object> get props => super.props..add(prototypes);
+  bool operator ==(Object other) => false;
 }
 
 class PrototypeChangedState extends GroceryListState {

@@ -41,13 +41,14 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
   GroceryListBloc bloc;
 
   void _startSearchReloadTimer() {
+    _reloadSearchResultsStreamController.add([]);
     _reloadSearchResultsTimer?.cancel();
     _reloadSearchResultsTimer = Timer(
         Duration(milliseconds: 700),
         () => _reloadSearchResultsStreamController.add(bloc
             .getSearchResults(_textEdContr.text, listId)
             .map((e) => Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   child: e,
                 ))
             .toList()));
@@ -55,13 +56,12 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
 
   @override
   void install() {
-    _animationController = AnimationController(vsync: this)..animateTo(1.0, duration: const Duration(milliseconds: 600));
+    _animationController = AnimationController(vsync: this)..animateTo(1.0, duration: const Duration(milliseconds: 500));
     _scrollController = ScrollController()..addListener(_handleScroll);
     _textField = FocusNode();
     _textEdContr = TextEditingController();
     _reloadSearchResultsStreamController = StreamController(sync: false);
-    _textEdContr.addListener(() => _startSearchReloadTimer());
-    _startSearchReloadTimer();
+    _textEdContr.addListener(_startSearchReloadTimer);
     popped.then((_) => _animationController.animateBack(0.0, duration: const Duration(milliseconds: 600)));
     super.install();
   }

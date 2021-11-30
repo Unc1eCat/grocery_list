@@ -5,7 +5,7 @@ import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/widgets/corner_drawer.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 
-typedef OnChange = void Function(double value);
+typedef OnChangeCallback = void Function(double value);
 
 class GroceryItemAmount extends StatefulWidget {
   final double quantize;
@@ -13,7 +13,7 @@ class GroceryItemAmount extends StatefulWidget {
   final double value;
   final String unit;
   final bool expanded;
-  final GroceryListBloc bloc;
+  final OnChangeCallback onChanged;
 
   GroceryItemAmount({
     this.quantize = 1,
@@ -21,7 +21,7 @@ class GroceryItemAmount extends StatefulWidget {
     this.value = 0,
     this.unit,
     this.expanded = false,
-    this.bloc,
+    this.onChanged,
   });
 
   @override
@@ -61,6 +61,8 @@ class _GroceryItemAmount extends State<GroceryItemAmount> {
       _up = true;
       _value += widget.quantize;
     });
+
+    widget.onChanged(_value);
   }
 
   void decrement() {
@@ -70,12 +72,12 @@ class _GroceryItemAmount extends State<GroceryItemAmount> {
       _up = false;
       _value -= widget.quantize;
     });
+
+    widget.onChanged(_value);
   }
 
   @override
   Widget build(BuildContext context) {
-    var bloc = widget.bloc;
-
     return Row(
       children: [
         AnimatedSwitcher(

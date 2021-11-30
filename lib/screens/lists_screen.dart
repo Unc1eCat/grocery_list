@@ -25,6 +25,8 @@ class _ListsScreenState extends State<ListsScreen> with AutomaticKeepAliveClient
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     var bloc = GroceryListBloc.of(context);
     var navigatorKey = GlobalKey<NavigatorState>();
 

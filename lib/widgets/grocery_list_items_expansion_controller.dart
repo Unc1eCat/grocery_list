@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 
-class GroceryListItemsExpansionController extends ChangeNotifier
+class CardExpansionController extends ChangeNotifier
 {
   String _expandedGroceryListItemDetails = null;
 
-  String get expandedGroceryListItemDetails => _expandedGroceryListItemDetails;
+  String get expandedCardItemId => _expandedGroceryListItemDetails;
 
-  set expandedGroceryListItemDetails(String val) {
+  set expandedCardItemId(String val) {
     _expandedGroceryListItemDetails = val;
     notifyListeners();
   }
