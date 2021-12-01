@@ -3,11 +3,13 @@ import 'package:flutter/painting.dart';
 
 @immutable
 class ItemTag {
+  final String id;
   final String title;
   final Color color;
 
-  const ItemTag({
+  ItemTag({
+    String id,
     this.title,
     this.color,
-  });
+  }) : this.id = id ?? DateTime.now().toString();
 }

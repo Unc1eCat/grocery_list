@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/models/grocery_item.dart';
+import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/screens/list_item_edit_screen.dart';
 import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/beautiful_text_field.dart';
@@ -53,12 +54,24 @@ class GroceryListItem extends StatelessWidget {
 
                   if (expanded) {
                     if (productBound) {
+                      // Is bound to a product
                       var subDetailsProductful = expansionController.isProductEditingExpanded
                           ? Column(
+                              // Subdetails are expanded
                               key: ValueKey(true),
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                  child: BeautifulTextField(
+                                    label: "Title",
+                                    controller: TextEditingController(text: model.title),
+                                    focusNode: FocusNode(),
+                                    onEditingComplete: (textField) => bloc.updatePrototype(bloc.getPrototypeOfId(this.fallbackModel.id).copyWith(title: textField.controller.text)),
+                                    // scrollPadding: EdgeInsets.zero,
+                                  ),
+                                ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
                                   child: Row(
@@ -158,20 +171,24 @@ class GroceryListItem extends StatelessWidget {
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
-                                  child: ActionButton(
-                                    onPressed: () => bloc.removeProduct(this.fallbackModel.id),
-                                    color: Colors.red[600],
-                                    icon: Icons.delete_rounded,
-                                    title: "Delete",
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: ActionButton(
+                                      onPressed: () => bloc.removeProduct(model.boundPrototype.id),
+                                      color: Colors.red[600],
+                                      icon: Icons.delete_rounded,
+                                      title: "Delete",
+                                    ),
                                   ),
                                 ),
                               ],
                             )
                           : Column(
+                              // Subdetails are collapsed
                               key: ValueKey(false),
                               children: [
                                 HeavyTouchButton(
-                                  onPressed: () {},
+                                  onPressed: () => expansionController.isProductEditingExpanded = true,
                                   child: DecoratedBox(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8),
@@ -212,6 +229,12 @@ class GroceryListItem extends StatelessWidget {
                                         icon: Icons.copy_rounded,
                                         title: "Duplicate",
                                       ),
+                                      ActionButton(
+                                        onPressed: () => bloc.removeProduct(model.boundPrototype.id),
+                                        color: Colors.pink[700],
+                                        icon: Icons.grade_rounded,
+                                        title: "Unbind product",
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -219,15 +242,30 @@ class GroceryListItem extends StatelessWidget {
                             );
 
                       detailsPanel = Column(
+                        key: ValueKey(true),
                         children: [
                           Padding(
-                            padding: EdgeInsets.symmetric(vertical: 20),
+                            padding: EdgeInsets.only(
+                              top: 10,
+                              bottom: 20,
+                              left: 30,
+                              right: 64,
+                            ),
                             child: SizedBox(
                               height: 24,
                               child: Row(
                                 children: [
                                   AnimatedSwitcher(
                                     duration: Duration(milliseconds: 400),
+                                    transitionBuilder: (child, animation) => child is SizedBox
+                                        ? child
+                                        : FadeTransition(
+                                            opacity: animation,
+                                            child: ScaleTransition(
+                                              scale: animation,
+                                              child: child,
+                                            ),
+                                          ),
                                     child: expansionController.isProductEditingExpanded
                                         ? HeavyTouchButton(
                                             onPressed: () => expansionController.isProductEditingExpanded = false,
@@ -235,19 +273,37 @@ class GroceryListItem extends StatelessWidget {
                                           )
                                         : SizedBox(width: 24),
                                   ),
-                                  Text(
-                                    "Bound to product:",
-                                    textAlign: TextAlign.center,
-                                    style: th.textTheme.caption.copyWith(color: th.colorScheme.onBackground.blendedWithInversion(0.2)),
+                                  Expanded(
+                                    child: Text(
+                                      "Bound to product:",
+                                      textAlign: TextAlign.center,
+                                      style: th.textTheme.caption.copyWith(color: th.colorScheme.onBackground.blendedWithInversion(0.2)),
+                                    ),
                                   ),
-                                  SizedBox(width: 24),
                                 ],
                               ),
                             ),
                           ),
-                          AnimatedSwitcher(
-                            duration: Duration(milliseconds: 200),
-                            child: subDetailsProductful,
+                          AnimatedSize(
+                            alignment: Alignment.topCenter,
+                            duration: Duration(milliseconds: 400),
+                            child: AnimatedSwitcher(
+                              duration: Duration(milliseconds: 400),
+                              layoutBuilder: (currentChild, previousChildren) => Stack(
+                                alignment: Alignment.topCenter,
+                                children: [...previousChildren, currentChild],
+                              ),
+                              transitionBuilder: (child, animation) => FadeTransition(
+                                opacity: animation,
+                                child: SlideTransition(
+                                  position: (child.key as ValueKey<bool>).value
+                                      ? Tween(begin: Offset(1.0, 0.0), end: Offset(0.0, 0.0)).animate(animation)
+                                      : Tween(begin: Offset(-1.0, 0.0), end: Offset(0.0, 0.0)).animate(animation),
+                                  child: child,
+                                ),
+                              ),
+                              child: subDetailsProductful,
+                            ),
                           ),
                           HeavyTouchButton(
                             onPressed: () => expansionController.expandedGroceryItemId = null,
@@ -262,7 +318,9 @@ class GroceryListItem extends StatelessWidget {
                         ],
                       );
                     } else {
+                      // Is not bound to a product
                       detailsPanel = Column(
+                        key: ValueKey(false),
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -388,6 +446,16 @@ class GroceryListItem extends StatelessWidget {
                                   color: Colors.amber[600],
                                   icon: Icons.copy_rounded,
                                   title: "Duplicate",
+                                ),
+                                ActionButton(
+                                  onPressed: () {
+                                    var p = model.createPrototype();
+                                    bloc.addPrototype(p);
+                                    bloc.updateItem(model.id, model.copyWith(boundPrototype: model.createPrototype(), updatePrototype: true), listId);
+                                  },
+                                  color: Colors.purpleAccent[400],
+                                  icon: Icons.grade_rounded,
+                                  title: "Create product",
                                 ),
                               ],
                             ),

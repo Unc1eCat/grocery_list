@@ -203,7 +203,7 @@ class ProductfulGroceryItem implements GroceryItem {
   int get quantizationFractionDigits => boundPrototype.quantizationFractionDigits;
 
   @override
-  List<ItemTag> get tags => throw UnimplementedError();
+  List<ItemTag> get tags => [];
 
   @override
   String get title => boundPrototype.title;
