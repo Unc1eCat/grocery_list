@@ -39,7 +39,7 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
   @override
   String get barrierLabel => "";
 
-  CardExpansionController _expansionController;
+  GroceryItemExpansionController _expansionController;
 
   Widget _buildBottomBarButton(BuildContext context, IconData icon, Color color, String tooltip, VoidCallback onPressed) => Tooltip(
         message: tooltip,
@@ -67,7 +67,7 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
   @override
   void install() {
     super.install();
-    _expansionController = CardExpansionController();
+    _expansionController = GroceryItemExpansionController();
   }
 
   @override
@@ -102,7 +102,7 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
                     cubit: bloc,
                     builder: (context, state) => ImplicitlyAnimatedReorderableList<GroceryItem>(
                       padding: EdgeInsets.only(top: 100),
-                      onReorderStarted: (item, index) => _expansionController.expandedCardItemId = null,
+                      onReorderStarted: (item, index) => _expansionController.expandedGroceryItemId = null,
                       onReorderFinished: (item, from, to, newItems) => bloc.moveItem(from, to, listId),
                       areItemsTheSame: (a, b) => a.id == b.id,
                       itemBuilder: (context, animation, item, i) {

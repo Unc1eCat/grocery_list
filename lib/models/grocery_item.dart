@@ -215,8 +215,8 @@ class ProductfulGroceryItem implements GroceryItem {
     this.amount = 0.0,
     this.boundPrototype,
     this.checked = false,
-    this.id,
-  });
+    String id,
+  }) : this.id = id ?? DateTime.now().toString();
 
   @override
   GroceryItem copyWith(

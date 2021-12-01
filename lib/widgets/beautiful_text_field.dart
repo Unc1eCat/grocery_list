@@ -32,9 +32,11 @@ class BeautifulTextField extends StatelessWidget {
             left: 0,
             bottom: 0,
             right: 0,
-            child: Material(
-              borderRadius: BorderRadius.circular(8),
-              color: Color.fromRGBO(30, 30, 30, 0.6),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Color.fromRGBO(30, 30, 30, 0.6),
+              ),
             ),
           ),
           Positioned(

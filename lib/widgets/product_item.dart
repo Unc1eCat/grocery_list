@@ -16,7 +16,7 @@ import 'grocery_item_tag_setting.dart';
 import 'heavy_touch_button.dart';
 
 class ProductListItem extends StatelessWidget {
-  final CardExpansionController expansionController;
+  final GroceryItemExpansionController expansionController;
   final GroceryPrototype fallbackModel;
 
   const ProductListItem({
@@ -32,7 +32,7 @@ class ProductListItem extends StatelessWidget {
     return AnimatedBuilder(
       animation: expansionController,
       builder: (context, child) {
-        var isExpanded = expansionController.expandedCardItemId == this.fallbackModel.id;
+        var isExpanded = expansionController.expandedGroceryItemId == this.fallbackModel.id;
 
         return AnimatedContainer(
           padding: EdgeInsets.symmetric(horizontal: 10),
@@ -55,7 +55,7 @@ class ProductListItem extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         splashColor: Colors.transparent,
                         highlightColor: Theme.of(context).colorScheme.onBackground.blendedWith(Theme.of(context).primaryColor, 0.3).withOpacity(0.06),
-                        onTap: () => expansionController.expandedCardItemId = this.fallbackModel.id,
+                        onTap: () => expansionController.expandedGroceryItemId = this.fallbackModel.id,
                         child: SizedBox(
                           height: 30,
                           child: Align(
@@ -216,7 +216,7 @@ class ProductListItem extends StatelessWidget {
                                     ),
                                   ),
                                   HeavyTouchButton(
-                                    onPressed: () => expansionController.expandedCardItemId = null,
+                                    onPressed: () => expansionController.expandedGroceryItemId = null,
                                     child: ColoredBox(
                                       color: Colors.transparent,
                                       child: Padding(

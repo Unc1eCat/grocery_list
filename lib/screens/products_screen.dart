@@ -21,12 +21,12 @@ class ProductsScreen extends StatefulWidget {
 
 class _ProductsScreenState extends State<ProductsScreen> with AutomaticKeepAliveClientMixin<ProductsScreen> {
   HeroController _heroController;
-  CardExpansionController _expansionController;
+  GroceryItemExpansionController _expansionController;
 
   @override
   void initState() {
     _heroController = HeroController();
-    _expansionController = CardExpansionController();
+    _expansionController = GroceryItemExpansionController();
 
     super.initState();
   }
