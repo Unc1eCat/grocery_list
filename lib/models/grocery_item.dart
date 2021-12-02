@@ -65,58 +65,8 @@ class ProductlessGroceryItem implements GroceryItem {
     this.title = "New item",
     this.checked = false,
     this.boundPrototype,
-    this.tags = const [
-      // ItemTag(color: Colors.red, title: "Test red tag"),
-      // ItemTag(color: Colors.blue, title: "Test blue tag"),
-      // ItemTag(color: Colors.green, title: "Test green tag"),
-    ],
+    this.tags = const [],
   }) : id = id ?? DateTime.now().toString();
-
-  // Map<String, Object> toJson() {
-  //   return boundPrototypeId == null
-  //       ? {
-  //           "id": id,
-  //           "title": title,
-  //           "checked": checked,
-  //           "tags": "", // TODO: TAGS
-  //           "unit": unit,
-  //           "quantization": quantization,
-  //           "currency": currency,
-  //           "price": price,
-  //           "amount": amount,
-  //           "fractionDigits": quantizationDecimalNumbersAmount,
-  //         }
-  //       : {
-  //           "id": id,
-  //           "checked": checked,
-  //           "amount": amount,
-  //           "boundPrototypeId": boundPrototype.id,
-  //         };
-  // }
-
-  // static GroceryItem fromJson(Map<String, dynamic> json) {
-  //   if (json.containsKey("boundPrototypeId")) {
-  //     return GroceryItem(
-  //       id: json["id"],
-  //       amount: json["amount"],
-  //       checked: json["checked"],
-  //       boundPrototype: json["boundPrototypeId"],
-  //     );
-  //   } else {
-  //     return GroceryItem(
-  //       id: json["id"],
-  //       amount: json["amount"],
-  //       checked: json["checked"],
-  //       currency: json["currency"],
-  //       price: json["price"],
-  //       quantization: json["quantization"],
-  //       quantizationDecimalNumbersAmount: json["fractionDigits"],
-  //       tags: <ItemTag>[], // TODO: TAGS
-  //       title: json["title"],
-  //       unit: json["unit"],
-  //     );
-  //   }
-  // }
 
   @override
   GroceryItem copyWith({
@@ -151,6 +101,7 @@ class ProductlessGroceryItem implements GroceryItem {
         : ProductfulGroceryItem(
             amount: amount ?? this.amount,
             checked: checked ?? this.checked,
+            tags: tags ?? this.tags,
             id: id ?? this.id,
             boundPrototype: updatePrototype ? boundPrototype : this.boundPrototype,
           );
@@ -203,7 +154,7 @@ class ProductfulGroceryItem implements GroceryItem {
   int get quantizationFractionDigits => boundPrototype.quantizationFractionDigits;
 
   @override
-  List<ItemTag> get tags => [];
+  final List<ItemTag> tags;
 
   @override
   String get title => boundPrototype.title;
@@ -212,6 +163,7 @@ class ProductfulGroceryItem implements GroceryItem {
   String get unit => boundPrototype.unit;
 
   ProductfulGroceryItem({
+    this.tags,
     this.amount = 0.0,
     this.boundPrototype,
     this.checked = false,
@@ -250,6 +202,7 @@ class ProductfulGroceryItem implements GroceryItem {
         : ProductfulGroceryItem(
             amount: amount ?? this.amount,
             checked: checked ?? this.checked,
+            tags: tags ?? this.tags,
             id: id ?? this.id,
             boundPrototype: updatePrototype ? boundPrototype : this.boundPrototype,
           );

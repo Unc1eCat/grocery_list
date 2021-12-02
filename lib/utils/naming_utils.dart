@@ -11,11 +11,11 @@ int findNextUnusedNumberForName(String newName, List<String> existingNames) {
 
   for (var i = 1; i < existingNumbers.length; i++)
   {
-    if (existingNumbers[i] != existingNumbers[i - 1])
+    if (existingNumbers[i] != existingNumbers[i - 1] + 1)
     {
       return existingNumbers[i - 1] + 1;
     }
   }
 
-  return 1;
+  return existingNumbers.length + 1;
 }

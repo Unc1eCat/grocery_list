@@ -10,7 +10,7 @@ import 'package:grocery_list/utils/ticker_provider_mixin.dart';
 import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/corner_drawer.dart';
 import 'package:grocery_list/widgets/grocery_list_item.dart';
-import 'package:grocery_list/widgets/grocery_list_items_expansion_controller.dart';
+import 'package:grocery_list/controllers/grocery_list_items_expansion_controller.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/pop_on_swipe.dart';
 import 'package:grocery_list/widgets/unfocus_on_tap.dart';
@@ -203,29 +203,7 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
                                 child: SizedBox(
                                   width: 60,
                                   height: 60,
-                                  child: Hero(
-                                    tag: "list_settings_screen_back_button",
-                                    flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) => Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        RotationTransition(
-                                          turns: Tween(begin: 0.0, end: 0.7).animate(animation),
-                                          child: FadeTransition(
-                                            opacity: ReverseAnimation(animation),
-                                            child: Icon(Icons.settings_rounded),
-                                          ),
-                                        ),
-                                        RotationTransition(
-                                          turns: Tween(begin: -0.7, end: 0.0).animate(animation),
-                                          child: FadeTransition(
-                                            opacity: animation,
-                                            child: Icon(Icons.arrow_back_rounded),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Icon(Icons.settings_rounded),
-                                  ),
+                                  child: Icon(Icons.settings_rounded),
                                 ),
                               ),
                             ),

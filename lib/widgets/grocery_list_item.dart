@@ -9,7 +9,7 @@ import 'package:grocery_list/screens/list_item_edit_screen.dart';
 import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/beautiful_text_field.dart';
 import 'package:grocery_list/widgets/grocery_item_tag_setting.dart';
-import 'package:grocery_list/widgets/grocery_list_items_expansion_controller.dart';
+import 'package:grocery_list/controllers/grocery_list_items_expansion_controller.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
 import 'package:grocery_list/widgets/grocery_item_amount.dart';
@@ -68,7 +68,7 @@ class GroceryListItem extends StatelessWidget {
                                     label: "Title",
                                     controller: TextEditingController(text: model.title),
                                     focusNode: FocusNode(),
-                                    onEditingComplete: (textField) => bloc.updatePrototype(bloc.getPrototypeOfId(this.fallbackModel.id).copyWith(title: textField.controller.text)),
+                                    onEditingComplete: (textField) => bloc.updatePrototype(model.boundPrototype.copyWith(title: textField.controller.text)),
                                     // scrollPadding: EdgeInsets.zero,
                                   ),
                                 ),
@@ -514,11 +514,12 @@ class GroceryListItem extends StatelessWidget {
                             ),
                           ),
                         if (!(expanded && !productBound))
-                          Text(
-                            model.title,
-                            style: th.textTheme.caption,
+                          Expanded(
+                            child: Text(
+                              model.title,
+                              style: th.textTheme.caption,
+                            ),
                           ),
-                        Spacer(),
                         SizedBox(width: 20),
                         GroceryItemAmount(
                           expanded: expansionController.expandedGroceryItemId == model.id,

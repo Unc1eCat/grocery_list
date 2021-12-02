@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
+import 'package:grocery_list/controllers/products_list_controller.dart';
 import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/utils/naming_utils.dart';
-import 'package:grocery_list/widgets/grocery_list_items_expansion_controller.dart';
+import 'package:grocery_list/controllers/grocery_list_items_expansion_controller.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/lists_view_item.dart';
 import 'package:grocery_list/widgets/product_item.dart';
@@ -21,12 +23,12 @@ class ProductsScreen extends StatefulWidget {
 
 class _ProductsScreenState extends State<ProductsScreen> with AutomaticKeepAliveClientMixin<ProductsScreen> {
   HeroController _heroController;
-  GroceryItemExpansionController _expansionController;
+  ProductsListController _listController;
 
   @override
   void initState() {
     _heroController = HeroController();
-    _expansionController = GroceryItemExpansionController();
+    _listController = ProductsListController();
 
     super.initState();
   }
@@ -63,14 +65,14 @@ class _ProductsScreenState extends State<ProductsScreen> with AutomaticKeepAlive
                         itemBuilder: (context, anim, model, i) {
                           return Reorderable(
                             key: ValueKey(model.id),
-                            child: ScaleTransition(
-                              scale: anim,
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 6.0),
-                                child: Handle(
-                                  delay: Duration(milliseconds: 300),
+                            child: Handle(
+                              delay: Duration(milliseconds: 300),
+                              child: ScaleTransition(
+                                scale: anim,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 6.0),
                                   child: ProductListItem(
-                                    expansionController: _expansionController,
+                                    listController: _listController,
                                     fallbackModel: model,
                                   ),
                                 ),
@@ -79,7 +81,7 @@ class _ProductsScreenState extends State<ProductsScreen> with AutomaticKeepAlive
                           );
                         },
                         areItemsTheSame: (a, b) => a.id == b.id,
-                        onReorderFinished: (id, from, to, newItems) => bloc.moveList(from, to),
+                        onReorderFinished: (id, from, to, newItems) => bloc.moveProduct(from, to),
                       );
                     },
                   ),

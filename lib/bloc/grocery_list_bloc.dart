@@ -31,6 +31,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   GroceryList getListOfId(String listId) => _lists?.firstWhere((e) => e.id == listId, orElse: () => null);
   GroceryItem getItemOfId(String id, String listId) => getListOfId(listId)?.items?.firstWhere((e) => e.id == id, orElse: () => null);
   GroceryPrototype getPrototypeOfId(String id) => _prototypes?.firstWhere((e) => e.id == id, orElse: () => null);
+  ItemTag getTagOfId(String id, String listId) => getListOfId(listId)?.tags?.firstWhere((e) => e.id == id);
 
   @override
   onChange(Change change) {
@@ -53,7 +54,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   }
 
   void removeProduct(String id) {
-    var index = _prototypes.indexWhere((e) => e.id == id);
+    _prototypes.removeWhere((e) => e.id == id);
     var changedIds = <String>{};
 
     for (var list in _lists) {
@@ -65,10 +66,33 @@ class GroceryListBloc extends Cubit<GroceryListState> {
       }
     }
 
-    if (index == -1) return;
-
     emit(ProductsListModifiedState());
     emit(ItemsChangedState(changedIds, true));
+
+    savePrototypes();
+  }
+
+  void removeItemTag(String id, String listId) {
+    ItemTag removed;
+    getListOfId(listId).tags.removeWhere((e) {
+      if (e.id == id) {
+        removed = e;
+        return true;
+      }
+      return false;
+    });
+    Set<String> changedItemsIds;
+
+    for (var list in _lists) {
+      for (var i = 0; i < list.items.length; i++) {
+        if (list.items[i].tags.contains(removed)) {
+          list.items[i].tags.remove(removed);
+          changedItemsIds.add(list.items[i].id);
+        }
+      }
+    }
+
+    emit(ItemsChangedState(changedItemsIds, true));
 
     savePrototypes();
   }
@@ -111,8 +135,27 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
   void moveProduct(int fromIndex, int toIndex) {
     _prototypes.insert(toIndex, _prototypes.removeAt(fromIndex));
-    
+
     emit(ProductsListModifiedState());
+  }
+
+  void moveItemTag(int fromIndex, int toIndex, String listId) {
+    var list = getListOfId(listId);
+    list.tags.insert(toIndex, list.tags.removeAt(fromIndex));
+
+    emit(ItemTagsListModifiedState(listId));
+
+    saveItems();
+  }
+
+  int countItemsBoundToProduct(String id) {
+    var ret = 0;
+
+    for (var i in lists) {
+      ret += i.items.where((e) => e.boundPrototype?.id == id).length;
+    }
+
+    return ret;
   }
 
   List<Widget> getSearchResults(String enteredText, String listId) {
@@ -142,6 +185,15 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     list.items.add(newItem);
 
     emit(ItemCreatedState(newItem.id, list.items, listId));
+
+    saveItems();
+  }
+
+  void addItemTag(ItemTag newItemTag, String listId) {
+    var list = getListOfId(listId);
+    list.tags.add(newItemTag);
+
+    emit(ItemTagsListModifiedState(listId));
 
     saveItems();
   }
@@ -188,6 +240,24 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     _lists[index] = newList;
 
     emit(ListSettingsModifiedState(id));
+  }
+
+  void updateItemTag(String id, ItemTag newItemTag, String listId) {
+    var list = getListOfId(listId);
+    var index = list.tags.indexWhere((e) => e.id == id);
+    list.tags[index] = newItemTag;
+    Set<String> changedItemsIds = {};
+
+    for (var list in _lists) {
+      for (var i = 0; i < list.items.length; i++) {
+        if (list.items[i].tags.firstWhere((e) => e.id == id) != null) {
+          list.items[i].tags[index] = newItemTag;
+          changedItemsIds.add(list.items[i].id);
+        }
+      }
+    }
+
+    emit(ItemTagChangedState(listId, id));
   }
 }
 
@@ -296,4 +366,15 @@ class ListsListModifiedState extends GroceryListState {
 
 class ListSettingsModifiedState extends WithinListState {
   ListSettingsModifiedState(String listId) : super(listId);
+}
+
+class ItemTagChangedState extends WithinListState {
+  final String id;
+  ItemTagChangedState(String listId, this.id) : super(listId);
+}
+
+class ItemTagsListModifiedState extends WithinListState {
+  ItemTagsListModifiedState(String listId) : super(listId);
+
+  bool operator == (dynamic other) => false;
 }

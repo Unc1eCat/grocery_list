@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
+import 'package:grocery_list/controllers/products_list_controller.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/screens/product_edit_screen.dart';
 import 'package:grocery_list/widgets/grocery_item_amount.dart';
-import 'package:grocery_list/widgets/grocery_list_items_expansion_controller.dart';
+import 'package:grocery_list/controllers/grocery_list_items_expansion_controller.dart';
 import 'package:grocery_list/widgets/list_item_check_box.dart';
 import 'package:grocery_list/widgets/smart_text_field.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
@@ -16,12 +18,12 @@ import 'grocery_item_tag_setting.dart';
 import 'heavy_touch_button.dart';
 
 class ProductListItem extends StatelessWidget {
-  final GroceryItemExpansionController expansionController;
+  final ProductsListController listController;
   final GroceryPrototype fallbackModel;
 
   const ProductListItem({
     Key key,
-    this.expansionController,
+    this.listController,
     this.fallbackModel,
   }) : super(key: key);
 
@@ -30,10 +32,10 @@ class ProductListItem extends StatelessWidget {
     var bloc = BlocProvider.of<GroceryListBloc>(context);
 
     return AnimatedBuilder(
-      animation: expansionController,
+      animation: listController,
       builder: (context, child) {
-        var isExpanded = expansionController.expandedGroceryItemId == this.fallbackModel.id;
-
+        var isExpanded = listController.expandedProductItemId == this.fallbackModel.id;
+      
         return AnimatedContainer(
           padding: EdgeInsets.symmetric(horizontal: 10),
           color: isExpanded ? Theme.of(context).primaryColorLight.withOpacity(0.02) : Colors.transparent,
@@ -55,28 +57,41 @@ class ProductListItem extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         splashColor: Colors.transparent,
                         highlightColor: Theme.of(context).colorScheme.onBackground.blendedWith(Theme.of(context).primaryColor, 0.3).withOpacity(0.06),
-                        onTap: () => expansionController.expandedGroceryItemId = this.fallbackModel.id,
+                        onTap: () => listController.expandedProductItemId = this.fallbackModel.id,
                         child: SizedBox(
                           height: 30,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(bottom: isExpanded ? 3.2 : 0.0, left: 10.0),
-                              child: isExpanded
-                                  ? SmartTextField(
-                                      controller: TextEditingController(text: model.title),
-                                      decoration: InputDecoration(border: InputBorder.none),
-                                      focusNode: FocusNode(),
-                                      onEditingComplete: (textField) =>
-                                          bloc.updatePrototype(bloc.getPrototypeOfId(this.fallbackModel.id).copyWith(title: textField.controller.text)),
-                                      textAlignVertical: TextAlignVertical.center,
-                                      style: Theme.of(context).textTheme.caption,
-                                      // scrollPadding: EdgeInsets.zero,
-                                    )
-                                  : Text(
-                                      model.title,
-                                      style: Theme.of(context).textTheme.caption,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(bottom: isExpanded ? 3.2 : 0.0),
+                                      child: isExpanded
+                                          ? SmartTextField(
+                                              controller: TextEditingController(text: model.title),
+                                              decoration: InputDecoration(border: InputBorder.none),
+                                              focusNode: FocusNode(),
+                                              onEditingComplete: (textField) =>
+                                                  bloc.updatePrototype(bloc.getPrototypeOfId(this.fallbackModel.id).copyWith(title: textField.controller.text)),
+                                              textAlignVertical: TextAlignVertical.center,
+                                              style: Theme.of(context).textTheme.caption,
+                                              // scrollPadding: EdgeInsets.zero,
+                                            )
+                                          : Text(
+                                              model.title,
+                                              style: Theme.of(context).textTheme.caption,
+                                            ),
                                     ),
+                                  ),
+                                  Text(
+                                    bloc.countItemsBoundToProduct(model.id).toString() + " items",
+                                    style: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).colorScheme.onBackground.blendedWithInversion(0.2)),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -216,7 +231,7 @@ class ProductListItem extends StatelessWidget {
                                     ),
                                   ),
                                   HeavyTouchButton(
-                                    onPressed: () => expansionController.expandedGroceryItemId = null,
+                                    onPressed: () => listController.expandedProductItemId = null,
                                     child: ColoredBox(
                                       color: Colors.transparent,
                                       child: Padding(

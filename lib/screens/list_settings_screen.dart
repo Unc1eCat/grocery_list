@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:grocery_list/screens/general_list_settings_tab.dart';
+import 'package:grocery_list/screens/tags_list_settings_tab.dart';
 import 'package:grocery_list/utils/scroll_behavior.dart';
 import 'package:grocery_list/utils/ticker_provider_mixin.dart';
 import 'package:grocery_list/widgets/colored_tab.dart';
@@ -89,8 +90,9 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
                       scrollController: _scrollController,
                       listId: listId,
                     ),
-                    GeneralListSettingsTab(
+                    TagsListSettingsTab(
                       scrollController: _scrollController,
+                      listId: listId,
                     ),
                     GeneralListSettingsTab(
                       scrollController: _scrollController,
@@ -130,21 +132,6 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
               ),
             ),
           ],
-        ),
-        Positioned(
-          left: 30,
-          top: MediaQuery.of(context).padding.top + 20,
-          child: HeavyTouchButton(
-            // Back button
-            onPressed: () => _animationController.animateBack(0.0, duration: Duration(milliseconds: 200)).then((_) => Navigator.of(context).pop()),
-            child: Hero(
-              tag: "list_settings_screen_back_button",
-              child: Icon(
-                Icons.arrow_back_rounded,
-                size: 28,
-              ),
-            ),
-          ),
         ),
       ],
     );
