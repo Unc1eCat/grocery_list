@@ -46,7 +46,7 @@ class _TagsListSettingsTabState extends State<TagsListSettingsTab> {
             child: HeavyTouchButton(
               onPressed: () async => bloc.addItemTag(
                   ItemTag(
-                      color: (bloc.getUnoccupiedTagColors(widget.listId).toList()..shuffle()).first,
+                      color: findTheMostDifferentColorTo(color, bloc.getUnoccupiedTagColors(widget.listId)),
                       title: "New Tag " + findNextUnusedNumberForName("New Tag", bloc.getListOfId(widget.listId).tags.map((e) => e.title).toList()).toString()),
                   widget.listId),
               child: Text(
