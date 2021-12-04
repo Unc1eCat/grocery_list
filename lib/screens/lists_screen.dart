@@ -82,7 +82,7 @@ class _ListsScreenState extends State<ListsScreen> with AutomaticKeepAliveClient
                     child: Tooltip(
                       message: "Create new grocery list",
                       child: HeavyTouchButton(
-                        onPressed: () => bloc.addList(GroceryList(title: "New List")),
+                        onPressed: () async => bloc.addList(GroceryList(title: "New List")),
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: Colors.limeAccent[700].withRangedHsvValue(0.8),

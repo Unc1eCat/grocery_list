@@ -19,14 +19,20 @@ import '../models/grocery_prototype.dart';
 class GroceryListBloc extends Cubit<GroceryListState> {
   static GroceryListBloc of(BuildContext context) => BlocProvider.of<GroceryListBloc>(context);
 
+  final List<Color> presetTagColors;
+
   List<GroceryPrototype> _prototypes = <GroceryPrototype>[];
   List<GroceryList> _lists = <GroceryList>[];
 
   List<GroceryList> get lists => _lists; //List<GroceryList>.unmodifiable(_lists);
   List<GroceryPrototype> get prototypes => List<GroceryPrototype>.unmodifiable(_prototypes);
 
-  GroceryListBloc() : super(GroceryListState());
-  GroceryListBloc.initFromFiles() : super(GroceryListState()) {}
+  GroceryListBloc({
+    this.presetTagColors = const [],
+  }) : super(GroceryListState());
+  GroceryListBloc.initFromFiles({
+    this.presetTagColors = const [],
+  }) : super(GroceryListState()) {}
 
   GroceryList getListOfId(String listId) => _lists?.firstWhere((e) => e.id == listId, orElse: () => null);
   GroceryItem getItemOfId(String id, String listId) => getListOfId(listId)?.items?.firstWhere((e) => e.id == id, orElse: () => null);
@@ -144,8 +150,6 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     list.tags.insert(toIndex, list.tags.removeAt(fromIndex));
 
     emit(ItemTagsListModifiedState(listId));
-
-    saveItems();
   }
 
   int countItemsBoundToProduct(String id) {
@@ -243,6 +247,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   }
 
   void updateItemTag(String id, ItemTag newItemTag, String listId) {
+    print("abobus");
     var list = getListOfId(listId);
     var index = list.tags.indexWhere((e) => e.id == id);
     list.tags[index] = newItemTag;
@@ -258,6 +263,10 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     }
 
     emit(ItemTagChangedState(listId, id));
+  }
+
+  Set<Color> getUnoccupiedTagColors(String listId) {
+    return presetTagColors.toSet().difference(getListOfId(listId).tags.map((e) => e.color).toSet());
   }
 }
 
@@ -371,10 +380,12 @@ class ListSettingsModifiedState extends WithinListState {
 class ItemTagChangedState extends WithinListState {
   final String id;
   ItemTagChangedState(String listId, this.id) : super(listId);
+
+  operator ==(Object other) => false;
 }
 
 class ItemTagsListModifiedState extends WithinListState {
   ItemTagsListModifiedState(String listId) : super(listId);
 
-  bool operator == (dynamic other) => false;
+  bool operator ==(dynamic other) => false;
 }

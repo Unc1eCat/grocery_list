@@ -6,7 +6,7 @@ import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/controllers/products_list_controller.dart';
 import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
-import 'package:grocery_list/utils/naming_utils.dart';
+import 'package:grocery_list/utils/modeling_utils.dart';
 import 'package:grocery_list/controllers/grocery_list_items_expansion_controller.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/lists_view_item.dart';

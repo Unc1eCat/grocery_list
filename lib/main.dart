@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/screens/list_item_edit_screen.dart';
 import 'package:grocery_list/screens/tabs_screen.dart';
+import 'package:grocery_list/utils/modeling_utils.dart';
 import 'package:grocery_list/utils/scroll_behavior.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:path/path.dart' as path;
@@ -29,7 +30,9 @@ class _TheAppState extends State<TheApp> {
 
   @override
   void initState() {
-    groceryListBloc = GroceryListBloc();
+    groceryListBloc = GroceryListBloc(
+        presetTagColors: getShadesOfMaterialColors(
+            [Colors.red, Colors.indigo, Colors.amber, Colors.lightGreen, Colors.lightBlue, Colors.teal, Colors.pink, Colors.deepOrange], {300, 500, 700}));
 
     super.initState();
   }

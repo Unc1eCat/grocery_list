@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/models/item_tag.dart';
+import 'package:grocery_list/utils/modeling_utils.dart';
 import 'package:grocery_list/widgets/beautiful_text_field.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/smart_text_field.dart';
@@ -26,12 +27,13 @@ class _TagsListSettingsTabState extends State<TagsListSettingsTab> {
   @override
   Widget build(BuildContext context) {
     var bloc = GroceryListBloc.of(context);
+    var length = bloc.getListOfId(widget.listId).tags.length;
 
     return UnfocusOnTap(
       child: BlocBuilder<GroceryListBloc, GroceryListState>(
         cubit: bloc,
         buildWhen: (previous, current) => current is ItemTagsListModifiedState && current.listId == widget.listId,
-        builder: (context, state) =>  ImplicitlyAnimatedReorderableList<ItemTag>(
+        builder: (context, state) => ImplicitlyAnimatedReorderableList<ItemTag>(
           key: list,
           controller: widget.scrollController,
           padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 64, left: 20, right: 20, bottom: 20.0),
@@ -42,7 +44,11 @@ class _TagsListSettingsTabState extends State<TagsListSettingsTab> {
           footer: Align(
             alignment: Alignment.topCenter,
             child: HeavyTouchButton(
-              onPressed: () => bloc.addItemTag(ItemTag(color: Colors.redAccent, title: "New Item Tag"), widget.listId),
+              onPressed: () async => bloc.addItemTag(
+                  ItemTag(
+                      color: (bloc.getUnoccupiedTagColors(widget.listId).toList()..shuffle()).first,
+                      title: "New Tag " + findNextUnusedNumberForName("New Tag", bloc.getListOfId(widget.listId).tags.map((e) => e.title).toList()).toString()),
+                  widget.listId),
               child: Text(
                 "+  Create new tag",
                 style: Theme.of(context).textTheme.headline6,
@@ -52,11 +58,18 @@ class _TagsListSettingsTabState extends State<TagsListSettingsTab> {
           itemBuilder: (context, animation, model, i) => Reorderable(
             key: ValueKey(model.id),
             child: Handle(
+              delay: Duration(milliseconds: 700),
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                child: TagsListItem(
-                  fallbackModel: model,
-                  listId: widget.listId,
+                child: FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: animation,
+                    child: TagsListItem(
+                      fallbackModel: model,
+                      listId: widget.listId,
+                    ),
+                  ),
                 ),
               ),
             ),

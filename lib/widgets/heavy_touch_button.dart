@@ -63,6 +63,7 @@ class _HeavyTouchButtonState extends State<HeavyTouchButton> with TickerProvider
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTapDown: (_) => _anim.animateBack(widget.pressedScale),
       onTapCancel: () => _anim.animateTo(1.0),
       onLongPressStart: widget.onLongPress == null ? null : (_) => widget.onLongPress.call(),
