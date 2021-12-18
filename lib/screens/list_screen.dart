@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,7 +23,7 @@ import '../utils/golden_ration_utils.dart' as gr;
 import '../bloc/grocery_list_bloc.dart';
 import '../bloc/grocery_list_bloc.dart';
 
-class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
+class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin, TickerProviderMixin {
   final String listId;
 
   ListScreen({this.listId});
@@ -40,6 +41,7 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
   String get barrierLabel => "";
 
   GroceryItemExpansionController _expansionController;
+  AnimationController _popOnSwipeRightController;
 
   Widget _buildBottomBarButton(BuildContext context, IconData icon, Color color, String tooltip, VoidCallback onPressed) => Tooltip(
         message: tooltip,
@@ -73,21 +75,41 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
   @override
   void dispose() {
     _expansionController.dispose();
+    _popOnSwipeRightController?.dispose();
+    disposeTickers();
     super.dispose();
   }
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     var bloc = BlocProvider.of<GroceryListBloc>(context);
-    var screenWidth = MediaQuery.of(context).size.width;
 
-    return PopOnSwipeRight(
-      key: popOnSwipeRight,
-      child: UnfocusOnTap(
-        child: FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: Tween(begin: Offset(1, 0), end: Offset(0, 0)).animate(animation),
+    if (_popOnSwipeRightController == null) {
+      _popOnSwipeRightController = AnimationController.unbounded(duration: Duration(milliseconds: 300), vsync: this);
+      _popOnSwipeRightController.value = MediaQuery.of(context).size.width;
+      _popOnSwipeRightController.animateTo(0.0);
+    }
+
+    return Stack(
+      children: [
+        AnimatedBuilder(
+          animation: _popOnSwipeRightController,
+          builder: (context, child) {
+            var swipeValue = (1.0 - _popOnSwipeRightController.value / MediaQuery.of(context).size.width).clamp(0.0, 1.0);
+            return BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: (swipeValue ?? 0.0) * 3, sigmaY: (swipeValue ?? 0.0) * 3),
+              child: ColoredBox(
+                color: Colors.black.withOpacity((swipeValue ?? 0.0) * 0.5),
+                child: child,
+              ),
+            );
+          },
+          child: SizedBox.expand(),
+        ),
+        PopOnSwipeRight(
+          controller: _popOnSwipeRightController,
+          key: popOnSwipeRight,
+          child: UnfocusOnTap(
             child: Material(
               elevation: 4,
               type: MaterialType.canvas,
@@ -100,33 +122,67 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
                       return ((state is ItemDeletedState || state is ItemCreatedState) && (state as WithinListState).listId == listId) || state is ItemsFetchedState;
                     },
                     cubit: bloc,
-                    builder: (context, state) => ImplicitlyAnimatedReorderableList<GroceryItem>(
-                      padding: EdgeInsets.only(top: 100),
-                      onReorderStarted: (item, index) => _expansionController.expandedGroceryItemId = null,
-                      onReorderFinished: (item, from, to, newItems) => bloc.moveItem(from, to, listId),
-                      areItemsTheSame: (a, b) => a.id == b.id,
-                      itemBuilder: (context, animation, item, i) {
-                        return Reorderable(
-                          key: ValueKey(item.id),
-                          child: FadeTransition(
-                            opacity: animation,
-                            child: ScaleTransition(
-                              scale: animation,
-                              child: Handle(
-                                delay: Duration(milliseconds: 400),
-                                child: GroceryListItem(
-                                  fallbackModel: item,
-                                  key: ValueKey(item.id),
-                                  listId: listId,
-                                  expansionController: _expansionController,
-                                ),
+                    builder: (context, state) => AnimatedSwitcher(
+                      duration: Duration(milliseconds: 300),
+                      child: bloc.getListOfId(listId).items.isEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 40.0),
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    height: 500,
+                                    child: RiveAnimation.asset(
+                                      "assets/rive/empty_list.riv",
+                                      animations: ["in"],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                                    child: Text(
+                                      "There are no items in this list yet.",
+                                      style: Theme.of(context).textTheme.headline5,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 40.0, right: 40.0, top: 10.0),
+                                    child: Text(
+                                      "Start adding them by clicking \"Create item\" button below",
+                                      style: Theme.of(context).textTheme.headline6.copyWith(color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7)),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
                               ),
+                            )
+                          : ImplicitlyAnimatedReorderableList<GroceryItem>(
+                              padding: EdgeInsets.only(top: 100),
+                              onReorderStarted: (item, index) => _expansionController.expandedGroceryItemId = null,
+                              onReorderFinished: (item, from, to, newItems) => bloc.moveItem(from, to, listId),
+                              areItemsTheSame: (a, b) => a.id == b.id,
+                              itemBuilder: (context, animation, item, i) {
+                                return Reorderable(
+                                  key: ValueKey(item.id),
+                                  child: FadeTransition(
+                                    opacity: animation,
+                                    child: ScaleTransition(
+                                      scale: animation,
+                                      child: Handle(
+                                        delay: Duration(milliseconds: 400),
+                                        child: GroceryListItem(
+                                          fallbackModel: item,
+                                          key: ValueKey(item.id),
+                                          listId: listId,
+                                          expansionController: _expansionController,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              items: bloc.getListOfId(listId).items,
+                              physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                             ),
-                          ),
-                        );
-                      },
-                      items: bloc.getListOfId(listId).items,
-                      physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                     ),
                   ),
                   Positioned(
@@ -217,7 +273,7 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin {
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 

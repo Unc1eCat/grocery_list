@@ -6,6 +6,7 @@ import 'package:grocery_list/utils/golden_ration_utils.dart' as gr;
 class PopOnSwipeRight extends StatefulWidget {
   final Widget child;
   final bool animateTransitionOut;
+  final AnimationController controller;
   final double speed;
 
   const PopOnSwipeRight({
@@ -13,6 +14,7 @@ class PopOnSwipeRight extends StatefulWidget {
     this.child,
     this.animateTransitionOut = true,
     this.speed = 2,
+    this.controller,
   }) : super(key: key);
 
   @override
@@ -24,16 +26,29 @@ class PopOnSwipeRightState extends State<PopOnSwipeRight> with SingleTickerProvi
 
   bool get hasPoppedOnSwipe => _poppingSwipeController.status == AnimationStatus.completed;
 
+  Animation<double> get poppingSwipeController => widget.controller ?? _poppingSwipeController.view;
+
   @override
   void initState() {
     super.initState();
-    _poppingSwipeController = AnimationController.unbounded(vsync: this);
+    _poppingSwipeController = widget.controller ?? AnimationController.unbounded(vsync: this);
   }
 
   @override
   void dispose() {
     super.dispose();
-    _poppingSwipeController.dispose();
+    if (widget.controller == null) {
+      _poppingSwipeController?.dispose();
+    }
+    _poppingSwipeController = null;
+  }
+
+  @override
+  void didUpdateWidget(covariant PopOnSwipeRight oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      _poppingSwipeController = widget.controller ?? AnimationController.unbounded(vsync: this);
+    });
   }
 
   @override

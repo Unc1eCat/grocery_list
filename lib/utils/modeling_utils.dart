@@ -41,13 +41,10 @@ List<Color> getShadesOfMaterialColors(List<MaterialColor> colors, Set<int> shade
 
 T modularDistance<T extends num>(T a, T b, T mod) => min((mod - a + b).abs(), (a - b).abs());
 
-Color findTheMostDifferentColorTo(Color color, Set<Color> otherColors) => otherColors.reduce(
-    (v, e) => v = (color.red + color.green + color.blue - e.red + e.green + e.blue).abs() > ((color.red + color.green + color.blue) - (v.red + v.green + v.blue)).abs() ? e : v);
-
 List<double> rgbToCiexyz(Color color) {
-  var var_R = (color.red as double) / 255.0;
-  var var_G = (color.green as double) / 255.0;
-  var var_B = (color.blue as double) / 255.0;
+  var var_R = color.red.toDouble() / 255.0;
+  var var_G = color.green.toDouble() / 255.0;
+  var var_B = color.blue.toDouble() / 255.0;
 
   if (var_R > 0.04045) {
     var_R = pow((var_R + 0.055) / 1.055, 2.4);
@@ -101,14 +98,37 @@ List<double> ciexyzToCieluv(List<double> color) {
   return [CIE_L, CIE_u, CIE_v];
 }
 
-Color findTheMostDifferentColorToSet(Set<Color> source, Set<Color> colors) {
-  for (var rgbi in source) {
-    double dif = 1;
-    var i = HSVColor.fromColor(rgbi);
+double colorDistinguishably(Color a, Color b) {
+  var ac = ciexyzToCieluv(rgbToCiexyz(a));
+  var bc = ciexyzToCieluv(rgbToCiexyz(b));
 
-    for (var rgbj in colors) {
-      var j = HSVColor.fromColor(rgbj);
-      dif = modularDistance(i.hue / 360.0, j.hue / 360.0, 1.0) * i.value * j.value * i.saturation * i.value * 4.0 + (i.saturation - j.saturation).abs() + (i.value - j.value).abs();
+  return sqrt(pow(ac[0] - bc[0], 2) + pow(ac[1] - bc[1], 2) + pow(ac[2] - bc[2], 2));
+}
+
+double myColorDistinguishability(HSVColor i, HSVColor j) {
+  return modularDistance(i.hue / 360.0, j.hue / 360.0, 1.0) * i.value * j.value * i.saturation * i.value * 4.0 + (i.saturation - j.saturation).abs() + (i.value - j.value).abs();
+}
+
+Color findTheMostDifferentColorToSet(Set<Color> source, Set<Color> colors) {
+  var biggestDis = 0.0;
+  Color ret = source.first;
+
+  for (var j in colors) {
+    biggestDis = colorDistinguishably(ret, j);
+  }
+
+  for (var i in source) {
+    double dis = 1.0;
+
+    for (var j in colors) {
+      dis = dis * colorDistinguishably(i, j);
+    }
+
+    if (dis > biggestDis) {
+      biggestDis = dis;
+      ret = i;
     }
   }
+
+  return ret;
 }

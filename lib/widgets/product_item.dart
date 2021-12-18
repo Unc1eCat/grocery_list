@@ -45,7 +45,7 @@ class ProductListItem extends StatelessWidget {
               duration: Duration(milliseconds: 400),
               alignment: Alignment.topCenter,
               child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                buildWhen: (previous, current) => current is ItemsChangedState && current.contains(this.fallbackModel.id),
+                buildWhen: (previous, current) => current is PrototypeChangedState && current.updatedPrototype.id == this.fallbackModel.id,
                 cubit: bloc,
                 builder: (context, state) {
                   var model = bloc.getPrototypeOfId(this.fallbackModel.id) ?? this.fallbackModel;

@@ -55,191 +55,189 @@ class GroceryListItem extends StatelessWidget {
                   if (expanded) {
                     if (productBound) {
                       // Is bound to a product
-                      var subDetailsProductful = expansionController.isProductEditingExpanded
-                          ? Column(
-                              // Subdetails are expanded
-                              key: ValueKey(true),
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                  child: BeautifulTextField(
-                                    label: "Title",
-                                    controller: TextEditingController(text: model.title),
-                                    focusNode: FocusNode(),
-                                    onEditingComplete: (textField) => bloc.updatePrototype(model.boundPrototype.copyWith(title: textField.controller.text)),
-                                    // scrollPadding: EdgeInsets.zero,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
-                                  child: Row(
-                                    // First text fields row
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Expanded(
-                                        flex: 2,
-                                        child: BeautifulTextField(
-                                          label: "Quantization",
-                                          controller: TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationFractionDigits)),
-                                          focusNode: FocusNode(),
-                                          onEditingComplete: (state) {
-                                            var value = double.tryParse(state.controller.text);
-                                            var oldModel = bloc.getPrototypeOfId(model.id);
-
-                                            if (value == null || value < 0) {
-                                              state.controller.text = oldModel.quantization.toStringAsFixed(model.quantizationFractionDigits);
-                                              return;
-                                            }
-
-                                            var dot = state.controller.text.lastIndexOf(RegExp(",|\\."));
-
-                                            bloc.updatePrototype(model.boundPrototype
-                                                .copyWith(quantization: value, quantizationDecimalNumbersAmount: dot == -1 ? 0 : state.controller.text.length - 1 - dot));
-                                          },
-                                        ),
-                                      ),
-                                      SizedBox(width: 20),
-                                      Expanded(
-                                        flex: 1,
-                                        child: BeautifulTextField(
-                                          label: "Unit",
-                                          controller: TextEditingController(text: model.unit),
-                                          focusNode: FocusNode(),
-                                          onEditingComplete: (state) => bloc.updatePrototype(model.boundPrototype.copyWith(unit: state.controller.text)),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
-                                  child: Row(
-                                    // Second text fields row
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Expanded(
-                                        flex: 2,
-                                        child: BeautifulTextField(
-                                          label: "Price",
-                                          controller: TextEditingController(text: model.price.toStringAsFixed(2)),
-                                          focusNode: FocusNode(),
-                                          onEditingComplete: (state) {
-                                            bloc.updatePrototype(model.boundPrototype.copyWith(price: double.tryParse(state.controller.text) ?? model.boundPrototype.price));
-                                          },
-                                        ),
-                                      ),
-                                      SizedBox(width: 20),
-                                      Expanded(
-                                        flex: 1,
-                                        child: BeautifulTextField(
-                                          label: "Currency",
-                                          controller: TextEditingController(text: model.currency),
-                                          focusNode: FocusNode(),
-                                          onEditingComplete: (state) => bloc.updatePrototype(model.boundPrototype.copyWith(currency: state.controller.text)),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
-                                  child: Wrap(
-                                    runSpacing: 12,
-                                    alignment: WrapAlignment.spaceBetween,
-                                    spacing: 10,
-                                    children: [
-                                      GroceryItemTagSetting(
-                                        color: Colors.deepOrange,
-                                        style: Theme.of(context).textTheme.caption,
-                                        ticked: true,
-                                        title: "For Cat",
-                                      ),
-                                      GroceryItemTagSetting(
-                                        color: Colors.purple,
-                                        style: Theme.of(context).textTheme.caption,
-                                        title: "Expansive",
-                                      ),
-                                      GroceryItemTagSetting(
-                                        color: Colors.green,
-                                        style: Theme.of(context).textTheme.caption,
-                                        title: "For Fun",
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
-                                  child: Align(
-                                    alignment: Alignment.topCenter,
-                                    child: ActionButton(
-                                      onPressed: () => bloc.removeProduct(model.boundPrototype.id),
-                                      color: Colors.red[600],
-                                      icon: Icons.delete_rounded,
-                                      title: "Delete",
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Column(
-                              // Subdetails are collapsed
-                              key: ValueKey(false),
-                              children: [
-                                HeavyTouchButton(
-                                  onPressed: () => expansionController.isProductEditingExpanded = true,
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      color: Color.fromRGBO(30, 30, 30, 0.6),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                                      child: Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(text: model.title + "   ", style: th.textTheme.headline6),
-                                            TextSpan(text: "${model.quantization.toStringAsFixed(model.quantizationFractionDigits)} ${model.unit}", style: th.textTheme.headline6),
-                                            TextSpan(text: " for ", style: th.textTheme.caption.copyWith(color: th.colorScheme.onBackground.blendedWithInversion(0.2))),
-                                            TextSpan(text: "${model.price} ${model.currency}", style: th.textTheme.headline6),
-                                          ],
-                                        ),
-                                        textAlign: TextAlign.center,
+                      var subDetailsProductful = BlocBuilder<GroceryListBloc, GroceryListState>(
+                        cubit: bloc,
+                        key: ValueKey(expansionController.isProductEditingExpanded),
+                        buildWhen: (previous, current) => current is PrototypeChangedState && current.updatedPrototype.id == model.boundPrototype.id,
+                        builder: (context, state) {
+                          return expansionController.isProductEditingExpanded
+                              ? Column(
+                                  // Subdetails are expanded
+                                  key: ValueKey(true),
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                      child: BeautifulTextField(
+                                        label: "Title",
+                                        controller: TextEditingController(text: model.title),
+                                        focusNode: FocusNode(),
+                                        onEditingComplete: (textField) => bloc.updatePrototype(model.boundPrototype.copyWith(title: textField.controller.text)),
+                                        // scrollPadding: EdgeInsets.zero,
                                       ),
                                     ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
-                                  child: Wrap(
-                                    runSpacing: 10,
-                                    alignment: WrapAlignment.center,
-                                    spacing: 8,
-                                    children: [
-                                      ActionButton(
-                                        onPressed: () => bloc.removeItem(this.fallbackModel.id, listId),
-                                        color: Colors.red[600],
-                                        icon: Icons.delete_rounded,
-                                        title: "Delete",
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
+                                      child: Row(
+                                        // First text fields row
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Expanded(
+                                            flex: 2,
+                                            child: BeautifulTextField(
+                                              label: "Quantization",
+                                              controller: TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationFractionDigits)),
+                                              focusNode: FocusNode(),
+                                              onEditingComplete: (state) {
+                                                var value = double.tryParse(state.controller.text);
+                                                var oldModel = bloc.getPrototypeOfId(model.id);
+
+                                                if (value == null || value < 0) {
+                                                  state.controller.text = oldModel.quantization.toStringAsFixed(model.quantizationFractionDigits);
+                                                  return;
+                                                }
+
+                                                var dot = state.controller.text.lastIndexOf(RegExp(",|\\."));
+
+                                                bloc.updatePrototype(model.boundPrototype
+                                                    .copyWith(quantization: value, quantizationDecimalNumbersAmount: dot == -1 ? 0 : state.controller.text.length - 1 - dot));
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(width: 20),
+                                          Expanded(
+                                            flex: 1,
+                                            child: BeautifulTextField(
+                                              label: "Unit",
+                                              controller: TextEditingController(text: model.unit),
+                                              focusNode: FocusNode(),
+                                              onEditingComplete: (state) => bloc.updatePrototype(model.boundPrototype.copyWith(unit: state.controller.text)),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      ActionButton(
-                                        onPressed: () => bloc.addItem(model.copyWith(id: DateTime.now().toString()), listId),
-                                        color: Colors.amber[600],
-                                        icon: Icons.copy_rounded,
-                                        title: "Duplicate",
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
+                                      child: Row(
+                                        // Second text fields row
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Expanded(
+                                            flex: 2,
+                                            child: BeautifulTextField(
+                                              label: "Price",
+                                              controller: TextEditingController(text: model.price.toStringAsFixed(2)),
+                                              focusNode: FocusNode(),
+                                              onEditingComplete: (state) {
+                                                bloc.updatePrototype(model.boundPrototype.copyWith(price: double.tryParse(state.controller.text) ?? model.boundPrototype.price));
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(width: 20),
+                                          Expanded(
+                                            flex: 1,
+                                            child: BeautifulTextField(
+                                              label: "Currency",
+                                              controller: TextEditingController(text: model.currency),
+                                              focusNode: FocusNode(),
+                                              onEditingComplete: (state) => bloc.updatePrototype(model.boundPrototype.copyWith(currency: state.controller.text)),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      ActionButton(
-                                        onPressed: () => bloc.removeProduct(model.boundPrototype.id),
-                                        color: Colors.pink[700],
-                                        icon: Icons.grade_rounded,
-                                        title: "Unbind product",
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
+                                      child: Wrap(
+                                        runSpacing: 12,
+                                        alignment: WrapAlignment.spaceBetween,
+                                        spacing: 10,
+                                        children: bloc
+                                            .getListOfId(listId)
+                                            .tags
+                                            .map((e) => HeavyTouchButton(
+                                                  onPressed: () => bloc.updateItem(model.id,
+                                                      model.copyWith(tags: model.tags.contains(e) ? (List.of(model.tags)..remove(e)) : (List.of(model.tags)..add(e))), listId),
+                                                  child: GroceryItemTagSetting(
+                                                    color: e.color,
+                                                    style: Theme.of(context).textTheme.caption,
+                                                    ticked: model.tags.contains(e),
+                                                    title: e.title,
+                                                  ),
+                                                ))
+                                            .toList(),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
+                                      child: Align(
+                                        alignment: Alignment.topCenter,
+                                        child: ActionButton(
+                                          onPressed: () => bloc.removeProduct(model.boundPrototype.id),
+                                          color: Colors.red[600],
+                                          icon: Icons.delete_rounded,
+                                          title: "Delete",
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  // Subdetails are collapsed
+                                  key: ValueKey(false),
+                                  children: [
+                                    HeavyTouchButton(
+                                      onPressed: () => expansionController.isProductEditingExpanded = true,
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          color: Color.fromRGBO(30, 30, 30, 0.6),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                                          child: Text.rich(
+                                            TextSpan(
+                                              children: [
+                                                TextSpan(text: model.title + "   ", style: th.textTheme.headline6),
+                                                TextSpan(
+                                                    text: "${model.quantization.toStringAsFixed(model.quantizationFractionDigits)} ${model.unit}", style: th.textTheme.headline6),
+                                                TextSpan(text: " for ", style: th.textTheme.caption.copyWith(color: th.colorScheme.onBackground.blendedWithInversion(0.2))),
+                                                TextSpan(text: "${model.price} ${model.currency}", style: th.textTheme.headline6),
+                                              ],
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
+                                      child: Wrap(
+                                        runSpacing: 10,
+                                        alignment: WrapAlignment.center,
+                                        spacing: 8,
+                                        children: bloc
+                                            .getListOfId(listId)
+                                            .tags
+                                            .map((e) => HeavyTouchButton(
+                                                  onPressed: () => bloc.updateItem(model.id,
+                                                      model.copyWith(tags: model.tags.contains(e) ? (List.of(model.tags)..remove(e)) : (List.of(model.tags)..add(e))), listId),
+                                                  child: GroceryItemTagSetting(
+                                                    color: e.color,
+                                                    style: Theme.of(context).textTheme.caption,
+                                                    ticked: model.tags.contains(e),
+                                                    title: e.title,
+                                                  ),
+                                                ))
+                                            .toList(),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                        },
+                      );
 
                       detailsPanel = Column(
                         key: ValueKey(true),
@@ -408,24 +406,21 @@ class GroceryListItem extends StatelessWidget {
                               runSpacing: 12,
                               alignment: WrapAlignment.spaceBetween,
                               spacing: 10,
-                              children: [
-                                GroceryItemTagSetting(
-                                  color: Colors.deepOrange,
-                                  style: th.textTheme.caption,
-                                  ticked: true,
-                                  title: "For Cat",
-                                ),
-                                GroceryItemTagSetting(
-                                  color: Colors.purple,
-                                  style: th.textTheme.caption,
-                                  title: "Expansive",
-                                ),
-                                GroceryItemTagSetting(
-                                  color: Colors.green,
-                                  style: th.textTheme.caption,
-                                  title: "For Fun",
-                                ),
-                              ],
+                              children: bloc
+                                  .getListOfId(listId)
+                                  .tags
+                                  .map((e) => HeavyTouchButton(
+                                        key: ValueKey(e.id),
+                                        onPressed: () => bloc.updateItem(
+                                            model.id, model.copyWith(tags: model.tags.contains(e) ? (List.of(model.tags)..remove(e)) : (List.of(model.tags)..add(e))), listId),
+                                        child: GroceryItemTagSetting(
+                                          color: e.color,
+                                          style: Theme.of(context).textTheme.caption,
+                                          ticked: model.tags.contains(e),
+                                          title: e.title,
+                                        ),
+                                      ))
+                                  .toList(),
                             ),
                           ),
                           Padding(
@@ -451,7 +446,7 @@ class GroceryListItem extends StatelessWidget {
                                   onPressed: () {
                                     var p = model.createPrototype();
                                     bloc.addPrototype(p);
-                                    bloc.updateItem(model.id, model.copyWith(boundPrototype: model.createPrototype(), updatePrototype: true), listId);
+                                    bloc.updateItem(model.id, model.copyWith(boundPrototype: p, updatePrototype: true), listId);
                                   },
                                   color: Colors.purpleAccent[400],
                                   icon: Icons.grade_rounded,

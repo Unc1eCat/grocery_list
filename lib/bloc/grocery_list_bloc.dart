@@ -65,7 +65,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     for (var list in _lists) {
       for (var i = 0; i < list.items.length; i++) {
-        if (list.items[i].boundPrototype.id == id) {
+        if (list.items[i].boundPrototype?.id == id) {
           list.items[i] = list.items[i].copyWith(boundPrototype: null, updatePrototype: true);
           changedIds.add(list.items[i].id);
         }
@@ -111,7 +111,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     for (var list in _lists) {
       for (var i = 0; i < list.items.length; i++) {
-        if (list.items[i].boundPrototype.id == newPrototype.id) {
+        if (list.items[i].boundPrototype?.id == newPrototype.id) {
           list.items[i] = list.items[i].copyWith(boundPrototype: newPrototype, updatePrototype: true);
           changedItemsIds.add(list.items[i].id);
         }
@@ -350,12 +350,12 @@ class ProductsListModifiedState extends GroceryListState {
 }
 
 class PrototypeChangedState extends GroceryListState {
-  final GroceryPrototype updatedPrototypes;
+  final GroceryPrototype updatedPrototype;
 
-  PrototypeChangedState(this.updatedPrototypes);
+  PrototypeChangedState(this.updatedPrototype);
 
   @override
-  List<Object> get props => super.props..add(updatedPrototypes);
+  List<Object> get props => super.props..add(updatedPrototype);
 }
 
 class ItemMovedState extends WithinListState {

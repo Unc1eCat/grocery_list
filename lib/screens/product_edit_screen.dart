@@ -96,8 +96,8 @@ class ProductItemEditRoute extends PageRoute with TickerProviderMixin {
             child: BlocListener<GroceryListBloc, GroceryListState>(
               cubit: bloc,
               listener: (previous, current) {
-                if (current is PrototypeChangedState && current.updatedPrototypes.id == id) {
-                  model = current.updatedPrototypes;
+                if (current is PrototypeChangedState && current.updatedPrototype.id == id) {
+                  model = current.updatedPrototype;
                   titleKey.currentState.controller.text = model.title;
                   quantizationKey.currentState.controller.text = model.quantization.toStringAsFixed(model.quantizationFractionDigits);
                   unitKey.currentState.controller.text = model.unit;

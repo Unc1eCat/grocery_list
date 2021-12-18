@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/models/item_tag.dart';
@@ -41,17 +42,22 @@ class _TagsListSettingsTabState extends State<TagsListSettingsTab> {
           items: bloc.getListOfId(widget.listId).tags,
           areItemsTheSame: (a, b) => a.id == b.id,
           onReorderFinished: (item, from, to, newItems) => bloc.moveItemTag(from, to, widget.listId),
-          footer: Align(
-            alignment: Alignment.topCenter,
-            child: HeavyTouchButton(
-              onPressed: () async => bloc.addItemTag(
-                  ItemTag(
-                      color: findTheMostDifferentColorTo(color, bloc.getUnoccupiedTagColors(widget.listId)),
-                      title: "New Tag " + findNextUnusedNumberForName("New Tag", bloc.getListOfId(widget.listId).tags.map((e) => e.title).toList()).toString()),
-                  widget.listId),
-              child: Text(
-                "+  Create new tag",
-                style: Theme.of(context).textTheme.headline6,
+          footer: Padding(
+            padding: const EdgeInsets.only(bottom: 100.0),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: HeavyTouchButton(
+                onPressed: () => Future(() => bloc.addItemTag(
+                    ItemTag(
+                        color: bloc.getListOfId(widget.listId).tags.length == 0
+                            ? (List.of(bloc.presetTagColors)..shuffle()).first
+                            : findTheMostDifferentColorToSet(bloc.getUnoccupiedTagColors(widget.listId), bloc.getListOfId(widget.listId).tags.map((e) => e.color).toSet()),
+                        title: "New Tag " + findNextUnusedNumberForName("New Tag", bloc.getListOfId(widget.listId).tags.map((e) => e.title).toList()).toString()),
+                    widget.listId)),
+                child: Text(
+                  "+  Create new tag",
+                  style: Theme.of(context).textTheme.headline6,
+                ),
               ),
             ),
           ),

@@ -77,61 +77,57 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
           ),
           child: SizedBox.expand(),
         ),
-        Column(
-          // Topmost column
-          children: [
-            Expanded(
+        FadeTransition(
+          opacity: _animationController,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              GeneralListSettingsTab(
+                scrollController: _scrollController,
+                listId: listId,
+              ),
+              TagsListSettingsTab(
+                scrollController: _scrollController,
+                listId: listId,
+              ),
+              GeneralListSettingsTab(
+                scrollController: _scrollController,
+              ),
+              GeneralListSettingsTab(
+                scrollController: _scrollController,
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          child: Padding(
+            // Bottom buttons and tabs
+            padding: const EdgeInsets.symmetric(horizontal: 30.0),
+            child: SizedBox(
+              height: 80,
               child: FadeTransition(
                 opacity: _animationController,
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    GeneralListSettingsTab(
-                      scrollController: _scrollController,
-                      listId: listId,
-                    ),
-                    TagsListSettingsTab(
-                      scrollController: _scrollController,
-                      listId: listId,
-                    ),
-                    GeneralListSettingsTab(
-                      scrollController: _scrollController,
-                    ),
-                    GeneralListSettingsTab(
-                      scrollController: _scrollController,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              // Bottom buttons and tabs
-              padding: const EdgeInsets.symmetric(horizontal: 30.0),
-              child: SizedBox(
-                height: 80,
-                child: FadeTransition(
-                  opacity: _animationController,
-                  child: FadedBordersBox(
-                    left: 0.1,
-                    right: 0.1,
-                    child: TabBar(
-                      controller: _tabController,
-                      indicatorColor: Colors.transparent,
-                      isScrollable: true,
-                      physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                      padding: EdgeInsets.symmetric(horizontal: 15.0),
-                      tabs: [
-                        _buildTabBarButton("General", 0),
-                        _buildTabBarButton("Tags", 1),
-                        _buildTabBarButton("Members", 2),
-                        _buildTabBarButton("Roles", 3),
-                      ],
-                    ),
+                child: FadedBordersBox(
+                  left: 0.1,
+                  right: 0.1,
+                  child: TabBar(
+                    controller: _tabController,
+                    indicatorColor: Colors.transparent,
+                    isScrollable: true,
+                    physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                    padding: EdgeInsets.symmetric(horizontal: 15.0),
+                    tabs: [
+                      _buildTabBarButton("General", 0),
+                      _buildTabBarButton("Tags", 1),
+                      _buildTabBarButton("Members", 2),
+                      _buildTabBarButton("Roles", 3),
+                    ],
                   ),
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ],
     );
