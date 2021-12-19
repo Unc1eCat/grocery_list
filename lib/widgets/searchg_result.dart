@@ -18,7 +18,8 @@ class SearchResultCreateProductless extends StatelessWidget {
 
     return HeavyTouchButton(
       onPressed: () {
-        GroceryListBloc.of(context).addItem(ProductlessGroceryItem(title: name, amount: 1.0), listId);
+        var bloc = GroceryListBloc.of(context);
+        bloc.addItem(ProductlessGroceryItem(title: name, amount: 1.0, currency: bloc.getListOfId(listId).defaultCurrency), listId);
       },
       child: Material(
         type: MaterialType.button,
@@ -97,7 +98,7 @@ class SearchResultWithProduct extends StatelessWidget {
 
     return HeavyTouchButton(
       onPressed: () {
-        var p = GroceryPrototype(title: name);
+        var p = GroceryPrototype(title: name, currency: bloc.getListOfId(listId).defaultCurrency);
         bloc.addPrototype(p);
         bloc.addItem(ProductfulGroceryItem(boundPrototype: p, amount: p.quantization), listId);
       },

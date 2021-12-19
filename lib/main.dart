@@ -32,7 +32,7 @@ class _TheAppState extends State<TheApp> {
   void initState() {
     groceryListBloc = GroceryListBloc(
         presetTagColors: getShadesOfMaterialColors(
-            [Colors.red, Colors.indigo, Colors.amber, Colors.lightGreen, Colors.lightBlue, Colors.teal, Colors.pink, Colors.deepOrange], {300, 500, 700}));
+            [Colors.red, Colors.indigo, Colors.amber, Colors.lightGreen, Colors.lightBlue, Colors.teal, Colors.pink, Colors.deepOrange], {200, 500, 800}));
 
     super.initState();
   }

@@ -10,8 +10,10 @@ class GroceryList {
   final String title;
   final String defaultCurrency;
   final Set<GroceryItem> purchasedItems;
+  final bool usePrice;
 
   GroceryList({
+    this.usePrice = true,
     Set<GroceryItem> removedItems,
     String id,
     List<GroceryItem> items,
@@ -24,6 +26,7 @@ class GroceryList {
         tags = tags ?? [];
 
   GroceryList copyWith({
+    bool usePrice,
     Set<GroceryItem> purchasedItems,
     String id,
     List<GroceryItem> items,
@@ -32,10 +35,10 @@ class GroceryList {
     String defaultCurrency,
   }) =>
       GroceryList(
-        id: id ?? this.id,
-        title: title ?? this.title,
-        defaultCurrency: defaultCurrency ?? this.defaultCurrency,
-        items: items ?? this.items,
-        removedItems: purchasedItems ?? this.purchasedItems
-      );
+          id: id ?? this.id,
+          title: title ?? this.title,
+          defaultCurrency: defaultCurrency ?? this.defaultCurrency,
+          items: items ?? this.items,
+          removedItems: purchasedItems ?? this.purchasedItems,
+          usePrice: usePrice ?? this.usePrice);
 }

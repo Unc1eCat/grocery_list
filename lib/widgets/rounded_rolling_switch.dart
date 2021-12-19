@@ -27,7 +27,7 @@ class RoundedRollingSwitch extends StatefulWidget {
     this.colorOn,
     this.colorOff,
     this.boxColor,
-    this.elevation = 3.6,
+    this.elevation = 2.6,
     this.borderRadius,
     this.animationDuration,
   }) : super(key: key);
@@ -76,7 +76,7 @@ class _RoundedRollingSwitchState extends State<RoundedRollingSwitch> with Ticker
   Widget build(BuildContext context) {
     final colorOff = widget.colorOff ?? Theme.of(context).cardColor.blendedWithInversion(0.7);
     final colorOn = widget.colorOn ?? Theme.of(context).accentColor;
-    final boxColor = widget.boxColor ?? Theme.of(context).cardColor.withRangedHsvValue(1.2);
+    final boxColor = widget.boxColor ?? Theme.of(context).cardColor?.withRangedHsvValue(0.8) ?? Theme.of(context).colorScheme.onBackground.blendedWithInversion(0.8);
     final borderRadius = widget.borderRadius ?? BorderRadius.circular(11);
 
     _anim.animateTo(value ? 1.0 : 0.0);

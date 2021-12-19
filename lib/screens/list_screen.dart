@@ -71,6 +71,7 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin, TickerProvide
   void install() {
     super.install();
     _expansionController = GroceryItemExpansionController();
+      _popOnSwipeRightController = AnimationController.unbounded(duration: Duration(milliseconds: 300), vsync: this);
   }
 
   @override
@@ -86,12 +87,6 @@ class ListScreen extends PageRoute with PopOnSwipeRightRouteMixin, TickerProvide
     var bloc = BlocProvider.of<GroceryListBloc>(context);
 
     if (_popOnSwipeRightController == null) {
-      _popOnSwipeRightController = AnimationController.unbounded(duration: Duration(milliseconds: 300), vsync: this);
-      controller.addListener(() {
-        if (_popOnSwipeRightController.value > 0.001) {
-          return _popOnSwipeRightController.value = (1.0 - controller.value) * MediaQuery.of(context).size.width;
-        }
-      });
       // _popOnSwipeRightController.value = MediaQuery.of(context).size.width;
       // _popOnSwipeRightController.animateTo(0.0);
     }

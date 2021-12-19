@@ -48,7 +48,7 @@ class RenderGroceryItemTagSetting extends RenderBox with TickerProviderMixin {
   static const double indent = 6;
 
   RenderGroceryItemTagSetting() {
-    _controller = AnimationController(vsync: this);
+    _controller = AnimationController(vsync: this)..addListener(markNeedsPaint);
     _textPainter = TextPainter(textDirection: TextDirection.ltr);
   }
 
@@ -123,7 +123,6 @@ class RenderGroceryItemTagSetting extends RenderBox with TickerProviderMixin {
     } else {
       _controller.animateBack(0.0);
     }
-    markNeedsPaint();
   }
 
   @override

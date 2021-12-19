@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:grocery_list/utils/ticker_provider_mixin.dart';
+import 'package:grocery_list/widgets/blurry_faded_background.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/smart_text_field.dart';
 import '../utils/golden_ration_utils.dart' as gr;
@@ -67,45 +68,32 @@ class ColorPickerDialog extends PageRoute<Color> with TickerProviderMixin {
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-    return Stack(
-      alignment: Alignment.topCenter,
-      children: [
-        AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) => BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: _animationController.value * 3, sigmaY: _animationController.value * 3),
-            child: ColoredBox(
-              color: Colors.black.withOpacity(_animationController.value * 0.5),
-              child: child,
-            ),
-          ),
-          child: SizedBox.expand(),
+    return BlurryFadedBackground(
+      controller: _animationController,
+      child: FadeTransition(
+        opacity: _animationController,
+        child: GridView.count(
+          addRepaintBoundaries: true,
+          physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          controller: _scrollController,
+          padding: EdgeInsets.only(right: 30, left: 30, top: MediaQuery.of(context).padding.top + 100),
+          crossAxisCount: colorsInARow,
+          mainAxisSpacing: 15,
+          crossAxisSpacing: 2,
+          childAspectRatio: gr.phi,
+          children: availableColors
+              .map((e) => HeavyTouchButton(
+                    onPressed: () {
+                      _pickedColorController.value = e;
+                    },
+                    child: ColorOption(
+                      color: e,
+                      pickedColorController: _pickedColorController,
+                    ),
+                  ))
+              .toList(),
         ),
-        FadeTransition(
-          opacity: _animationController,
-          child: GridView.count(
-            addRepaintBoundaries: true,
-            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-            controller: _scrollController,
-            padding: EdgeInsets.only(right: 30, left: 30, top: MediaQuery.of(context).padding.top + 100),
-            crossAxisCount: colorsInARow,
-            mainAxisSpacing: 15,
-            crossAxisSpacing: 2,
-            childAspectRatio: gr.phi,
-            children: availableColors
-                .map((e) => HeavyTouchButton(
-                      onPressed: () {
-                        _pickedColorController.value = e;
-                      },
-                      child: ColorOption(
-                        color: e,
-                        pickedColorController: _pickedColorController,
-                      ),
-                    ))
-                .toList(),
-          ),
-        ),
-      ],
+      ),
     );
   }
 

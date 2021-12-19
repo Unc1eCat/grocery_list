@@ -316,6 +316,8 @@ class ItemsChangedState extends GroceryListState {
     ..add(changedIds)
     ..add(reboundPrototype);
 
+  bool operator == (dynamic other) => false;
+
   bool contains(String id) => changedIds.contains(id);
 }
 

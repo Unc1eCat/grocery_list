@@ -28,6 +28,16 @@ class TagsListItem extends StatelessWidget {
 
           return Row(
             children: [
+              Expanded(
+                child: SmartTextField(
+                  controller: TextEditingController(text: model.title),
+                  decoration: InputDecoration(border: InputBorder.none),
+                  focusNode: FocusNode(),
+                  onEditingComplete: (state) => bloc.updateItemTag(model.id, model.copyWith(title: state.controller.text), listId),
+                ),
+              ),
+              Spacer(),
+              SizedBox(width: 20),
               HeavyTouchButton(
                 onPressed: () => Navigator.of(context).push(ColorPickerDialog(
                   availableColors: bloc.presetTagColors,
@@ -41,15 +51,6 @@ class TagsListItem extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: SizedBox(width: 40, height: 25),
-                ),
-              ),
-              SizedBox(width: 20),
-              Expanded(
-                child: SmartTextField(
-                  controller: TextEditingController(text: model.title),
-                  decoration: InputDecoration(border: InputBorder.none),
-                  focusNode: FocusNode(),
-                  onEditingComplete: (state) => bloc.updateItemTag(model.id, model.copyWith(title: state.controller.text), listId),
                 ),
               ),
             ],

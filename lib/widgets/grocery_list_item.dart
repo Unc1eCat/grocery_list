@@ -159,8 +159,11 @@ class GroceryListItem extends StatelessWidget {
                                             .getListOfId(listId)
                                             .tags
                                             .map((e) => HeavyTouchButton(
-                                                  onPressed: () => bloc.updateItem(model.id,
-                                                      model.copyWith(tags: model.tags.contains(e) ? (List.of(model.tags)..remove(e)) : (List.of(model.tags)..add(e))), listId),
+                                                  onPressed: () {
+                                                    print("AMONGUS");
+                                                    bloc.updateItem(model.id,
+                                                      model.copyWith(tags: model.tags.contains(e) ? (List.of(model.tags)..remove(e)) : (List.of(model.tags)..add(e))), listId);
+                                                  },
                                                   child: GroceryItemTagSetting(
                                                     color: e.color,
                                                     style: Theme.of(context).textTheme.caption,

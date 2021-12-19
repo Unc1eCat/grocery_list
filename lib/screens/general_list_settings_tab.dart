@@ -4,6 +4,7 @@ import 'package:grocery_list/screens/fly_from_point_dialog.dart';
 import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/beautiful_text_field.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
+import 'package:grocery_list/widgets/rounded_rolling_switch.dart';
 import 'package:grocery_list/widgets/smart_text_field.dart';
 import 'package:grocery_list/widgets/unfocus_on_tap.dart';
 
@@ -90,6 +91,21 @@ class _GeneralListSettingsTabState extends State<GeneralListSettingsTab> {
                     ),
                   ),
                 ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          Row(
+            children: [
+              Text(
+                "Use price",
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              SizedBox(width: 20),
+              Spacer(),
+              RoundedRollingSwitch(
+                onChanged: (val) => bloc.updateList(widget.listId, bloc.getListOfId(widget.listId).copyWith(usePrice: val)),
+                initialValue: bloc.getListOfId(widget.listId).usePrice,
               ),
             ],
           ),
