@@ -44,6 +44,12 @@ class _TheAppState extends State<TheApp> {
       child: MaterialApp(
         themeMode: ThemeMode.dark,
         darkTheme: ThemeData.dark().copyWith(
+          cardTheme: CardTheme(
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
           // tabBarTheme: TabBarTheme(),
           primaryColor: Colors.purple,
           bottomAppBarColor: Color(0xFF081524),

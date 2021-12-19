@@ -6,6 +6,7 @@ import 'package:grocery_list/screens/general_list_settings_tab.dart';
 import 'package:grocery_list/screens/tags_list_settings_tab.dart';
 import 'package:grocery_list/utils/scroll_behavior.dart';
 import 'package:grocery_list/utils/ticker_provider_mixin.dart';
+import 'package:grocery_list/widgets/blurry_faded_background.dart';
 import 'package:grocery_list/widgets/colored_tab.dart';
 import 'package:grocery_list/widgets/faded_borders_box.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
@@ -64,72 +65,64 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-    return Stack(
-      children: [
-        AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) => BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: _animationController.value * 3, sigmaY: _animationController.value * 3),
-            child: ColoredBox(
-              color: Colors.black.withOpacity(_animationController.value * 0.5),
-              child: child,
+    return BlurryFadedBackground(
+      controller: _animationController,
+      child: Stack(
+        children: [
+          FadeTransition(
+            opacity: _animationController,
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                GeneralListSettingsTab(
+                  scrollController: _scrollController,
+                  listId: listId,
+                ),
+                TagsListSettingsTab(
+                  scrollController: _scrollController,
+                  listId: listId,
+                ),
+                GeneralListSettingsTab(
+                  scrollController: _scrollController,
+                ),
+                GeneralListSettingsTab(
+                  scrollController: _scrollController,
+                ),
+              ],
             ),
           ),
-          child: SizedBox.expand(),
-        ),
-        FadeTransition(
-          opacity: _animationController,
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              GeneralListSettingsTab(
-                scrollController: _scrollController,
-                listId: listId,
-              ),
-              TagsListSettingsTab(
-                scrollController: _scrollController,
-                listId: listId,
-              ),
-              GeneralListSettingsTab(
-                scrollController: _scrollController,
-              ),
-              GeneralListSettingsTab(
-                scrollController: _scrollController,
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          bottom: 0,
-          child: Padding(
-            // Bottom buttons and tabs
-            padding: const EdgeInsets.symmetric(horizontal: 30.0),
-            child: SizedBox(
-              height: 80,
-              child: FadeTransition(
-                opacity: _animationController,
-                child: FadedBordersBox(
-                  left: 0.1,
-                  right: 0.1,
-                  child: TabBar(
-                    controller: _tabController,
-                    indicatorColor: Colors.transparent,
-                    isScrollable: true,
-                    physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    padding: EdgeInsets.symmetric(horizontal: 15.0),
-                    tabs: [
-                      _buildTabBarButton("General", 0),
-                      _buildTabBarButton("Tags", 1),
-                      _buildTabBarButton("Members", 2),
-                      _buildTabBarButton("Roles", 3),
-                    ],
+          Positioned(
+            bottom: 0,
+            child: Padding(
+              // Bottom buttons and tabs
+              padding: const EdgeInsets.symmetric(horizontal: 30.0),
+              child: SizedBox(
+                height: 80,
+                child: FadeTransition(
+                  opacity: _animationController,
+                  child: FadedBordersBox(
+                    left: 0.1,
+                    right: 0.1,
+                    child: TabBar(
+                      controller: _tabController,
+                      indicatorColor: Colors.transparent,
+                      isScrollable: true,
+                      physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                      padding: EdgeInsets.symmetric(horizontal: 15.0),
+                      tabs: [
+                        _buildTabBarButton("General", 0),
+                        _buildTabBarButton("Tags", 1),
+                        _buildTabBarButton("Members", 2),
+                        _buildTabBarButton("Roles", 3),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

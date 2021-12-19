@@ -9,6 +9,7 @@ import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/utils/ticker_provider_mixin.dart';
 import 'package:grocery_list/widgets/action_button.dart';
+import 'package:grocery_list/widgets/blurry_faded_background.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/unfocus_on_tap.dart';
 import 'package:my_utilities/color_utils.dart';
@@ -102,76 +103,64 @@ class AddItemScreen<T> extends PageRoute<T> with TickerProviderMixin {
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     var bloc = BlocProvider.of<GroceryListBloc>(context);
-
+    
     return UnfocusOnTap(
       child: Material(
         type: MaterialType.transparency,
-        child: Stack(
-          children: [
-            AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) => BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: _animationController.value * 3, sigmaY: _animationController.value * 3),
-                child: ColoredBox(
-                  color: Colors.black.withOpacity(_animationController.value * 0.5),
-                  child: child,
-                ),
-              ),
-              child: SizedBox.expand(),
-            ),
-            ListView(
-              controller: _scrollController,
-              physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: SafeArea(
-                    child: Hero(
-                      tag: "addItem",
-                      child: Material(
-                        color: const Color.fromARGB(255, 250, 250, 250),
-                        elevation: 6,
-                        borderRadius: BorderRadius.circular(8),
-                        type: MaterialType.button,
-                        child: TextField(
-                          onSubmitted: (value) => _textField.unfocus(),
-                          controller: _textEdContr,
-                          textCapitalization: TextCapitalization.sentences,
-                          focusNode: _textField,
-                          scrollPadding: EdgeInsets.zero,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                            hintText: "+  Create item",
-                            hintStyle: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black54),
-                          ),
-                          style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black),
+        child: BlurryFadedBackground(
+          controller: _animationController,
+          child: ListView(
+            controller: _scrollController,
+            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: SafeArea(
+                  child: Hero(
+                    tag: "addItem",
+                    child: Material(
+                      color: const Color.fromARGB(255, 250, 250, 250),
+                      elevation: 6,
+                      borderRadius: BorderRadius.circular(8),
+                      type: MaterialType.button,
+                      child: TextField(
+                        onSubmitted: (value) => _textField.unfocus(),
+                        controller: _textEdContr,
+                        textCapitalization: TextCapitalization.sentences,
+                        focusNode: _textField,
+                        scrollPadding: EdgeInsets.zero,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                          hintText: "+  Create item",
+                          hintStyle: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black54),
                         ),
+                        style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.black),
                       ),
                     ),
                   ),
                 ),
-                FadeTransition(
-                  opacity: _animationController,
-                  child: StreamBuilder<List<Widget>>(
-                    stream: _reloadSearchResultsStreamController.stream,
-                    initialData: [],
-                    builder: (context, snap) {
-                      return AnimatedSwitcher(
-                        duration: Duration(milliseconds: 200),
-                        transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
-                        child: Column(
-                          key: ValueKey(DateTime.now().millisecondsSinceEpoch),
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: snap.data,
-                        ),
-                      );
-                    },
-                  ),
+              ),
+              FadeTransition(
+                opacity: _animationController,
+                child: StreamBuilder<List<Widget>>(
+                  stream: _reloadSearchResultsStreamController.stream,
+                  initialData: [],
+                  builder: (context, snap) {
+                    return AnimatedSwitcher(
+                      duration: Duration(milliseconds: 200),
+                      transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+                      child: Column(
+                        key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: snap.data,
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
