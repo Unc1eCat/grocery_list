@@ -35,7 +35,7 @@ class ProductListItem extends StatelessWidget {
       animation: listController,
       builder: (context, child) {
         var isExpanded = listController.expandedProductItemId == this.fallbackModel.id;
-      
+
         return AnimatedContainer(
           padding: EdgeInsets.symmetric(horizontal: 10),
           color: isExpanded ? Theme.of(context).primaryColorLight.withOpacity(0.02) : Colors.transparent,
@@ -45,7 +45,7 @@ class ProductListItem extends StatelessWidget {
               duration: Duration(milliseconds: 400),
               alignment: Alignment.topCenter,
               child: BlocBuilder<GroceryListBloc, GroceryListState>(
-                buildWhen: (previous, current) => current is PrototypeChangedState && current.updatedPrototype.id == this.fallbackModel.id,
+                buildWhen: (previous, current) => (current is PrototypeChangedState && current.updatedPrototype.id == this.fallbackModel.id),
                 cubit: bloc,
                 builder: (context, state) {
                   var model = bloc.getPrototypeOfId(this.fallbackModel.id) ?? this.fallbackModel;
@@ -86,9 +86,15 @@ class ProductListItem extends StatelessWidget {
                                             ),
                                     ),
                                   ),
-                                  Text(
-                                    bloc.countItemsBoundToProduct(model.id).toString() + " items",
-                                    style: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).colorScheme.onBackground.blendedWithInversion(0.2)),
+                                  BlocBuilder<GroceryListBloc, GroceryListState>(
+                                    cubit: bloc,
+                                    buildWhen: (previous, current) => current is AmountOfItemsOfProductChangedState && current.productId == model.id,
+                                    builder: (context, state) {
+                                      return Text(
+                                        bloc.countItemsBoundToProduct(model.id).toString() + " items",
+                                        style: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).colorScheme.onBackground.blendedWithInversion(0.2)),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
@@ -178,32 +184,6 @@ class ProductListItem extends StatelessWidget {
                                             focusNode: FocusNode(),
                                             onEditingComplete: (state) => bloc.updatePrototype(model.copyWith(currency: state.controller.text)),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
-                                    child: Wrap(
-                                      runSpacing: 12,
-                                      alignment: WrapAlignment.spaceBetween,
-                                      spacing: 10,
-                                      children: [
-                                        GroceryItemTagSetting(
-                                          color: Colors.deepOrange,
-                                          style: Theme.of(context).textTheme.caption,
-                                          ticked: true,
-                                          title: "For Cat",
-                                        ),
-                                        GroceryItemTagSetting(
-                                          color: Colors.purple,
-                                          style: Theme.of(context).textTheme.caption,
-                                          title: "Expansive",
-                                        ),
-                                        GroceryItemTagSetting(
-                                          color: Colors.green,
-                                          style: Theme.of(context).textTheme.caption,
-                                          title: "For Fun",
                                         ),
                                       ],
                                     ),

@@ -8,8 +8,8 @@ class GroceryList {
   final List<GroceryItem> items;
   final List<ItemTag> tags;
   final String title;
-  final String default_currency;
-  final Set<GroceryItem> removedItems;
+  final String defaultCurrency;
+  final Set<GroceryItem> purchasedItems;
 
   GroceryList({
     Set<GroceryItem> removedItems,
@@ -17,23 +17,25 @@ class GroceryList {
     List<GroceryItem> items,
     List<ItemTag> tags,
     this.title,
-    this.default_currency,
+    this.defaultCurrency,
   })  : this.id = id ?? DateTime.now().toString(),
-        removedItems = removedItems ?? {},
+        purchasedItems = removedItems ?? {},
         items = items ?? [],
         tags = tags ?? [];
 
   GroceryList copyWith({
-    Set<GroceryItem> removedItems,
+    Set<GroceryItem> purchasedItems,
     String id,
     List<GroceryItem> items,
     List<ItemTag> tags,
     String title,
-    String default_currency,
+    String defaultCurrency,
   }) =>
       GroceryList(
         id: id ?? this.id,
         title: title ?? this.title,
-        default_currency: default_currency ?? this.default_currency,
+        defaultCurrency: defaultCurrency ?? this.defaultCurrency,
+        items: items ?? this.items,
+        removedItems: purchasedItems ?? this.purchasedItems
       );
 }

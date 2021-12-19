@@ -31,17 +31,29 @@ abstract class GroceryItem {
     bool updatePrototype = false,
   });
 
+  GroceryItem();
+
   factory GroceryItem.fromJson(Map<String, Object> from) {
     // TODO: Implement
   }
 
   GroceryPrototype createPrototype();
 
+  GroceryItem copyWithAmountSnappedToQuantization() {
+    var newAmount = (this.amount / this.quantization).round() * this.quantization;
+
+    if (newAmount == 0.0) {
+      newAmount = this.quantization;
+    }
+
+    return this.copyWith(amount: newAmount);
+  }
+
   Map<String, Object> toJson();
 }
 
 @immutable
-class ProductlessGroceryItem implements GroceryItem {
+class ProductlessGroceryItem extends GroceryItem {
   final String id;
   final String title;
   final bool checked;
@@ -128,7 +140,7 @@ class ProductlessGroceryItem implements GroceryItem {
   }
 }
 
-class ProductfulGroceryItem implements GroceryItem {
+class ProductfulGroceryItem extends GroceryItem {
   @override
   final double amount;
 

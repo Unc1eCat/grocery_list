@@ -18,6 +18,7 @@ import 'package:grocery_list/widgets/tag_widget.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 import 'package:my_utilities/color_utils.dart';
 
+// TODO: Make text fields be synced by using the text editing controllers and bloc listeners
 class GroceryListItem extends StatelessWidget {
   final GroceryItem fallbackModel;
   final String listId;
@@ -234,6 +235,36 @@ class GroceryListItem extends StatelessWidget {
                                             .toList(),
                                       ),
                                     ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 20.0, left: 20, right: 20),
+                                      child: Wrap(
+                                        runSpacing: 10,
+                                        alignment: WrapAlignment.center,
+                                        spacing: 8,
+                                        children: [
+                                          ActionButton(
+                                            onPressed: () => bloc.removeItem(this.fallbackModel.id, listId),
+                                            color: Colors.red[600],
+                                            icon: Icons.delete_rounded,
+                                            title: "Delete",
+                                          ),
+                                          ActionButton(
+                                            onPressed: () => bloc.addItem(model.copyWith(id: DateTime.now().toString()), listId),
+                                            color: Colors.amber[600],
+                                            icon: Icons.copy_rounded,
+                                            title: "Duplicate",
+                                          ),
+                                          ActionButton(
+                                            onPressed: () {
+                                              bloc.updateItem(model.id, model.copyWith(boundPrototype: null, updatePrototype: true), listId);
+                                            },
+                                            color: Colors.purpleAccent[400],
+                                            icon: Icons.remove_circle_outline_rounded,
+                                            title: "Unbind product",
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ],
                                 );
                         },
@@ -350,7 +381,7 @@ class GroceryListItem extends StatelessWidget {
                                         model.copyWith(
                                             quantization: value,
                                             quantizationDecimalNumbersAmount: dot == -1 ? 0 : state.controller.text.length - 1 - dot,
-                                            amount: (model.amount / value).round() * value),
+                                            amount: (model.amount / value).round() * value).copyWithAmountSnappedToQuantization(),
                                         listId,
                                       );
                                     },

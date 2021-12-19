@@ -19,7 +19,6 @@ class SearchResultCreateProductless extends StatelessWidget {
     return HeavyTouchButton(
       onPressed: () {
         GroceryListBloc.of(context).addItem(ProductlessGroceryItem(title: name, amount: 1.0), listId);
-        Navigator.of(context).pop();
       },
       child: Material(
         type: MaterialType.button,

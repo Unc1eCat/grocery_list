@@ -112,7 +112,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     for (var list in _lists) {
       for (var i = 0; i < list.items.length; i++) {
         if (list.items[i].boundPrototype?.id == newPrototype.id) {
-          list.items[i] = list.items[i].copyWith(boundPrototype: newPrototype, updatePrototype: true);
+          list.items[i] = list.items[i].copyWith(boundPrototype: newPrototype, updatePrototype: true).copyWithAmountSnappedToQuantization();
           changedItemsIds.add(list.items[i].id);
         }
       }
@@ -190,6 +190,10 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     emit(ItemCreatedState(newItem.id, list.items, listId));
 
+    if (newItem.boundPrototype != null) {
+      emit(AmountOfItemsOfProductChangedState(newItem.boundPrototype.id, countItemsBoundToProduct(newItem.boundPrototype.id)));
+    }
+
     saveItems();
   }
 
@@ -205,8 +209,13 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   void removeItem(String id, String listId) {
     var list = getListOfId(listId);
     var index = list.items.indexWhere((e) => e.id == id);
+    var removedItem = list.items.removeAt(index);
 
-    emit(ItemDeletedState(list.items.removeAt(index), index, listId));
+    emit(ItemDeletedState(removedItem, index, listId));
+
+    if (removedItem.boundPrototype != null) {
+      emit(AmountOfItemsOfProductChangedState(removedItem.boundPrototype.id, countItemsBoundToProduct(removedItem.boundPrototype.id)));
+    }
 
     saveItems();
   }
@@ -220,8 +229,18 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     list.items[index] = newItem;
 
     emit(ItemsChangedState({id, oldItem.id}, updatedProtBinding));
+
     if (updatedChecked) {
       emit(CheckedChangedState(newItem.checked, newItem));
+    }
+
+    if (updatedProtBinding) {
+      if (oldItem.boundPrototype != null) {
+        emit(AmountOfItemsOfProductChangedState(oldItem.boundPrototype.id, countItemsBoundToProduct(oldItem.boundPrototype.id)));
+      }
+      if (newItem.boundPrototype != null) {
+        emit(AmountOfItemsOfProductChangedState(newItem.boundPrototype.id, countItemsBoundToProduct(newItem.boundPrototype.id)));
+      }
     }
 
     saveItems();
@@ -388,4 +407,16 @@ class ItemTagsListModifiedState extends WithinListState {
   ItemTagsListModifiedState(String listId) : super(listId);
 
   bool operator ==(dynamic other) => false;
+}
+
+class AmountOfItemsOfProductChangedState extends GroceryListState {
+  final String productId;
+  final int amount;
+
+  AmountOfItemsOfProductChangedState(this.productId, this.amount);
+
+  @override
+  List<Object> get props => super.props
+    ..add(productId)
+    ..add(amount);
 }
