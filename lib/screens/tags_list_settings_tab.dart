@@ -12,8 +12,10 @@ import 'package:grocery_list/widgets/unfocus_on_tap.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 import 'package:my_utilities/color_utils.dart';
 
+import 'list_settings_screen.dart';
+
 class TagsListSettingsTab extends StatefulWidget {
-  final ScrollController scrollController;
+  final GetScrollControllerCallback scrollController;
   final String listId;
 
   const TagsListSettingsTab({Key key, this.scrollController, this.listId}) : super(key: key);
@@ -36,7 +38,7 @@ class _TagsListSettingsTabState extends State<TagsListSettingsTab> {
         buildWhen: (previous, current) => current is ItemTagsListModifiedState && current.listId == widget.listId,
         builder: (context, state) => ImplicitlyAnimatedReorderableList<ItemTag>(
           key: list,
-          controller: widget.scrollController,
+          controller: widget.scrollController(),
           padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 64, left: 20, right: 20, bottom: 20.0),
           physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           items: bloc.getListOfId(widget.listId).tags,

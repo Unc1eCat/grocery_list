@@ -61,21 +61,22 @@ class _TheAppState extends State<TheApp> {
           textTheme: TextTheme(
             caption: TextStyle(
               fontSize: 17,
+              fontWeight: FontWeight.w300,
             ),
             headline6: TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               // fontWeight: FontWeight.w400,
             ),
             headline5: TextStyle(
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.w500,
             ),
             headline4: TextStyle(
-              fontSize: 29,
+              fontSize: 24,
               fontWeight: FontWeight.w500,
             ),
             headline3: TextStyle(
-              fontSize: 34,
+              fontSize: 28,
               fontWeight: FontWeight.w400,
             ),
           ),

@@ -13,6 +13,8 @@ import 'package:grocery_list/widgets/heavy_touch_button.dart';
 import 'package:grocery_list/widgets/pop_on_swipe.dart';
 import 'package:path/path.dart';
 
+typedef GetScrollControllerCallback = ScrollController Function();
+
 class ListSettingsScreen extends PageRoute with TickerProviderMixin {
   final String listId;
 
@@ -35,7 +37,8 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
   void dispose() {
     _animationController.dispose();
     _tabController.dispose();
-    _scrollController.dispose();
+    _scrollController?.dispose();
+    _scrollController = null;
     disposeTickers();
     super.dispose();
   }
@@ -75,18 +78,18 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
               controller: _tabController,
               children: [
                 GeneralListSettingsTab(
-                  scrollController: _scrollController,
+                  scrollController: () => _tabController.index == 0 ? _scrollController : null,
                   listId: listId,
                 ),
                 TagsListSettingsTab(
-                  scrollController: _scrollController,
+                  scrollController: () => _tabController.index == 1 ? _scrollController : null,
                   listId: listId,
                 ),
                 GeneralListSettingsTab(
-                  scrollController: _scrollController,
+                  scrollController: () => _tabController.index == 2 ? _scrollController : null,
                 ),
                 GeneralListSettingsTab(
-                  scrollController: _scrollController,
+                  scrollController: () => _tabController.index == 3 ? _scrollController : null,
                 ),
               ],
             ),

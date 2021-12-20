@@ -15,7 +15,7 @@ class GroceryItemTagSetting extends LeafRenderObjectWidget {
   GroceryItemTagSetting({
     Duration duration,
     this.ticked = false,
-    this.padding = const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+    this.padding = const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
     this.title,
     this.style,
     this.color,
@@ -136,7 +136,7 @@ class RenderGroceryItemTagSetting extends RenderBox with TickerProviderMixin {
 
   @override
   void performLayout() {
-    size = Size(_padding.horizontal + badgeSize.width + indent + _textPainter.size.width, _padding.vertical + max(_textPainter.height, badgeSize.height));
+    size = Size(_padding.horizontal + 2 * (badgeSize.width + indent) + _textPainter.size.width, _padding.vertical + max(_textPainter.height, badgeSize.height));
   }
 
   @override
@@ -147,7 +147,7 @@ class RenderGroceryItemTagSetting extends RenderBox with TickerProviderMixin {
     _boxPainter.paint(context.canvas, offset + Offset(rv * _padding.left, rv * (_padding.top + (_textPainter.height - badgeSize.height) / 2)),
         ImageConfiguration(size: Size(badgeSize.width + v * (size.width - badgeSize.width), badgeSize.height + v * (size.height - badgeSize.height))));
     _textPainter.paint(context.canvas,
-        offset + Offset((size.width - _textPainter.width) / 2 + rv * ((_padding.left + badgeSize.width + indent) - (size.width - _textPainter.width) / 2), _padding.top));
+        offset + Offset(padding.left + badgeSize.width + indent, _padding.top));
 
     super.paint(context, offset);
   }

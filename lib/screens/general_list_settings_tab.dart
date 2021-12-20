@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grocery_list/bloc/grocery_list_bloc.dart';
 import 'package:grocery_list/screens/fly_from_point_dialog.dart';
+import 'package:grocery_list/screens/list_settings_screen.dart';
 import 'package:grocery_list/widgets/action_button.dart';
 import 'package:grocery_list/widgets/beautiful_text_field.dart';
 import 'package:grocery_list/widgets/heavy_touch_button.dart';
@@ -9,7 +10,7 @@ import 'package:grocery_list/widgets/smart_text_field.dart';
 import 'package:grocery_list/widgets/unfocus_on_tap.dart';
 
 class GeneralListSettingsTab extends StatefulWidget {
-  final ScrollController scrollController;
+  final GetScrollControllerCallback scrollController;
   final String listId;
 
   const GeneralListSettingsTab({Key key, this.scrollController, this.listId}) : super(key: key);
@@ -27,7 +28,7 @@ class _GeneralListSettingsTabState extends State<GeneralListSettingsTab> {
 
     return UnfocusOnTap(
       child: ListView(
-        controller: widget.scrollController,
+        controller: widget.scrollController(),
         padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 64, left: 20, right: 20),
         physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         children: [

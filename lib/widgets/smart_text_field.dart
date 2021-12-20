@@ -407,7 +407,7 @@ class FullSmartTextFieldState extends SmartTextFieldState {
   } // TODO: This and the below functions are copied in every class representing a variation of the smart text field. Make it only one declaration for on  function
 
   void _defaultOnSubmittedCallback(String val) {
-    FocusScope.of(context)?.unfocus();
+    // FocusScope.of(context)?.unfocus();
   }
 
   @override
@@ -465,5 +465,23 @@ class FullSmartTextFieldState extends SmartTextFieldState {
       autofillHints: widget.autofillHints,
       restorationId: widget.restorationId,
     );
+  }
+}
+
+extension ControllerSmartTextFieldKeyExtension<T extends ControllerSmartTextFieldState> on GlobalKey<T>
+{
+  set text(String val)
+  {
+    if (currentState?.controller?.text == null || val == currentState.controller.text) return;
+    currentState.controller.text = val;
+  }
+}
+
+extension FullSmartTextFieldKeyExtension<T extends FullSmartTextFieldState> on GlobalKey<T>
+{
+  set text(String val)
+  {
+    if (currentState?.controller == null || val == currentState.controller.text) return;
+    currentState.controller.text = val;
   }
 }
