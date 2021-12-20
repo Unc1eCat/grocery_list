@@ -407,7 +407,7 @@ class FullSmartTextFieldState extends SmartTextFieldState {
   } // TODO: This and the below functions are copied in every class representing a variation of the smart text field. Make it only one declaration for on  function
 
   void _defaultOnSubmittedCallback(String val) {
-    // FocusScope.of(context)?.unfocus();
+    FocusScope.of(context)?.unfocus();
   }
 
   @override

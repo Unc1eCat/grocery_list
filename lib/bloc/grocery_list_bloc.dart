@@ -318,7 +318,7 @@ class ItemsChangedState extends GroceryListState {
 
   bool operator ==(dynamic other) => false;
 
-  bool contains(String id) => previous.contains(id);
+  bool contains(String id) => previousOfId(id) != null;
 
   GroceryItem previousOfId(String id) => previous.firstWhere((e) => e.id == id, orElse: () => null);
 }

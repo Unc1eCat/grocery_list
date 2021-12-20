@@ -19,7 +19,7 @@ class GroceryList {
     List<GroceryItem> items,
     List<ItemTag> tags,
     this.title,
-    this.defaultCurrency,
+    this.defaultCurrency = "",
   })  : this.id = id ?? DateTime.now().toString(),
         purchasedItems = removedItems ?? {},
         items = items ?? [],

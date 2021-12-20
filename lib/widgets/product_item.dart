@@ -37,19 +37,11 @@ class ProductListItem extends StatelessWidget {
         var isExpanded = listController.expandedProductItemId == this.fallbackModel.id;
         var model = bloc.getPrototypeOfId(this.fallbackModel.id) ?? this.fallbackModel;
 
-        GlobalKey<FullSmartTextFieldState> titleField;
-        GlobalKey<FullSmartTextFieldState> quantizationField;
-        GlobalKey<FullSmartTextFieldState> unitField;
-        GlobalKey<FullSmartTextFieldState> priceField;
-        GlobalKey<FullSmartTextFieldState> currencyField;
-
-        if (isExpanded) {
-          titleField = GlobalKey<FullSmartTextFieldState>();
-          quantizationField = GlobalKey<FullSmartTextFieldState>();
-          unitField = GlobalKey<FullSmartTextFieldState>();
-          priceField = GlobalKey<FullSmartTextFieldState>();
-          currencyField = GlobalKey<FullSmartTextFieldState>();
-        }
+        TextEditingController titleField;
+        TextEditingController quantizationField;
+        TextEditingController unitField;
+        TextEditingController priceField;
+        TextEditingController currencyField;
 
         return AnimatedContainer(
           padding: EdgeInsets.symmetric(horizontal: 10),
@@ -91,8 +83,7 @@ class ProductListItem extends StatelessWidget {
                                     padding: EdgeInsets.only(bottom: isExpanded ? 3.2 : 0.0),
                                     child: isExpanded
                                         ? SmartTextField(
-                                            key: titleField,
-                                            controller: TextEditingController(text: model.title),
+                                            controller: titleField = TextEditingController(text: model.title),
                                             decoration: InputDecoration(border: InputBorder.none),
                                             focusNode: FocusNode(),
                                             onEditingComplete: (textField) =>
@@ -154,9 +145,8 @@ class ProductListItem extends StatelessWidget {
                                       Expanded(
                                         flex: 2,
                                         child: BeautifulTextField(
-                                          textFieldKey: quantizationField,
                                           label: "Quantization",
-                                          controller: TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationFractionDigits)),
+                                          controller: quantizationField = TextEditingController(text: model.quantization.toStringAsFixed(model.quantizationFractionDigits)),
                                           focusNode: FocusNode(),
                                           onEditingComplete: (state) {
                                             var value = double.tryParse(state.controller.text);
@@ -178,9 +168,8 @@ class ProductListItem extends StatelessWidget {
                                       Expanded(
                                         flex: 1,
                                         child: BeautifulTextField(
-                                          textFieldKey: unitField,
                                           label: "Unit",
-                                          controller: TextEditingController(text: model.unit),
+                                          controller: unitField = TextEditingController(text: model.unit),
                                           focusNode: FocusNode(),
                                           onEditingComplete: (state) => bloc.updatePrototype(model.copyWith(unit: state.controller.text)),
                                         ),
@@ -197,9 +186,8 @@ class ProductListItem extends StatelessWidget {
                                       Expanded(
                                         flex: 2,
                                         child: BeautifulTextField(
-                                          textFieldKey: priceField,
                                           label: "Price",
-                                          controller: TextEditingController(text: model.price.toStringAsFixed(2)),
+                                          controller: priceField = TextEditingController(text: model.price.toStringAsFixed(2)),
                                           focusNode: FocusNode(),
                                           onEditingComplete: (state) {
                                             var itemOfId = model;
@@ -211,9 +199,8 @@ class ProductListItem extends StatelessWidget {
                                       Expanded(
                                         flex: 1,
                                         child: BeautifulTextField(
-                                          textFieldKey: currencyField,
                                           label: "Currency",
-                                          controller: TextEditingController(text: model.currency),
+                                          controller: currencyField = TextEditingController(text: model.currency),
                                           focusNode: FocusNode(),
                                           onEditingComplete: (state) => bloc.updatePrototype(model.copyWith(currency: state.controller.text)),
                                         ),
