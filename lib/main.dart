@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grocery_list/screens/list_item_edit_screen.dart';
 import 'package:grocery_list/screens/tabs_screen.dart';
+import 'package:grocery_list/utils/app_directories.dart';
 import 'package:grocery_list/utils/modeling_utils.dart';
 import 'package:grocery_list/utils/scroll_behavior.dart';
 import 'package:path_provider/path_provider.dart' as pp;
@@ -12,24 +13,26 @@ import 'package:path/path.dart' as path;
 import 'bloc/grocery_list_bloc.dart';
 import 'models/grocery_item.dart';
 
-void main() {
+void main() async {
+  await initDirectories();
   runApp(TheApp());
 }
 
 class TheApp extends StatefulWidget {
   @override
-  _TheAppState createState() => _TheAppState();
+  TheAppState createState() => TheAppState();
 
-  static Directory appDocDirectory;
-  static File groceryItemsFile;
-  static File groceryPrototypesFile;
+  static TheAppState of(BuildContext context) {
+    return context.findAncestorStateOfType<TheAppState>();
+  }
 }
 
-class _TheAppState extends State<TheApp> {
+class TheAppState extends State<TheApp> {
   GroceryListBloc groceryListBloc;
 
   @override
   void initState() {
+    initDirectories();
     groceryListBloc = GroceryListBloc(
         presetTagColors: getShadesOfMaterialColors(
             [Colors.red, Colors.indigo, Colors.amber, Colors.lightGreen, Colors.lightBlue, Colors.teal, Colors.pink, Colors.deepOrange], {200, 500, 800}));

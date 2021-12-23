@@ -28,7 +28,7 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
   void install() {
     _animationController = AnimationController(vsync: this)..animateTo(1.0, duration: const Duration(milliseconds: 500));
     _scrollController = ScrollController();
-    _tabController = TabController(vsync: this, length: 4);
+    _tabController = TabController(vsync: this, length: 3);
     _scrollController = ScrollController()..addListener(_handleScroll);
     super.install();
   }
@@ -88,9 +88,6 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
                 GeneralListSettingsTab(
                   scrollController: () => _tabController.index == 2 ? _scrollController : null,
                 ),
-                GeneralListSettingsTab(
-                  scrollController: () => _tabController.index == 3 ? _scrollController : null,
-                ),
               ],
             ),
           ),
@@ -116,7 +113,6 @@ class ListSettingsScreen extends PageRoute with TickerProviderMixin {
                         _buildTabBarButton("General", 0),
                         _buildTabBarButton("Tags", 1),
                         _buildTabBarButton("Members", 2),
-                        _buildTabBarButton("Roles", 3),
                       ],
                     ),
                   ),

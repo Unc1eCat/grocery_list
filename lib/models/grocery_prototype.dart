@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:grocery_list/models/grocery_item.dart';
+import 'package:grocery_list/utils/serealization_utils.dart';
 
 import 'item_tag.dart';
 
-class GroceryPrototype {
+class GroceryPrototype with FieldsToJson {
   final String id;
   final String title;
-  final List<ItemTag> tags;
   final String unit;
   final double quantization;
   final int quantizationFractionDigits;
@@ -16,26 +16,12 @@ class GroceryPrototype {
   GroceryPrototype({
     String id,
     this.title = "",
-    this.tags,
     this.unit = "it.",
     this.quantization = 1,
     this.quantizationFractionDigits = 0,
     this.currency = "\$",
     this.price = 0,
   }) : this.id = id ?? DateTime.now().toString();
-
-  Map<String, Object> toJson() {
-    return {
-      "id": id,
-      "title": title,
-      "tags": "", // TODO: TAGS
-      "unit": unit,
-      "quantization": quantization,
-      "currency": currency,
-      "price": price,
-      "fractionDigits": quantizationFractionDigits,
-    };
-  }
 
   static GroceryPrototype fromJson(Map<String, dynamic> json) {
     return GroceryPrototype(
@@ -44,7 +30,6 @@ class GroceryPrototype {
       price: json["price"],
       quantization: json["quantization"],
       quantizationFractionDigits: json["fractionDigits"],
-      tags: <ItemTag>[], // TODO: TAGS
       title: json["title"],
       unit: json["unit"],
     );
@@ -66,7 +51,6 @@ class GroceryPrototype {
       quantizationFractionDigits: quantizationDecimalNumbersAmount ?? this.quantizationFractionDigits,
       price: price ?? this.price,
       quantization: quantization ?? this.quantization,
-      tags: tags ?? this.tags,
       title: title ?? this.title,
       unit: unit ?? this.unit,
     );
@@ -81,6 +65,17 @@ class GroceryPrototype {
   }
 
   bool equals(GroceryPrototype other) {
-    return title == other.title && tags == other.tags && price == other.price && currency == other.currency && unit == other.unit;
+    return title == other.title && price == other.price && currency == other.currency && unit == other.unit;
   }
+
+  @override
+  Map<String, Object> get fieldsNameValueMap => {
+        "id": id,
+        "currency": currency,
+        "quantizationFractionDigits": quantizationFractionDigits,
+        "price": price,
+        "quantization": quantization,
+        "title": title,
+        "unit": unit,
+      };
 }

@@ -2,8 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/models/item_tag.dart';
+import 'package:grocery_list/utils/serealization_utils.dart';
 
-abstract class GroceryItem {
+abstract class GroceryItem extends ToJson {
   String get id;
   String get title;
   bool get checked;
@@ -48,12 +49,10 @@ abstract class GroceryItem {
 
     return this.copyWith(amount: newAmount);
   }
-
-  Map<String, Object> toJson();
 }
 
 @immutable
-class ProductlessGroceryItem extends GroceryItem {
+class ProductlessGroceryItem extends GroceryItem with FieldsToJson {
   final String id;
   final String title;
   final bool checked;
@@ -127,20 +126,25 @@ class ProductlessGroceryItem extends GroceryItem {
       price: price,
       quantization: quantization,
       quantizationFractionDigits: quantizationFractionDigits,
-      tags: tags,
       title: title,
       unit: unit,
     );
   }
 
   @override
-  Map<String, Object> toJson() {
-    // TODO: implement toJson
-    throw UnimplementedError();
-  }
+  Map<String, Object> get fieldsNameValueMap => {
+        "id": id,
+        "currency": currency,
+        "price": price,
+        "quantization": quantization,
+        "quantizationFractionDigits": quantizationFractionDigits,
+        "tags": tags,
+        "amount": amount,
+        "checked": checked,
+      };
 }
 
-class ProductfulGroceryItem extends GroceryItem {
+class ProductfulGroceryItem extends GroceryItem with FieldsToJson {
   @override
   final double amount;
 
@@ -221,12 +225,16 @@ class ProductfulGroceryItem extends GroceryItem {
   }
 
   @override
-  Map<String, Object> toJson() {
-    // TODO: implement toJson
-  }
-
-  @override
   GroceryPrototype createPrototype() {
     return boundPrototype;
   }
+
+  @override
+  Map<String, Object> get fieldsNameValueMap => {
+        "id": id,
+        "boundPrototype": boundPrototype,
+        "tags": tags,
+        "amount": amount,
+        "checked": checked,
+      };
 }

@@ -6,6 +6,7 @@ import 'package:grocery_list/models/grocery_item.dart';
 import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/models/item_tag.dart';
+import 'package:grocery_list/utils/serealization_utils.dart';
 import 'package:grocery_list/widgets/rounded_rolling_switch.dart';
 import 'package:grocery_list/widgets/searchg_result.dart';
 import 'package:string_similarity/string_similarity.dart';
@@ -45,9 +46,13 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     super.onChange(change);
   }
 
-  void saveItems() {}
+  void saveLists() {
+    conv.jsonEncode(_lists.toJson());
+  }
 
-  void savePrototypes() {}
+  void savePrototypes() {
+    
+  }
 
   void addPrototype(GroceryPrototype prototype) {
     _prototypes.add(prototype);
@@ -137,7 +142,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     emit(ItemMovedState(list.items, listId));
 
-    saveItems();
+    saveLists();
   }
 
   void moveProduct(int fromIndex, int toIndex) {
@@ -195,7 +200,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
       emit(AmountOfItemsOfProductChangedState(newItem.boundPrototype.id, countItemsBoundToProduct(newItem.boundPrototype.id)));
     }
 
-    saveItems();
+    saveLists();
   }
 
   void addItemTag(ItemTag newItemTag, String listId) {
@@ -204,7 +209,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     emit(ItemTagsListModifiedState(listId));
 
-    saveItems();
+    saveLists();
   }
 
   void removeItem(String id, String listId) {
@@ -218,7 +223,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
       emit(AmountOfItemsOfProductChangedState(removedItem.boundPrototype.id, countItemsBoundToProduct(removedItem.boundPrototype.id)));
     }
 
-    saveItems();
+    saveLists();
   }
 
   void updateItem(String id, GroceryItem newItem, String listId) {
@@ -244,7 +249,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
       }
     }
 
-    saveItems();
+    saveLists();
   }
 
   void addList(GroceryList list) {
