@@ -48,7 +48,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   }
 
   void saveLists() async {
-    print(jsonEncoder.convert(_lists));
+    // print(jsonEncoder.convert(_lists));
   }
 
   void savePrototypes() async {}
