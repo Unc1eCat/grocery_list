@@ -4,7 +4,7 @@ import 'package:grocery_list/utils/serealization_utils.dart';
 import 'grocery_item.dart';
 import 'item_tag.dart';
 
-class GroceryList with FieldsToJson {
+class GroceryList implements ToJson {
   final String id;
   final List<GroceryItem> items;
   final List<ItemTag> tags;
@@ -44,7 +44,7 @@ class GroceryList with FieldsToJson {
           usePrice: usePrice ?? this.usePrice);
 
   @override
-  Map<String, Object> get fieldsNameValueMap => {
+  Map<String, Object> toJson() => {
         "id": id,
         "items": items,
         "tags": tags,

@@ -6,6 +6,7 @@ import 'package:grocery_list/models/grocery_item.dart';
 import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/models/item_tag.dart';
+import 'package:grocery_list/utils/app_directories.dart';
 import 'package:grocery_list/utils/serealization_utils.dart';
 import 'package:grocery_list/widgets/rounded_rolling_switch.dart';
 import 'package:grocery_list/widgets/searchg_result.dart';
@@ -46,18 +47,18 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     super.onChange(change);
   }
 
-  void saveLists() {
-    conv.jsonEncode(_lists.toJson());
+  void saveLists() async {
+    print(jsonEncoder.convert(_lists));
   }
 
-  void savePrototypes() {
-    
-  }
+  void savePrototypes() async {}
 
   void addPrototype(GroceryPrototype prototype) {
     _prototypes.add(prototype);
 
     emit(ProductsListModifiedState());
+
+    savePrototypes();
   }
 
   GroceryPrototype getPrototypeOfTitle(String title) {
@@ -81,6 +82,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     emit(ItemsChangedState(true, previousItems));
 
     savePrototypes();
+    saveLists();
   }
 
   void removeItemTag(String id, String listId) {
@@ -106,7 +108,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
 
     emit(ItemsChangedState(true, previousItems));
 
-    savePrototypes();
+    saveLists();
   }
 
   void updatePrototype(GroceryPrototype newPrototype) {
@@ -128,12 +130,15 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     emit(ItemsChangedState(false, previousItems));
 
     savePrototypes();
+    saveLists();
   }
 
   void moveList(int fromIndex, int toIndex) {
     _lists.insert(toIndex, _lists.removeAt(fromIndex));
 
     emit(ListsListModifiedState());
+
+    saveLists();
   }
 
   void moveItem(int fromIndex, int toIndex, String listId) {
@@ -149,6 +154,8 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     _prototypes.insert(toIndex, _prototypes.removeAt(fromIndex));
 
     emit(ProductsListModifiedState());
+
+    savePrototypes();
   }
 
   void moveItemTag(int fromIndex, int toIndex, String listId) {
@@ -156,6 +163,8 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     list.tags.insert(toIndex, list.tags.removeAt(fromIndex));
 
     emit(ItemTagsListModifiedState(listId));
+
+    saveLists();
   }
 
   int countItemsBoundToProduct(String id) {
@@ -256,12 +265,16 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     _lists.add(list);
 
     emit(ListsListModifiedState());
+
+    saveLists();
   }
 
   void removeList(String listId) {
     _lists.removeWhere((e) => e.id == listId);
 
     emit(ListsListModifiedState());
+
+    saveLists();
   }
 
   void updateList(String id, GroceryList newList) {
@@ -269,6 +282,8 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     _lists[index] = newList;
 
     emit(ListSettingsModifiedState(id));
+
+    saveLists();
   }
 
   void updateItemTag(String id, ItemTag newItemTag, String listId) {
@@ -287,6 +302,8 @@ class GroceryListBloc extends Cubit<GroceryListState> {
     }
 
     emit(ItemTagChangedState(listId, id));
+
+    saveLists();
   }
 
   Set<Color> getUnoccupiedTagColors(String listId) {

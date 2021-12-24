@@ -4,7 +4,7 @@ import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/models/item_tag.dart';
 import 'package:grocery_list/utils/serealization_utils.dart';
 
-abstract class GroceryItem extends ToJson {
+abstract class GroceryItem implements ToJson {
   String get id;
   String get title;
   bool get checked;
@@ -52,7 +52,7 @@ abstract class GroceryItem extends ToJson {
 }
 
 @immutable
-class ProductlessGroceryItem extends GroceryItem with FieldsToJson {
+class ProductlessGroceryItem extends GroceryItem {
   final String id;
   final String title;
   final bool checked;
@@ -132,7 +132,7 @@ class ProductlessGroceryItem extends GroceryItem with FieldsToJson {
   }
 
   @override
-  Map<String, Object> get fieldsNameValueMap => {
+  Map<String, Object> toJson() => {
         "id": id,
         "currency": currency,
         "price": price,
@@ -144,7 +144,7 @@ class ProductlessGroceryItem extends GroceryItem with FieldsToJson {
       };
 }
 
-class ProductfulGroceryItem extends GroceryItem with FieldsToJson {
+class ProductfulGroceryItem extends GroceryItem {
   @override
   final double amount;
 
@@ -230,7 +230,7 @@ class ProductfulGroceryItem extends GroceryItem with FieldsToJson {
   }
 
   @override
-  Map<String, Object> get fieldsNameValueMap => {
+  Map<String, Object> toJson() => {
         "id": id,
         "boundPrototype": boundPrototype,
         "tags": tags,

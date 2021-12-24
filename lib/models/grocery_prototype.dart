@@ -4,7 +4,7 @@ import 'package:grocery_list/utils/serealization_utils.dart';
 
 import 'item_tag.dart';
 
-class GroceryPrototype with FieldsToJson {
+class GroceryPrototype {
   final String id;
   final String title;
   final String unit;
@@ -69,7 +69,7 @@ class GroceryPrototype with FieldsToJson {
   }
 
   @override
-  Map<String, Object> get fieldsNameValueMap => {
+  Map<String, Object> toJson() => {
         "id": id,
         "currency": currency,
         "quantizationFractionDigits": quantizationFractionDigits,

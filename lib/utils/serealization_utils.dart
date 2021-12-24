@@ -29,9 +29,26 @@
 //       );
 // }
 
+import 'dart:convert';
+
 abstract class ToJson {
   Object toJson();
+
+  static Object toEncodable(Object value) {
+    if (value is Iterable) {
+      return value.toList();
+    } else if (value is ToJson) {
+      return value.toJson();
+    } else if (value is num || value is bool || value is String || value == null || value is Map<String, dynamic>) {
+      return value;
+    } else {
+      throw UnsupportedError(
+          'The object "$value" of type "${value.runtimeType}" can\'t be converted to List-Map Json representation. Only primitives, "ToJson" implementors, "String"-keyed maps and iterables can be converted to List-Map Json representation.');
+    }
+  }
 }
+
+var jsonEncoder = JsonEncoder.withIndent('    ', ToJson.toEncodable);
 
 // abstract class FieldsNameValueMapable {
 //   Map<String, Object> get fieldsNameValueMap;

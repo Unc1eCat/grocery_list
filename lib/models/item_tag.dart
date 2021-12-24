@@ -1,9 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:grocery_list/utils/serealization_utils.dart';
 
 @immutable
-class ItemTag extends Equatable {
+class ItemTag extends Equatable implements ToJson {
   final String id;
   final String title;
   final Color color;
@@ -27,4 +28,11 @@ class ItemTag extends Equatable {
 
   @override
   List<Object> get props => [id];
+
+  @override
+  Object toJson() => {
+        "id": id,
+        "title": title,
+        "color": color.value,
+      };
 }
