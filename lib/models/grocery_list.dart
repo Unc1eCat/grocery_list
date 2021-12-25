@@ -26,6 +26,15 @@ class GroceryList implements ToJson {
         items = items ?? [],
         tags = tags ?? [];
 
+  GroceryList.fromJson(Map<String, Object> json)
+      : id = json["id"],
+        items = (json["items"] as List<Map<String, Object>>).map((e) => GroceryItem.fromJson(e)).toList(),
+        tags = (json["tags"] as List<Map<String, Object>>).map((e) => ItemTag.fromJson(e)).toList(),
+        title = json["title"],
+        defaultCurrency = json["defaultCurrency"],
+        purchasedItems = (json["purchasedItems"] as List<Map<String, Object>>).map((e) => GroceryItem.fromJson(e)).toSet(),
+        usePrice = json["purchasedItems"];
+
   GroceryList copyWith({
     bool usePrice,
     Set<GroceryItem> purchasedItems,

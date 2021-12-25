@@ -39,6 +39,11 @@ class TagsListItem extends StatelessWidget {
               Spacer(),
               SizedBox(width: 20),
               HeavyTouchButton(
+                onPressed: () => bloc.removeItemTag(model.id, listId),
+                child: Icon(Icons.delete_rounded),
+              ),
+              SizedBox(width: 20),
+              HeavyTouchButton(
                 onPressed: () => Navigator.of(context).push(ColorPickerDialog(
                   availableColors: bloc.presetTagColors,
                   colorsInARow: 3,

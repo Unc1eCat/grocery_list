@@ -6,7 +6,7 @@ import 'package:grocery_list/models/grocery_item.dart';
 import 'package:grocery_list/models/grocery_list.dart';
 import 'package:grocery_list/models/grocery_prototype.dart';
 import 'package:grocery_list/models/item_tag.dart';
-import 'package:grocery_list/utils/app_directories.dart';
+import 'package:grocery_list/utils/app_directories.dart' as ad;
 import 'package:grocery_list/utils/serealization_utils.dart';
 import 'package:grocery_list/widgets/rounded_rolling_switch.dart';
 import 'package:grocery_list/widgets/searchg_result.dart';
@@ -39,7 +39,7 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   GroceryList getListOfId(String listId) => _lists?.firstWhere((e) => e.id == listId, orElse: () => null);
   GroceryItem getItemOfId(String id, String listId) => getListOfId(listId)?.items?.firstWhere((e) => e.id == id, orElse: () => null);
   GroceryPrototype getPrototypeOfId(String id) => _prototypes?.firstWhere((e) => e.id == id, orElse: () => null);
-  ItemTag getTagOfId(String id, String listId) => getListOfId(listId)?.tags?.firstWhere((e) => e.id == id);
+  ItemTag getTagOfId(String id, String listId) => getListOfId(listId)?.tags?.firstWhere((e) => e.id == id, orElse: () => null);
 
   @override
   onChange(Change change) {
@@ -48,10 +48,22 @@ class GroceryListBloc extends Cubit<GroceryListState> {
   }
 
   void saveLists() async {
-    // print(jsonEncoder.convert(_lists));
+    var jsonString = jsonEncodeModel(_lists);
+
+    print("<-------------------- SAVING JSON MODEL -------------------->");
+    print(jsonString);
+
+    ad.groceryListsFile.writeAsStringSync(jsonString);
   }
 
-  void savePrototypes() async {}
+  void savePrototypes() async {
+    var jsonString = jsonEncodeModel(_prototypes);
+
+    print("<-------------------- SAVING JSON MODEL -------------------->");
+    print(jsonString);
+
+    ad.groceryPrototypesFile.writeAsStringSync(jsonString);
+  }
 
   void addPrototype(GroceryPrototype prototype) {
     _prototypes.add(prototype);
@@ -101,12 +113,13 @@ class GroceryListBloc extends Cubit<GroceryListState> {
       for (var i = 0; i < list.items.length; i++) {
         if (list.items[i].tags.contains(removed)) {
           previousItems.add(list.items[i]);
-          list.items[i].tags.remove(removed);
+          list.items[i].tags.removeWhere((e) => removed.id == e.id);
         }
       }
     }
 
-    emit(ItemsChangedState(true, previousItems));
+    emit(ItemTagsListModifiedState(listId));
+    emit(ItemsChangedState(false, previousItems));
 
     saveLists();
   }

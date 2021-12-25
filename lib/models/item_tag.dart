@@ -26,6 +26,11 @@ class ItemTag extends Equatable implements ToJson {
         color: color ?? this.color,
       );
 
+  ItemTag.fromJson(Map<String, Object> json)
+      : id = json["id"],
+        title = json["title"],
+        color = Color(json["color"]);
+
   @override
   List<Object> get props => [id];
 

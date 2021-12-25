@@ -27,6 +27,7 @@ dependencies:
   intl: 
   http: ^0.12.2
   local_hero: ^0.1.0
+  trotter: ^1.2.0
   equatable: ^1.2.5
   shared_preferences:
   path_provider: ^2.0.2

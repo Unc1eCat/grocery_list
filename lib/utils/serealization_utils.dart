@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
 
+import 'package:trotter/trotter.dart' as tr;
+
 abstract class ToJson {
   Object toJson();
 
@@ -31,38 +33,46 @@ abstract class ModelUpgrader with EquatableMixin {
   List<Object> get props => [inputVersions, outputVersion];
 }
 
-var currentModelsVersion = "1.0";
+var currentModelsVersion = 0;
 
 var _jsonEncoder = JsonEncoder.withIndent('    ', ToJson.toEncodable);
 
 var modelUpgraders = Map<Object, Set<ModelUpgrader>>();
 
-/// Returns a list of model upgraders from the [[modelUpgraders]]. Every input versions set of upgrader n contains output version of upgrader n - 1, this does 
+/// Returns a list of model upgraders from the [[modelUpgraders]]. Every input versions set of upgrader n contains output version of upgrader n - 1, this does
 /// not apply to the first upgrader. Input versions set of first upgrader contains [[fromVersion]]; output version of the last upgrader equals to [[toVersion]].
-/// 
+///
 /// If such list can't be formed from the model upgraders in the set [[modelUpgraders]] then null is returned.
-// TODO: Fix it, think a bit and you'll know why
+// TODO: Make it not O(n!) for god
 List<ModelUpgrader> getShortestModelUpgradersChain(int fromVersion, int toVersion, Set<ModelUpgrader> modelUpgraders) {
-  var ret = <ModelUpgrader>[];
+  var perms = tr.Permutations(modelUpgraders.length, modelUpgraders.toList());
+  var matchingChains = <List<ModelUpgrader>>{};
 
-  ret.add(getClosestModelUpgrader(fromVersion, toVersion, modelUpgraders));
+  perms().forEach((e) {
+    if (!e.first.inputVersions.contains(fromVersion)) return;
 
-  if (ret.last == null) return null;
+    var possibleChain = [e.first];
 
-  while (toVersion != ret.last.outputVersion) {
-    var i = getClosestModelUpgrader(ret.last.outputVersion, toVersion, modelUpgraders);
+    for (var i = 1; i < e.length && possibleChain.last.outputVersion < toVersion; i++) {
+      if (e[i].inputVersions.contains(e[i - 1].outputVersion) && e[i].outputVersion <= toVersion) {
+        possibleChain.add(e[i]);
+      } else {
+        return;
+      }
+    }
 
-    if (i == null) return null;
+    if (possibleChain.last.outputVersion == toVersion)
+    {
+      matchingChains.add(possibleChain);
+    }
+  });
 
-    ret.add(i);
-  }
-
-  return ret.last.outputVersion == toVersion ? ret : null;
+  return matchingChains.fold(<ModelUpgrader>[], (s, e) => e.length < s.length ? e : s);
 }
 
 /// Returns ModelUpgrader from the given set with its input versions containing the [[fromVersion]] and its
 /// output version, being the closest to [[toVersion]] among all model upgraders output versions in the set and being lower than the [[toVersion]].
-/// 
+///
 /// If there is no model upgrader that's input versions contain the [[fromVersion]] and that's output version is lower than the [[toVersion]], it returns null
 ModelUpgrader getClosestModelUpgrader(int fromVersion, int toVersion, Set<ModelUpgrader> modelUpgraders) {
   var ret = modelUpgraders.firstWhere((e) => e.inputVersions.contains(fromVersion) && e.outputVersion <= toVersion, orElse: () => null);

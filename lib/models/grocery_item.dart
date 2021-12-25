@@ -138,7 +138,7 @@ class ProductlessGroceryItem extends GroceryItem {
         "price": price,
         "quantization": quantization,
         "quantizationFractionDigits": quantizationFractionDigits,
-        "tags": tags,
+        "tags": tags.map((e) => e.id),
         "amount": amount,
         "checked": checked,
       };
@@ -232,8 +232,8 @@ class ProductfulGroceryItem extends GroceryItem {
   @override
   Map<String, Object> toJson() => {
         "id": id,
-        "boundPrototype": boundPrototype,
-        "tags": tags,
+        "boundPrototype": boundPrototype.id,
+        "tags": tags.map((e) => e.id),
         "amount": amount,
         "checked": checked,
       };
